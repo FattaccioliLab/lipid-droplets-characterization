@@ -1,0 +1,9 @@
+# Eclipse
+.settings/
+*.classpath
+*.project
+*.tmp
+*.bak
+
+# Maven
+target/

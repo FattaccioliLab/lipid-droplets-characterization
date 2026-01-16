@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>42.0.0</version>
+		<relativePath />
+	</parent>
+
+	<groupId>fr.sorbonne-universite</groupId>
+	<artifactId>lipid-droplets-characterization</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+
+	<name>Lipid Droplets Characterization</name>
+	<description>Fiji plugin that aims to characterize the surface fluorescence and size distribution of microparticles.</description>
+	<url>https://github.com/FattaccioliLab/LipidDroplets_Characterization</url>
+	<inceptionYear>2026</inceptionYear>
+	<organization>
+		<name>Sorbonne Université</name>
+		<url>https://www.sorbonne-universite.fr</url>
+	</organization>
+	<licenses>
+		<license>
+	        <name>GNU General Public License v3.0</name>
+	        <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+	        <distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>00David</id>
+			<name>David Vadimon</name>
+			<roles>
+				<role>developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>maamun101</id>
+			<name>Abdullah Al Mamun</name>
+			<roles>
+				<role>developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>YahyaMudallal</id>
+			<name>Yahya Mudallal</name>
+			<roles>
+				<role>developer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>None</name>
+		</contributor>
+	</contributors>
+	
+	<mailingLists>
+		<mailingList>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tags/imagej</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://github.com/FattaccioliLab/LipidDroplets_Characterization.git</connection>
+		<developerConnection>scm:git:git@github.com:FattaccioliLab/LipidDroplets_Characterization.git</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/FattaccioliLab/LipidDroplets_Characterization</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>http://github.com/FattaccioliLab/LipidDroplets_Characterization/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>None</system>
+	</ciManagement>
+
+	<properties>
+		<license.licenseName>GNU General Public License v3.0</license.licenseName>
+		<license.copyrightOwners>David Vadimon, Abdullah Al Mamun, Yahya Mudallal, Sorbonne Université</license.copyrightOwners>
+		<license.projectName>Fiji plugin for characterizing surface fluorescence and microparticle size distribution.</license.projectName>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>scijava.public</id>
+			<url>https://maven.scijava.org/content/groups/public</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-legacy</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-simple</artifactId>
+		</dependency>
+	</dependencies>
+</project>
