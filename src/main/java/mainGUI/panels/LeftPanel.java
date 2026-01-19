@@ -9,10 +9,15 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
+import org.scijava.Context;
+
 @SuppressWarnings("serial")
 public class LeftPanel extends JPanel {
 
-    public LeftPanel() {
+    public LeftPanel(final Context ctx) {
+    	
+    	ctx.inject(this);
+    	
         setLayout(new BorderLayout());
         
         TitledBorder border = BorderFactory.createTitledBorder(
