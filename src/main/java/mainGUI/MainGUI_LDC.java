@@ -1,7 +1,7 @@
 package mainGUI;
 import java.awt.GridLayout;
 
-import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.scijava.Context;
@@ -13,7 +13,7 @@ import mainGUI.panels.RightPanel;
  * The plugin main GUI.
  */
 @SuppressWarnings("serial")
-public class MainGUI_LDC extends JDialog {
+public class MainGUI_LDC extends JFrame {
 
 	private final JPanel leftContent;
 	private final JPanel rightContent;
