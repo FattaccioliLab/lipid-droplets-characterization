@@ -14,6 +14,10 @@ public class AnalysisSettings {
 	private boolean gausianFilter = false;
 	private boolean backgroundSubstraction = false;
 	private boolean darkBackgroud = false;
+	private boolean enhanceContrast = false;
+	private double enhanceSaturatedPercent = 0.35; // default per spec (0.35)
+	private double medianRadius = 2.0; // default radius (px)
+
 	
 	// thresholding
 	// manual
@@ -98,6 +102,18 @@ public class AnalysisSettings {
 	public void setMedianFilter(boolean medianFilter) {
 		this.medianFilter = medianFilter;
 	}
+	
+	
+	public boolean isEnhanceContrast() { return enhanceContrast; }
+	public void setEnhanceContrast(boolean enhanceContrast) { this.enhanceContrast = enhanceContrast; }
+
+	public double getEnhanceSaturatedPercent() { return enhanceSaturatedPercent; }
+	public void setEnhanceSaturatedPercent(double enhanceSaturatedPercent) { this.enhanceSaturatedPercent = enhanceSaturatedPercent; }
+
+
+	public double getMedianRadius() { return medianRadius; }
+	public void setMedianRadius(double medianRadius) { this.medianRadius = medianRadius; }
+	
 	/**
 	 * @return the gausianFilter
 	 */

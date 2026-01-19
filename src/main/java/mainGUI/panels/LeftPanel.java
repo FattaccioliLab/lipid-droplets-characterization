@@ -2,6 +2,8 @@ package mainGUI.panels;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.io.File;
 
 import javax.swing.BorderFactory;
@@ -9,22 +11,39 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JCheckBox;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.Timer;
+import javax.swing.BoxLayout;
+import javax.swing.Box;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
+import ij.ImageStack;
+import ij.process.ImageProcessor;
+import ij.plugin.filter.RankFilters;
+import ij.plugin.ContrastEnhancer;
 import model.AnalysisSettings;
 
 /**
  * The left side of the plugin main GUI.
- * It contains checkboxes and sliders that let users set theirs preferred setting.
+ * It contains checkboxes and controls for preprocessing.
  */
 @SuppressWarnings("serial")
 public class LeftPanel extends JPanel {
 	
 	private ImagePlus img;
-	private AnalysisSettings selectedSettings;
+	private final AnalysisSettings selectedSettings;
+	
+	private JLabel imageStatusLabel;
+	private JCheckBox enhanceCheckbox;
+	private JSpinner enhanceSaturatedSpinner;
+	private JCheckBox medianCheckbox;
+	private JSpinner medianRadiusSpinner;
 	
     public LeftPanel(AnalysisSettings selectedSettings) {
     
@@ -32,18 +51,27 @@ public class LeftPanel extends JPanel {
     	
         setLayout(new BorderLayout());
         
-        // top panel contains image imported label and button
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(new java.awt.GridLayout(2, 1)); 
+        // Main container for the column
+        JPanel mainContainer = new JPanel();
+        mainContainer.setLayout(new BoxLayout(mainContainer, BoxLayout.Y_AXIS));
         
+        // --- 1. IMAGE SOURCE SCOPE ---
+        JPanel imagePanel = new JPanel();
+        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
+        imagePanel.setBorder(BorderFactory.createTitledBorder("Image Source"));
         
-        JLabel label = new JLabel();
-        topPanel.add(label);
+        // FORCE FULL WIDTH: Set alignment left + Max width to huge value
+        imagePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        imagePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150)); // Height is arbitrary cap, Width is key
         
-        // button that let user open a tiff file
-        JButton fileSelectButton =  new JButton("replace image");
+        // Label
+        imageStatusLabel = new JLabel("<html><center>No image opened.<br>Please open one.</center></html>", SwingConstants.CENTER);
+        imageStatusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        // Button
+        JButton fileSelectButton = new JButton("Replace image");
+        fileSelectButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         fileSelectButton.addActionListener(e -> {
-
             img = WindowManager.getCurrentImage();
 
             if (img == null) {
@@ -63,7 +91,6 @@ public class LeftPanel extends JPanel {
             	return;
             }
 
-            // replace the current image
             img.setStack(newImage.getTitle(), newImage.getStack());
             img.setCalibration(newImage.getCalibration());
             img.setDimensions(
@@ -74,26 +101,178 @@ public class LeftPanel extends JPanel {
 
             img.updateAndDraw();
         });
-        topPanel.add(fileSelectButton);
         
-        add(topPanel, BorderLayout.NORTH);
+        imagePanel.add(Box.createVerticalStrut(5));
+        imagePanel.add(imageStatusLabel);
+        imagePanel.add(Box.createVerticalStrut(10));
+        imagePanel.add(fileSelectButton);
+        imagePanel.add(Box.createVerticalStrut(5));
+
+        mainContainer.add(imagePanel);
+        mainContainer.add(Box.createVerticalStrut(10)); 
+
+        // --- 2. PREPROCESSING SCOPE ---
+        JPanel filterPanel = new JPanel();
+        filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
+        filterPanel.setBorder(BorderFactory.createTitledBorder("Preprocessing"));
+        
+        // FORCE FULL WIDTH: Match the imagePanel behavior
+        filterPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        filterPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300)); // Height is arbitrary cap, Width is key
+
+        // Enhance contrast controls
+        enhanceCheckbox = new JCheckBox("Enhance contrast (stretch)");
+        enhanceCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        enhanceCheckbox.setSelected(selectedSettings.isEnhanceContrast());
+        enhanceCheckbox.addActionListener(e -> {
+            boolean enabled = enhanceCheckbox.isSelected();
+            selectedSettings.setEnhanceContrast(enabled);
+            enhanceSaturatedSpinner.setEnabled(enabled);
+        });
+        filterPanel.add(enhanceCheckbox);
+
+        enhanceSaturatedSpinner = new JSpinner(new SpinnerNumberModel(selectedSettings.getEnhanceSaturatedPercent(), 0.01, 5.0, 0.01));
+        enhanceSaturatedSpinner.setEnabled(selectedSettings.isEnhanceContrast());
+        enhanceSaturatedSpinner.addChangeListener(e -> {
+            double val = ((Number) enhanceSaturatedSpinner.getValue()).doubleValue();
+            selectedSettings.setEnhanceSaturatedPercent(val);
+        });
+
+        JPanel saturatedRow = new JPanel(new BorderLayout());
+        saturatedRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        saturatedRow.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
+        saturatedRow.add(new JLabel("  Saturated (%): "), BorderLayout.WEST);
+        saturatedRow.add(enhanceSaturatedSpinner, BorderLayout.CENTER);
+        filterPanel.add(saturatedRow);
+
+        filterPanel.add(Box.createVerticalStrut(8));
+
+        // Median filter controls
+        medianCheckbox = new JCheckBox("Median filter");
+        medianCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        medianCheckbox.setSelected(selectedSettings.isMedianFilter());
+        medianCheckbox.addActionListener(e -> {
+            boolean enabled = medianCheckbox.isSelected();
+            selectedSettings.setMedianFilter(enabled);
+            medianRadiusSpinner.setEnabled(enabled);
+        });
+        filterPanel.add(medianCheckbox);
+
+        medianRadiusSpinner = new JSpinner(new SpinnerNumberModel(selectedSettings.getMedianRadius(), 0.5, 50.0, 0.5));
+        medianRadiusSpinner.setEnabled(selectedSettings.isMedianFilter());
+        medianRadiusSpinner.addChangeListener(e -> {
+            double val = ((Number) medianRadiusSpinner.getValue()).doubleValue();
+            selectedSettings.setMedianRadius(val);
+        });
+
+        JPanel radiusRow = new JPanel(new BorderLayout());
+        radiusRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        radiusRow.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
+        radiusRow.add(new JLabel("  Radius (px): "), BorderLayout.WEST);
+        radiusRow.add(medianRadiusSpinner, BorderLayout.CENTER);
+        filterPanel.add(radiusRow);
+
+        // Action buttons
+        JPanel buttonRow = new JPanel(new java.awt.GridLayout(1, 2, 6, 6));
+        buttonRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // Fix button row width to match others
+        buttonRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        
+        JButton previewButton = new JButton("Preview");
+        previewButton.addActionListener(e -> runPreprocessingInBackground(true));
+        JButton applyButton = new JButton("Apply");
+        applyButton.addActionListener(e -> runPreprocessingInBackground(false));
+        buttonRow.add(previewButton);
+        buttonRow.add(applyButton);
+        
+        filterPanel.add(Box.createVerticalStrut(10));
+        filterPanel.add(buttonRow);
+        filterPanel.add(Box.createVerticalStrut(5));
+
+        mainContainer.add(filterPanel);
+        
+        add(mainContainer, BorderLayout.NORTH);
            
-        // Timer that check regularly if an image is opened and get the image
     	Timer imageWatcher = new Timer(300, e -> {
     		img = WindowManager.getCurrentImage();
     	    if (img != null) {
-    	    	label.setText("Image opened : " + img.getTitle());
-    	    }else {
-    	    	label.setText("There is no opened image, please open one.");
+    	    	imageStatusLabel.setText("<html><center>Image opened:<br>" + img.getTitle() + "</center></html>");
+    	    } else {
+    	    	imageStatusLabel.setText("<html><center>No image opened.<br>Please open one.</center></html>");
     	    }
-    	    
     	});
     	imageWatcher.start();
         	      
         setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(Color.BLUE, 2)
         ));
-        
     }
-    
+
+    private void runPreprocessingInBackground(final boolean previewOnly) {
+        img = WindowManager.getCurrentImage();
+        if (img == null) {
+            IJ.showMessage("No image", "Please open an image first (File > Open).");
+            return;
+        }
+
+        SwingWorker<ImagePlus, Void> worker = new SwingWorker<ImagePlus, Void>() {
+            @Override
+            protected ImagePlus doInBackground() throws Exception {
+                ImagePlus work = img.duplicate();
+                work.setTitle(img.getTitle() + (previewOnly ? "-preview" : "-preprocessed"));
+
+                IJ.showStatus("Preprocessing...");
+                int totalSteps = 1;
+                if (selectedSettings.isEnhanceContrast()) totalSteps++;
+                if (selectedSettings.isMedianFilter()) totalSteps++;
+                int step = 0;
+
+                if (selectedSettings.isEnhanceContrast()) {
+                    step++;
+                    IJ.showStatus(String.format("Enhancing contrast (saturated=%.2f%%) [%d/%d]", selectedSettings.getEnhanceSaturatedPercent(), step, totalSteps));
+                    ContrastEnhancer ce = new ContrastEnhancer();
+                    ce.stretchHistogram(work, selectedSettings.getEnhanceSaturatedPercent());
+                    IJ.showProgress(step, totalSteps);
+                }
+
+                if (selectedSettings.isMedianFilter()) {
+                    step++;
+                    IJ.showStatus(String.format("Applying median (r=%.2f px) [%d/%d]", selectedSettings.getMedianRadius(), step, totalSteps));
+                    applyMedianFilter(work, selectedSettings.getMedianRadius());
+                    IJ.showProgress(step, totalSteps);
+                }
+
+                IJ.showStatus("Preprocessing done.");
+                IJ.showProgress(1.0);
+                return work;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    ImagePlus result = get();
+                    result.updateAndDraw();
+                    result.show();
+                } catch (Exception ex) {
+                    IJ.showMessage("Error", "Preprocessing failed: " + ex.getMessage());
+                    ex.printStackTrace();
+                } finally {
+                    IJ.showProgress(0);
+                }
+            }
+        };
+
+        worker.execute();
+    }
+
+    private void applyMedianFilter(final ImagePlus imp, final double radius) {
+        final RankFilters rf = new RankFilters();
+        final ImageStack stack = imp.getStack();
+        final int n = stack.getSize();
+        for (int z = 1; z <= n; z++) {
+            final ImageProcessor ip = stack.getProcessor(z);
+            rf.rank(ip, radius, RankFilters.MEDIAN);
+            IJ.showProgress(z, n);
+        }
+    }
 }
