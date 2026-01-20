@@ -13,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JCheckBox;
 import javax.swing.JSpinner;
+import javax.swing.JToggleButton;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.Timer;
 import javax.swing.BoxLayout;
@@ -28,6 +29,11 @@ import ij.process.ImageProcessor;
 import ij.plugin.filter.RankFilters;
 import ij.plugin.ContrastEnhancer;
 import model.AnalysisSettings;
+import net.imagej.display.ImageDisplayService;
+
+import org.scijava.Context;
+import org.scijava.plugin.Parameter;
+
 
 /**
  * The left side of the plugin main GUI.
@@ -44,8 +50,17 @@ public class LeftPanel extends JPanel {
 	private JSpinner enhanceSaturatedSpinner;
 	private JCheckBox medianCheckbox;
 	private JSpinner medianRadiusSpinner;
+	private JButton resetEC;
 	
-    public LeftPanel(AnalysisSettings selectedSettings) {
+	// needed for the pretreatments
+	private ContrastEnhancer ce;
+	
+	
+	@Parameter
+	private ImageDisplayService imageDisplayService;
+
+	
+    public LeftPanel(Context ctx, AnalysisSettings selectedSettings) {
     
     	this.selectedSettings = selectedSettings;
     	
@@ -121,7 +136,7 @@ public class LeftPanel extends JPanel {
         filterPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300)); // Height is arbitrary cap, Width is key
 
         // Enhance contrast controls
-        enhanceCheckbox = new JCheckBox("Enhance contrast (stretch)");
+        enhanceCheckbox = new JCheckBox("Enhance contrast");
         enhanceCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
         enhanceCheckbox.setSelected(selectedSettings.isEnhanceContrast());
         enhanceCheckbox.addActionListener(e -> {
@@ -207,7 +222,86 @@ public class LeftPanel extends JPanel {
             BorderFactory.createLineBorder(Color.BLUE, 2)
         ));
     }
+    
+    
+    
+    /**
+     * Enhances the contrast of the current active image, or does nothing if there is no active image.
+     * @param saturated The saturated value for enhancing constrast. Makes the assumption that {@code saturated} is a percentage.
+     */
+    private void enhanceContrast(double saturated) {
+    	// No active image
+    	if (imageDisplayService.getImageDisplays().isEmpty()) return;
+    	
+		ImagePlus imp = IJ.getImage();
+		ce.stretchHistogram(imp, saturated);
+		imp.updateAndDraw();
+    }
+    
+    
+    /**
+     * Handles the ON/OFF change of the toggle.
+     * @param toggle Enhance contrast toggle
+     */
+    private void handleToggleEC(JToggleButton toggle) {
+        if (toggle.isSelected()) {
+            toggle.setText("ON");
+            enhanceSaturatedSpinner.setEnabled(true);
+            resetEC.setEnabled(true);
+            handleUpdateSaturatedValue(enhanceSaturatedSpinner);
+            
+        } else {
+            toggle.setText("OFF");
+            enhanceSaturatedSpinner.setEnabled(false);
+            resetEC.setEnabled(false);
+            enhanceContrast(0);
+        }
+    }
+    
+    /**
+     * Calls {@code applyContrast}.
+     * @param text The formatted input for the 'saturated' enhance contrast value 
+     */
+    private void handleUpdateSaturatedValue(JSpinner text) {
+    	
+    	// No active image
+    	if (imageDisplayService.getImageDisplays().isEmpty()) return;
+    	
+    	// Format check first, might be useless
+    	if (text.getValue() instanceof Number) {
+    		double v = ((Number) text.getValue()).doubleValue();
+        	if (v >= 0 && v <= 100) { // Enhancing contrast
+        		enhanceContrast(v);
+        	} else {
+        		System.err.println("Must be in the [0, 100] range");
+        	}
+    	    
+    	} else {
+    		System.err.println("Must be a double");
+    	}
+    }
+    
+    
+    
+    /**
+     * Handles the ON/OFF change of the toggle.
+     * @param toggle Median filter toggle
+     */
+    private void handleToggleMF(JToggleButton toggle) {
+        if (toggle.isSelected()) {
+            toggle.setText("ON");
+        } else {
+            toggle.setText("OFF");
+        }
+    }
+    
 
+    
+    
+    
+    
+    
+    
     private void runPreprocessingInBackground(final boolean previewOnly) {
         img = WindowManager.getCurrentImage();
         if (img == null) {

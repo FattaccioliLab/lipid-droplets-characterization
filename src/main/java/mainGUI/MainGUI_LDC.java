@@ -18,10 +18,12 @@ public class MainGUI_LDC extends JDialog {
 	
 	private AnalysisSettings selectedSettings = new AnalysisSettings();
 	
-	private final JPanel leftContent = new LeftPanel(selectedSettings);
-	private final JPanel rightContent = new RightPanel(selectedSettings);
+	private final JPanel leftContent;
+	private final JPanel rightContent;
 	
 	public MainGUI_LDC(final Context ctx) {
+		this.leftContent = new LeftPanel(ctx, selectedSettings);
+		this.rightContent = new RightPanel(ctx, selectedSettings);
 		
 		int gridLines = 1;
 		int gridColumns = 2;
