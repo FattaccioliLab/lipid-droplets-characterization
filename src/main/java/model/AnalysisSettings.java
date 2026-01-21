@@ -9,15 +9,17 @@ public class AnalysisSettings {
 	private double calibration; // μm per pixel
 	
 	// pre-treatment 
-	private boolean enhanceContraste = false;
 	private boolean medianFilter = false;
 	private boolean gausianFilter = false;
 	private boolean backgroundSubstraction = false;
 	private boolean darkBackgroud = false;
 	private boolean enhanceContrast = false;
-	private double enhanceSaturatedPercent = 0.35; // default per spec (0.35)
-	private double medianRadius = 2.0; // default radius (px)
-
+	
+	public final static double DFL_EC_SATURATED = 0.35; // default saturated value (%)
+	private double enhanceSaturatedPercent = DFL_EC_SATURATED;
+	
+	public final static double DFL_MEDIAN_RADIUS = 2.0; // default radius (px)
+	private double medianRadius = DFL_MEDIAN_RADIUS;
 	
 	// thresholding
 	// manual
@@ -78,18 +80,7 @@ public class AnalysisSettings {
 	public void setCalibration(double calibration) {
 		this.calibration = calibration;
 	}
-	/**
-	 * @return the enhanceContraste
-	 */
-	public boolean isEnhanceContraste() {
-		return enhanceContraste;
-	}
-	/**
-	 * @param enhanceContraste the enhanceContraste to set
-	 */
-	public void setEnhanceContraste(boolean enhanceContraste) {
-		this.enhanceContraste = enhanceContraste;
-	}
+
 	/**
 	 * @return the medianFilter
 	 */

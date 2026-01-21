@@ -4,6 +4,29 @@
 *.project
 *.tmp
 *.bak
+/.metadata/
 
-# Maven
+# IntelliJ
+.idea/
+*.iml
+
+# Maven / Java
 target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+dependency-reduced-pom.xml
+release.properties
+
+# Resources / OS
+.DS_Store
+Thumbs.db
+
+# logs / temp
+*.log
+*.tmp
+
+# optionally ignore IntelliJ and NetBeans too
+*.ipr
+*.iws
+nbproject/
