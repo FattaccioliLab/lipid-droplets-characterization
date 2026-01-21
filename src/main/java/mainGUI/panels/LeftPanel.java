@@ -377,10 +377,12 @@ public class LeftPanel extends JPanel {
         medianCheckbox.setEnabled(enabled);
         medianPreviewCheckbox.setEnabled(enabled);
         medianRadiusField.setEnabled(enabled);
+        medianRadiusResetButton.setEnabled(enabled);
         applyButton.setEnabled(enabled && medianCheckbox.isSelected());
         
         enhanceCheckbox.setEnabled(enabled);
         enhanceSaturatedSpinner.setEnabled(enabled && enhanceCheckbox.isSelected());
+        enhanceSaturatedResetButton.setEnabled(enabled);
         nextButton.setEnabled(enabled && img != null && !filterPanel.isVisible() == false);
     }
 
