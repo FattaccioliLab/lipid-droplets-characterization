@@ -6,7 +6,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
-import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
@@ -21,7 +21,7 @@ import model.AnalysisSettings;
  * The plugin main GUI.
  */
 @SuppressWarnings("serial")
-public class MainGUI_LDC extends JDialog {
+public class MainGUI_LDC extends JFrame {
     
     private AnalysisSettings selectedSettings = new AnalysisSettings();
     

@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
+import java.net.URL;
 import java.util.concurrent.CancellationException;
 
 import javax.swing.BorderFactory;
@@ -68,10 +69,12 @@ public class LeftPanel extends JPanel {
     // Contrast
     private JCheckBox enhanceCheckbox;
     private JSpinner enhanceSaturatedSpinner;
+    private JButton enhanceSaturatedResetButton;
 
     // Median
     private JCheckBox medianCheckbox;
     private JCheckBox medianPreviewCheckbox;
+    private JButton medianRadiusResetButton;
     private JTextField medianRadiusField; 
     private JButton applyButton;
     private JLabel loadingLabel; 
@@ -172,12 +175,17 @@ public class LeftPanel extends JPanel {
             selectedSettings.setEnhanceSaturatedPercent(((Number) enhanceSaturatedSpinner.getValue()).doubleValue());
             if (enhanceCheckbox.isSelected() && !isProcessing) enhanceContrast(selectedSettings.getEnhanceSaturatedPercent());
         });
+        
+        enhanceSaturatedResetButton = new JButton("Reset");
+        enhanceSaturatedResetButton.setMargin(new Insets(0, 5, 0, 5)); // Compact
+        enhanceSaturatedResetButton.addActionListener(e -> resetSaturatedContrast());
 
         JPanel saturatedRow = new JPanel(new BorderLayout());
         saturatedRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         saturatedRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         saturatedRow.add(new JLabel("  Saturated (%): "), BorderLayout.WEST);
         saturatedRow.add(enhanceSaturatedSpinner, BorderLayout.CENTER);
+        saturatedRow.add(enhanceSaturatedResetButton, BorderLayout.EAST);
 
         panel.add(enhanceCheckbox);
         panel.add(saturatedRow);
@@ -195,7 +203,7 @@ public class LeftPanel extends JPanel {
         medianPreviewCheckbox.setEnabled(selectedSettings.isMedianFilter());
 
         // Loading GIF
-        java.net.URL gifUrl = getClass().getResource("/loading.gif"); 
+        URL gifUrl = getClass().getResource("/loading.gif"); 
         if (gifUrl != null) {
             loadingLabel = new JLabel("<html><img src='" + gifUrl + "' width='20' height='20'></html>");
         } else {
@@ -234,12 +242,17 @@ public class LeftPanel extends JPanel {
                 if (!isProcessing) updateMedianRadiusFromField();
             }
         });
+        
+        medianRadiusResetButton= new JButton("Reset");
+        medianRadiusResetButton.setMargin(new Insets(0, 5, 0, 5)); // Compact
+        medianRadiusResetButton.addActionListener(e -> resetMedianRadius());
 
         JPanel radiusRow = new JPanel(new BorderLayout());
         radiusRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         radiusRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         radiusRow.add(new JLabel("  Radius (px): "), BorderLayout.WEST);
         radiusRow.add(medianRadiusField, BorderLayout.CENTER);
+        radiusRow.add(medianRadiusResetButton, BorderLayout.EAST);
 
         // Logic Connections
         medianCheckbox.addActionListener(e -> {
@@ -406,6 +419,19 @@ public class LeftPanel extends JPanel {
             enhanceContrast(enabled ? selectedSettings.getEnhanceSaturatedPercent() : 0);
         }
     }
+    
+    /**
+     * Resets contrast enhancement to its default value.
+     */
+    private void resetSaturatedContrast() {
+    	enhanceSaturatedSpinner.setValue(AnalysisSettings.DFL_EC_SATURATED);
+    	boolean enabled = enhanceCheckbox.isSelected();
+    	
+    	img = WindowManager.getCurrentImage();
+        if (img != null) {
+            enhanceContrast(enabled ? selectedSettings.getEnhanceSaturatedPercent() : 0);
+        }
+    }
 
     /**
      * Applies contrast enhancement to the current image using ImageJ's ContrastEnhancer.
@@ -437,6 +463,19 @@ public class LeftPanel extends JPanel {
                     enhanceContrast(selectedSettings.getEnhanceSaturatedPercent());
                 }
             });
+        }
+    }
+    
+    /**
+     * Resets median radius to its default value.
+     */
+    private void resetMedianRadius() {
+        boolean enabled = medianCheckbox.isSelected();
+        selectedSettings.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
+        medianRadiusField.setText(String.valueOf(selectedSettings.getMedianRadius()));
+
+        if (enabled) {
+        	updateMedianRadiusFromField();
         }
     }
 
@@ -671,7 +710,9 @@ public class LeftPanel extends JPanel {
                 : "<html><center>No image opened.<br>Please open one.</center></html>");
 
             enhanceCheckbox.setEnabled(hasImage);
+            enhanceSaturatedResetButton.setEnabled(hasImage);
             medianCheckbox.setEnabled(hasImage);
+            medianRadiusResetButton.setEnabled(hasImage);
             enhanceSaturatedSpinner.setEnabled(hasImage && enhanceCheckbox.isSelected());
 
             boolean medEnabled = hasImage && medianCheckbox.isSelected();

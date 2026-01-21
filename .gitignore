@@ -17,10 +17,6 @@ pom.xml.releaseBackup
 pom.xml.versionsBackup
 dependency-reduced-pom.xml
 release.properties
-*.class
-*.jar
-*.war
-*.ear
 
 # Resources / OS
 .DS_Store
@@ -29,11 +25,6 @@ Thumbs.db
 # logs / temp
 *.log
 *.tmp
-
-# test / coverage / generated site
-target/
-target/*
-!target/.gitkeep
 
 # optionally ignore IntelliJ and NetBeans too
 *.ipr

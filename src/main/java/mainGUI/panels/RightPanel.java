@@ -11,10 +11,6 @@ import model.AnalysisSettings;
 @SuppressWarnings("serial")
 public class RightPanel extends JPanel {
 	
-
-	// default values
-	public final static double DFL_SATURATED = 0.35;
-	
     public RightPanel(Context ctx, AnalysisSettings selectedSettings) {
     	ctx.inject(this);
     }
