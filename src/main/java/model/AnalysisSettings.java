@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * A class containing the user's current image processing settings for the plugin. 
+ * A class containing the user's current image processing settings for the plugin.
  */
 public class AnalysisSettings {
 	

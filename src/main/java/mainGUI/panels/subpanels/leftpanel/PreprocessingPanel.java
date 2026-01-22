@@ -36,6 +36,7 @@ import ij.process.ImageProcessor;
 import mainGUI.panels.LeftPanel;
 import mainGUI.utils.PanelUtils;
 import model.AnalysisSettings;
+import model.LDCService;
 import net.imagej.display.ImageDisplayService;
 
 /**
@@ -45,11 +46,14 @@ import net.imagej.display.ImageDisplayService;
 @SuppressWarnings("serial")
 public class PreprocessingPanel extends JPanel{
 	
+	// The parent panel
+	private LeftPanel leftPanel;
+	
     // --- Services & Models ---
     @Parameter
     private ImageDisplayService imageDisplayService;
-	private AnalysisSettings selectedSettings;
-	private LeftPanel leftPanel;
+    @Parameter
+	private LDCService selectedSettings;
 	private final ContrastEnhancer ce;
 	
     // Contrast
@@ -69,14 +73,13 @@ public class PreprocessingPanel extends JPanel{
     // Reference to the currently running worker to allow cancellation
     private SwingWorker<Void, Void> currentWorker;
 	
-	public PreprocessingPanel(Context ctx, AnalysisSettings selectedSettings, LeftPanel leftPanel) {
+	public PreprocessingPanel(Context ctx, LeftPanel leftPanel) {
 		
 		// Initialization of the panel layout
 		super();
 		PanelUtils.createVerticalPanel(this, "Preprocessing", 300);
 		
 		ctx.inject(this);
-		this.selectedSettings = selectedSettings;
 		this.leftPanel = leftPanel;
 		this.ce = new ContrastEnhancer();
 

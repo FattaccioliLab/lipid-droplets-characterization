@@ -13,7 +13,6 @@ import ij.WindowManager;
 import mainGUI.panels.subpanels.leftpanel.FooterLeftPanel;
 import mainGUI.panels.subpanels.leftpanel.ImageSourcePanel;
 import mainGUI.panels.subpanels.leftpanel.PreprocessingPanel;
-import model.AnalysisSettings;
 
 /**
  * The left side of the plugin main GUI.
@@ -46,7 +45,7 @@ public class LeftPanel extends JPanel {
      * * @param ctx              The SciJava context for injection.
      * @param selectedSettings The model object holding analysis parameters.
      */
-    public LeftPanel(Context ctx, AnalysisSettings selectedSettings) {
+    public LeftPanel(Context ctx) {
         ctx.inject(this);
 
         setLayout(new BorderLayout());
@@ -60,7 +59,7 @@ public class LeftPanel extends JPanel {
         mainContainer.add(Box.createVerticalStrut(10));
         
         // PreprocessingPanel
-        preprocessingPanel = new PreprocessingPanel(ctx, selectedSettings, this);
+        preprocessingPanel = new PreprocessingPanel(ctx, this);
         mainContainer.add(preprocessingPanel);
         
         // FooterLeftPanel

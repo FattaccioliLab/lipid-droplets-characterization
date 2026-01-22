@@ -12,10 +12,11 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 import org.scijava.Context;
+import org.scijava.plugin.Parameter;
 
 import mainGUI.panels.LeftPanel;
 import mainGUI.panels.RightPanel;
-import model.AnalysisSettings;
+import model.LDCService;
 
 /**
  * The plugin main GUI.
@@ -23,19 +24,21 @@ import model.AnalysisSettings;
 @SuppressWarnings("serial")
 public class MainGUI_LDC extends JFrame {
     
-    private AnalysisSettings selectedSettings = new AnalysisSettings();
+	@Parameter
+    private LDCService selectedSettings;
     
     private final JPanel leftContent;
     private final JPanel rightContent;
     
     public MainGUI_LDC(final Context ctx) {
-        this.leftContent = new LeftPanel(ctx, selectedSettings);
-        this.rightContent = new RightPanel(ctx, selectedSettings);
+        ctx.inject(this);
+    	
+        this.leftContent = new LeftPanel(ctx);
+        this.rightContent = new RightPanel(ctx);
         this.leftContent.setPreferredSize(new Dimension(0, 0));
         this.rightContent.setPreferredSize(new Dimension(0, 0));
         
         // Initialization of the MainGUI itself
-        ctx.inject(this);
         
         //Set the initial size
         setSize(800, 600);

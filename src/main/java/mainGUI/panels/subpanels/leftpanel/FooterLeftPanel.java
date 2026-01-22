@@ -58,6 +58,15 @@ public class FooterLeftPanel extends JPanel{
         add(nextButton);
 	}
 	
+    /**
+     * Enables (or disables) the footer's 'Next' button.
+     * @param enabled true : enables, false : disables
+     */
     public void setNextButtonEnabled(boolean enabled) { nextButton.setEnabled(enabled); }
+    
+    /**
+     * Enables (or disables) the footer's 'Prev' button.
+     * @param enabled true : enables, false : disables
+     */
     public void setPrevButtonEnabled(boolean enabled) { prevButton.setEnabled(enabled); }
 }

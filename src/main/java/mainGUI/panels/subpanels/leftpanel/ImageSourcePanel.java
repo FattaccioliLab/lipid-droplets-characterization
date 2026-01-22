@@ -25,8 +25,10 @@ import mainGUI.utils.PanelUtils;
 @SuppressWarnings("serial")
 public class ImageSourcePanel extends JPanel {
 	
+	// The parent panel
+	private LeftPanel leftPanel;
+	
 	private JLabel imageStatusLabel;
-	private LeftPanel leftPanel; // The panel container
 	
 	public ImageSourcePanel(Context ctx, LeftPanel leftPanel) {
 		

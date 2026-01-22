@@ -2,7 +2,6 @@ package mainGUI.panels;
 
 import javax.swing.JPanel;
 import org.scijava.Context;
-import model.AnalysisSettings;
 
 
 /**
@@ -11,7 +10,7 @@ import model.AnalysisSettings;
 @SuppressWarnings("serial")
 public class RightPanel extends JPanel {
 	
-    public RightPanel(Context ctx, AnalysisSettings selectedSettings) {
+    public RightPanel(Context ctx) {
     	ctx.inject(this);
     }
     
