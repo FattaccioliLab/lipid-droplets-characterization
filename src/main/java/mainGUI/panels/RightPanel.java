@@ -19,18 +19,30 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.text.NumberFormatter;
 
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.ui.UIService;
+
+import core.MeasuresProcessing;
+
 import org.scijava.event.EventService;
 
 import io.scif.services.DatasetIOService;
 import model.AnalysisSettings;
 import net.imagej.Dataset;
 import net.imagej.display.ImageDisplayService;
+
+import ij.plugin.filter.Analyzer;
+import ij.plugin.filter.ParticleAnalyzer;
+import ij.IJ;
+import ij.ImagePlus;
+import ij.WindowManager;
+import ij.measure.Measurements;
+import ij.measure.ResultsTable;
 
 @SuppressWarnings("serial")
 public class RightPanel extends JPanel {
@@ -56,48 +68,32 @@ public class RightPanel extends JPanel {
 	private JToggleButton toggleMF;
 	private JFormattedTextField saturatedField;
 	
+	private AnalysisSettings selectedSettings;
+	private MeasuresProcessing mp;
+	
     public RightPanel(final Context ctx,  AnalysisSettings selectedSettings) {
+    	
+    	this.selectedSettings = selectedSettings;
+    	this.mp = new MeasuresProcessing(selectedSettings);
     	
     	ctx.inject(this);
     	
-    	// Layout
-    	setLayout(new BorderLayout());
         setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(Color.GREEN, 2)
         ));
-       
-           
-        // Measures view Panel at the CENTER
-        JPanel viewPanel = new JPanel();
-        viewPanel.setLayout(new BorderLayout());
-        
-        // PLACEHOLDER data
-        String[] columns = {"x", "y", "intensity", "radius", "circularity"};
-        Object[][] data = {
-        		{1,2,3,4,5},
-        		{1,2,5,4,5},
-        		{1,2,3,4,5},
-        		{1,2,3,4,5},
-        		{1,2,3,4,5},
-        		{1,2,3,4,5},
-        		{1,2,3,4,5},
-        		{1,2,3,4,5},
-        		{1,2,3,4,5},
-        		{1,2,3,4,5},
-        };
-        
-        JTable measuresTable = new JTable(data, columns);
-        measuresTable.setAutoCreateRowSorter(true);
-        JScrollPane scrollTable = new JScrollPane(measuresTable); 
-        
-        viewPanel.add(scrollTable, BorderLayout.CENTER);
-       
-        add(viewPanel , BorderLayout.CENTER);
-        
-        
-        // measures treatment panel at the SOUTH
+ 
+        // measures treatment panel
         JPanel actionPanel = new JPanel();
-        actionPanel.setLayout(new GridLayout(1, 3));
+        actionPanel.setLayout(new GridLayout(3, 1));
+        
+        // show measures button
+        JButton resultsButton = new JButton("show results");
+        resultsButton.addActionListener(e -> {
+        	new Thread(() -> {
+                mp.generateMeasures();
+            }).start();
+        });
+        actionPanel.add(resultsButton);
         
         // generate histograms button
         JButton histogramsButton = new JButton("histograms");
@@ -106,25 +102,9 @@ public class RightPanel extends JPanel {
         });
         actionPanel.add(histogramsButton);
         
-        // generate statistics button
-        JButton statisticsButton = new JButton("statistics");
-        statisticsButton.addActionListener(e -> {
-        	// TODO
-        });
-        actionPanel.add(statisticsButton);
-        
-        // export as csv button
-        JButton exportButton = new JButton("Export");
-        exportButton.addActionListener(e -> {
-        	// TODO
-        });
-        actionPanel.add(exportButton);
-                
-        add(actionPanel, BorderLayout.SOUTH);
+        add(actionPanel);
         
         
     }
-    
-   
     
 }
