@@ -1,32 +1,35 @@
 package mainGUI.panels.subpanels.leftpanel;
 
 import java.awt.Component;
-import java.io.File;
 
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
 import org.scijava.Context;
+import org.scijava.plugin.Parameter;
 
 import ij.IJ;
 import ij.ImagePlus;
 import mainGUI.panels.LeftPanel;
 import mainGUI.utils.PanelUtils;
+import model.LDCService;
 
 /**
- * Creates the top panel of the LeftPanel, containing image status and the "Replace Image" button.
- * * @return The constructed JPanel.
+ * Creates the top panel of the {@link LeftPanel}, containing image status and the "Replace Image" button.
  */
 @SuppressWarnings("serial")
 public class ImageSourcePanel extends JPanel {
 	
 	// The parent panel
 	private LeftPanel leftPanel;
+	
+	// Lipid Droplet Characterization service
+    @Parameter
+	private LDCService selectedSettings;
 	
 	private JLabel imageStatusLabel;
 	
@@ -45,7 +48,14 @@ public class ImageSourcePanel extends JPanel {
 	    JButton fileSelectButton = new JButton("Replace image");
 	    fileSelectButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 	    fileSelectButton.addActionListener(e -> {
-	        if (!leftPanel.isProcessing()) replaceImageAction();
+	        if (!leftPanel.isProcessing()) {
+	        	leftPanel.updateAndGetImg();
+	        	try {
+	        		selectedSettings.replaceCurrentImage(this);
+	        	} catch (IllegalArgumentException error) {
+	        		IJ.showMessage("Please open an image first (File > Open)");
+	        	}
+	        }
 	    });
 
 	    add(Box.createVerticalStrut(5));
@@ -57,28 +67,6 @@ public class ImageSourcePanel extends JPanel {
 	    
 		startImageWatcher();
 	}
-	
-    /**
-     * Opens a file chooser to replace the current image stack with a new one from disk.
-     */
-    private void replaceImageAction() {
-    	ImagePlus img = leftPanel.updateAndGetImg();
-        if (img == null) {
-            IJ.showMessage("Please open an image first (File > Open)");
-            return;
-        }
-        JFileChooser fileChooser = new JFileChooser();
-        if (fileChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
-
-        File imageFile = fileChooser.getSelectedFile();
-        ImagePlus newImage = IJ.openImage(imageFile.getAbsolutePath());
-        if (newImage == null) return;
-
-        img.setStack(newImage.getTitle(), newImage.getStack());
-        img.setCalibration(newImage.getCalibration());
-        img.setDimensions(newImage.getNChannels(), newImage.getNSlices(), newImage.getNFrames());
-        img.updateAndDraw();
-    }
     
     /**
      * Starts a timer that regularly checks the status of the current image.

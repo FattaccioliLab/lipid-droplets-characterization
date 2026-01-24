@@ -16,7 +16,7 @@ public class PanelUtils {
      * Helper to create standardized vertical panels with a titled border.
      * @param title     The title of the border.
      * @param maxHeight The maximum height constraint for the panel.
-     * @return The configured JPanel.
+     * @return The configured {@link JPanel}.
      */
     public static JPanel createVerticalPanel(String title, int maxHeight) {
         JPanel p = new JPanel();
@@ -28,8 +28,8 @@ public class PanelUtils {
     }
     
     /**
-     * Helper to transform an existing JPanel into a container of standardized vertical panels with a titled border.
-     * @param p     An existing JPanel that needs to be modified.
+     * Helper to transform an existing {@link JPanel} into a container of standardized vertical panels with a titled border.
+     * @param p     An existing {@link JPanel} that needs to be modified.
      * @param title     The title of the border.
      * @param maxHeight The maximum height constraint for the panel.
      */

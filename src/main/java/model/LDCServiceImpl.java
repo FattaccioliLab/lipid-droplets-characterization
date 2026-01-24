@@ -1,13 +1,19 @@
 package model;
 
+import java.awt.Component;
 import java.util.List;
 
 import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
 
+import ij.ImagePlus;
+import ij.WindowManager;
+import model.leftpanel.ImageSourceManager;
+import model.leftpanel.PreprocessingManager;
+
 /**
- * The implementation of the LDCService. It delegates its getters / setters treatments to an attribute.
+ * The implementation of the {@link LDCService}. It delegates its operations to inner attributes.
  */
 @Plugin(type = Service.class)
 public class LDCServiceImpl extends AbstractService implements LDCService{
@@ -15,8 +21,20 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	// Object holding all LDC parameters (pure state)
 	private AnalysisSettings settings;
 	
+	// For the LeftPanel's sub-panels operations.
+	private ImageSourceManager imageSourceManager;
+	private PreprocessingManager preprocessingManager;
+	
 	@Override
-	public void initialize() { settings = new AnalysisSettings(); }
+	public void initialize() { 
+		settings = new AnalysisSettings(); 
+		imageSourceManager = new ImageSourceManager();
+		preprocessingManager = new PreprocessingManager();
+	}
+	
+    // =========================================================================
+    // GETTERS / SETTERS for the LDC state management.
+    // =========================================================================
 
 	// =================
     // Preprocessing
@@ -94,5 +112,16 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 
     @Override public boolean analyseExcludeOnEdgesEnabled() { return settings.analyseExcludeOnEdgesEnabled(); }
     @Override public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges) { settings.setAnalyseExcludeOnEdges(analyseExcludeOnEdges); }
+
+    
+    // =========================================================================
+    // OPERATIONS
+    // =========================================================================
+    
+    /** @see ImageSourceManager#replaceCurrentImage(ImagePlus, Component) */
+	@Override public void replaceCurrentImage(Component parent) { imageSourceManager.replaceCurrentImage(WindowManager.getCurrentImage(), parent); }
+
+	/** @see PreprocessingManager#applyEnhanceContrast(ImagePlus, double) */
+	@Override public void applyEnhanceContrast() { preprocessingManager.applyEnhanceContrast(WindowManager.getCurrentImage(), enhanceContrastEnabled(),getEnhanceSaturatedPercent()); }
 
 }

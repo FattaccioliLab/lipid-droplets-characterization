@@ -12,7 +12,7 @@ import org.scijava.Context;
 import mainGUI.panels.LeftPanel;
 
 /**
- * Creates the bottom panel of the LeftPanel, containing navigation buttons (Prev/Next).
+ * Creates the bottom panel of the {@link LeftPanel}, containing navigation buttons (Prev/Next).
  * * @return The constructed JPanel.
  */
 @SuppressWarnings("serial")

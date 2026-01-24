@@ -1,16 +1,21 @@
 package model;
 
+import java.awt.Component;
 import java.util.List;
 
 import org.scijava.service.SciJavaService;
 
+import ij.ImagePlus;
+import model.leftpanel.ImageSourceManager;
+import model.leftpanel.PreprocessingManager;
+
 /**
- * Service defining all parameters and state used for the Lipid Droplet Characterization Fiji plugin.
+ * Service exposing the API for manipulating parameters, operations, and the general state used for the Lipid Droplet Characterization Fiji plugin.
  */
 public interface LDCService extends SciJavaService {
 
     // =========================================================================
-    // METHODS (getters / setters)
+    // GETTERS / SETTERS for the LDC state management.
     // =========================================================================
 	
     // =============
@@ -100,4 +105,21 @@ public interface LDCService extends SciJavaService {
 	public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges);
 	
 	
+    // =========================================================================
+    // OPERATIONS
+    // =========================================================================
+	
+    /**
+     * Replaces the content of the current {@link ImagePlus} active image with an image loaded from disk.<br>
+     * The LDC implementation delegates the operation to the {@link ImageSourceManager} class.
+	 * @param parent The parent {@link Component} for the file chooser dialog, or {@code null} if none.
+     * @see ImageSourceManager#replaceCurrentImage(ImagePlus, Component)
+     */
+	public void replaceCurrentImage(Component parent);
+	
+	/**
+	 * Applies contrast enhancement to the current active image.
+	 * @see PreprocessingManager#applyEnhanceContrast(ImagePlus, double)
+	 */
+	public void applyEnhanceContrast();
 }

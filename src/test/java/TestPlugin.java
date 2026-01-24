@@ -4,8 +4,8 @@ import mainGUI.MainGUI_LDC;
 import net.imagej.ImageJ;
 
 /**
- * Simply creates a new ImageJ interface, containing aswell the plugin content (from src/test/java).<br>
- * Entry point for debug, instantly opens the MainGUI_LDC.
+ * Simply creates a new {@link ImageJ} interface, containing aswell the plugin content (from src/test/java).<br>
+ * Entry point for debug, instantly opens the {@code MainGUI_LDC}.
  */
 public class TestPlugin {
 

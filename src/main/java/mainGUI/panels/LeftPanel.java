@@ -37,7 +37,6 @@ public class LeftPanel extends JPanel {
     private FooterLeftPanel footerLeftPanel;
 
     // State Flags
-    private boolean isApplicable = false;
     private volatile boolean isProcessing = false; 
 
     /**
@@ -74,13 +73,13 @@ public class LeftPanel extends JPanel {
     // Sub-panel getters
     // =========================================================================
     
-    /** @return The {@code PreprocessingPanel} JPanel (the top sub-panel) */
+    /** @return The {@link PreprocessingPanel} JPanel (the top sub-panel) */
     public PreprocessingPanel getPreprocessingPanel() { return preprocessingPanel; }
     
-    /** @return The {@code ImageSourceControl} JPanel (the center sub-panel) */
+    /** @return The {@link ImageSourceControl} JPanel (the center sub-panel) */
     public ImageSourcePanel getImageSourcePanel() { return imageSourcePanel; }
     
-    /** @return The {@code FooterLeftPanel} JPanel (the bottom sub-panel) */
+    /** @return The {@link FooterLeftPanel} JPanel (the bottom sub-panel) */
     public FooterLeftPanel getFooterLeftPanel() { return footerLeftPanel; }
     
     
@@ -93,13 +92,6 @@ public class LeftPanel extends JPanel {
     
     /** @param isProcessing The new value of the {@code isProcessing} boolean. */
     public void setProcessing(boolean isProcessing) { this.isProcessing = isProcessing; }
-    
-    /** @return boolean value indicating if the plugin can apply a preprocessing operation. */
-    public boolean isApplicable() { return isApplicable; }
-    
-    /** @param isApplicable The new value of the {@code isApplicable} boolean. */
-    public void setApplicable(boolean isApplicable) { this.isApplicable = isApplicable; }
-    
     
     // =========================================================================
     // Enabling / disabling footer navigation buttons
