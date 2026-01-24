@@ -27,8 +27,10 @@ import org.scijava.plugin.Parameter;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.gui.YesNoCancelDialog;
 import mainGUI.panels.LeftPanel;
+import mainGUI.utils.InputUtils;
 import mainGUI.utils.PanelUtils;
 import model.AnalysisSettings;
 import model.LDCService;
@@ -61,6 +63,7 @@ public class PreprocessingPanel extends JPanel{
     private JButton medianRadiusResetButton;
     private JTextField medianRadiusField; 
     private JButton applyButton;
+    private JTextField medianApplyRangeField;
     private JLabel loadingLabel; 
     private JButton cancelButton; 
     
@@ -75,6 +78,8 @@ public class PreprocessingPanel extends JPanel{
 		
 		ctx.inject(this);
 		this.leftPanel = leftPanel;
+		
+		add(Box.createVerticalStrut(15));
 
 	    // --- Contrast Section ---
 	    enhanceCheckbox = new JCheckBox("Enhance contrast");
@@ -102,9 +107,10 @@ public class PreprocessingPanel extends JPanel{
 
 	    add(enhanceCheckbox);
 	    add(saturatedRow);
-	    add(Box.createVerticalStrut(8));
 
 	    // --- Median Section ---
+	    add(Box.createVerticalStrut(15));
+	    
 	    JPanel medianRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 	    medianRow.setAlignmentX(Component.LEFT_ALIGNMENT);
 	    medianRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
@@ -182,20 +188,33 @@ public class PreprocessingPanel extends JPanel{
 	    add(medianRow);
 	    add(radiusRow);
 
-	    // Apply median filter Button
-	    JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-	    buttonRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+	    // Median filter range row
+	    JPanel rangeRow = new JPanel(new BorderLayout());
+	    rangeRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+	    rangeRow.add(new JLabel("  Range (stack slices):  "), BorderLayout.WEST);
+	    medianApplyRangeField = new JTextField();
+	    medianApplyRangeField.setToolTipText("Example: 1-3,5,8-10");
+	    rangeRow.add(medianApplyRangeField, BorderLayout.CENTER);
+
+	    add(Box.createVerticalStrut(10));
+	    add(rangeRow);
+	    
+	    // Apply median filter row
+	    JPanel applyRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+	    applyRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+	    
 	    applyButton = new JButton("Apply median filter");
 	    applyButton.addActionListener(e -> {
 	        if (leftPanel.isProcessing()) return;
 	        applyButton.setEnabled(false);
 	        runApplyLogic();
 	    });
-
-	    buttonRow.add(applyButton);
+	    applyRow.add(applyButton, BorderLayout.WEST);
 	    
+	    add(applyRow);
 	    add(Box.createVerticalStrut(10));
-	    add(buttonRow);
+	    add(applyRow);
 	    add(Box.createVerticalStrut(5));
 	}
 	
@@ -213,15 +232,35 @@ public class PreprocessingPanel extends JPanel{
         }
 
         boolean processAllSlices = false;
-
-        if (selectedSettings.medianFilterEnabled() && img.getStackSize() > 1) {
+        
+        
+        // We consider the new stack, according to the given ranges
+        int oldStackSize = img.getStackSize();
+        ImageStack oldStack = img.getImageStack();
+        ImageStack newRangedStack = InputUtils.parseSliceRanges(medianApplyRangeField.getText(), oldStackSize, oldStack);
+        if (newRangedStack.getSize() == 0) { // median filter processing cancelled if no images
+        	applyButton.setEnabled(true);
+        	IJ.showMessage("No images available.");
+        	return;
+        }
+        
+        if (selectedSettings.medianFilterEnabled() && newRangedStack.size() > 1) {
             YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Process Stack?", 
-                "Do you want to process all " + img.getStackSize() + " images?\nThere is no undo.");
+                "Do you want to process all " + newRangedStack.size() + " images?\nThere is no undo.");
             if (d.cancelPressed()) {
                 applyButton.setEnabled(true);
                 return;
             }
+            
+            // We process all given slices
             processAllSlices = d.yesPressed();
+            
+            // If it is a new stack and we decided to process all given images : we update the current stack
+            if (newRangedStack != img.getImageStack() && processAllSlices) {
+            	img.setStack(newRangedStack);
+            	img.setDimensions(img.getNChannels(), newRangedStack.getSize(), img.getNFrames());
+            	img.updateAndDraw();
+            }
         }
 
         // If applying to stack while preview is active, undo preview first
@@ -261,6 +300,7 @@ public class PreprocessingPanel extends JPanel{
         boolean enabled = enhanceCheckbox.isSelected();
         selectedSettings.setEnhanceContrast(enabled);
         enhanceSaturatedSpinner.setEnabled(enabled);
+        enhanceSaturatedResetButton.setEnabled(enabled);
         
         ImagePlus img = leftPanel.updateAndGetImg();
         if (img != null) {
@@ -293,6 +333,8 @@ public class PreprocessingPanel extends JPanel{
         
         medianRadiusField.setEnabled(enabled);
         medianPreviewCheckbox.setEnabled(enabled);
+        medianRadiusResetButton.setEnabled(enabled);
+        medianApplyRangeField.setEnabled(enabled);
 
         if (!enabled && medianPreviewCheckbox.isSelected()) {
             medianPreviewCheckbox.setSelected(false);
@@ -371,6 +413,7 @@ public class PreprocessingPanel extends JPanel{
         medianPreviewCheckbox.setEnabled(enabled);
         medianRadiusField.setEnabled(enabled);
         medianRadiusResetButton.setEnabled(enabled);
+        medianApplyRangeField.setEnabled(enabled);
         applyButton.setEnabled(enabled && medianCheckbox.isSelected());
         
         enhanceCheckbox.setEnabled(enabled);
@@ -399,6 +442,7 @@ public class PreprocessingPanel extends JPanel{
     		medianCheckbox.setEnabled(enable);
     		medianRadiusResetButton.setEnabled(enable);
     		medianRadiusField.setEnabled(enable);
+    		medianApplyRangeField.setEnabled(enable);
     		applyButton.setEnabled(enable);
     		
     		// Inputs take their original values
@@ -414,11 +458,13 @@ public class PreprocessingPanel extends JPanel{
     		
     		medianCheckbox.setSelected(enable);
     		medianRadiusField.setText(Double.toString(AnalysisSettings.DFL_MEDIAN_RADIUS));
+    		medianApplyRangeField.setText("");
     		
     	// If components are enabled
     	} else {
     		enhanceCheckbox.setEnabled(enable);
     		medianCheckbox.setEnabled(enable);
+    		if (!leftPanel.isProcessing()) applyButton.setEnabled(enable);
     	}
     }
     
