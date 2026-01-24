@@ -3,14 +3,19 @@ package model;
 import java.awt.Component;
 import java.util.List;
 
+import javax.swing.SwingWorker;
+
 import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
 
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.WindowManager;
+import ij.process.ImageProcessor;
 import model.leftpanel.ImageSourceManager;
 import model.leftpanel.PreprocessingManager;
+import model.workers.preprocessing.PreprocessingPreviewMedianWorker;
 
 /**
  * The implementation of the {@link LDCService}. It delegates its operations to inner attributes.
@@ -123,5 +128,15 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 
 	/** @see PreprocessingManager#applyEnhanceContrast(ImagePlus, double) */
 	@Override public void applyEnhanceContrast() { preprocessingManager.applyEnhanceContrast(WindowManager.getCurrentImage(), enhanceContrastEnabled(),getEnhanceSaturatedPercent()); }
+
+	/** @see PreprocessingPreviewMedianWorker */
+	@Override public SwingWorker<Void, Void> createPreviewMedianWorker(ImageProcessor ip, boolean isPreviewOn) {
+		return preprocessingManager.createPreviewMedianWorker(ip, isPreviewOn, getMedianRadius());
+	}
+
+	/** @see PreprocessingApplyMedianWorker */
+	@Override public SwingWorker<Void, Void> createApplyMedianWorker(ImageStack stack, boolean processAll, int targetSlice) {  
+		return preprocessingManager.createApplyMedianWorker(medianFilterEnabled(), getMedianRadius(), stack, processAll, targetSlice);
+	}
 
 }

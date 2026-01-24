@@ -3,11 +3,17 @@ package model;
 import java.awt.Component;
 import java.util.List;
 
+import javax.swing.SwingWorker;
+
 import org.scijava.service.SciJavaService;
 
 import ij.ImagePlus;
+import ij.ImageStack;
+import ij.process.ImageProcessor;
 import model.leftpanel.ImageSourceManager;
 import model.leftpanel.PreprocessingManager;
+import model.workers.preprocessing.PreprocessingApplyMedianWorker;
+import model.workers.preprocessing.PreprocessingPreviewMedianWorker;
 
 /**
  * Service exposing the API for manipulating parameters, operations, and the general state used for the Lipid Droplet Characterization Fiji plugin.
@@ -122,4 +128,21 @@ public interface LDCService extends SciJavaService {
 	 * @see PreprocessingManager#applyEnhanceContrast(ImagePlus, double)
 	 */
 	public void applyEnhanceContrast();
+	
+    /**
+     * Creates a {@link SwingWorker}, that can apply a median filter preview on a given {@link ImageProcessor} if executed.
+     * @param ip The image processor to modify.
+     * @param isPreviewOn Whether preview mode is enabled. If it is false it will reset the given image processor.
+     * @see PreprocessingPreviewMedianWorker
+     */
+	public SwingWorker<Void,Void> createPreviewMedianWorker(ImageProcessor ip, boolean isPreviewOn);
+	
+    /**
+     * Creates a {@link SwingWorker}, that can apply a median filter on a given {@link ImageStack}, or on an individual {@link ImageProcessor} among the given stack if executed.
+	 * @param stack The array of images to process (slices).
+	 * @param processAll True to process all slices.
+	 * @param targetSlice The specific slice to process if not all.
+	 * @see PreprocessingApplyMedianWorker
+     */
+	public SwingWorker<Void,Void> createApplyMedianWorker(ImageStack stack, boolean processAll, int targetSlice);
 }

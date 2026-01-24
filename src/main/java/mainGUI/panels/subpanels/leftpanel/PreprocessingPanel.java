@@ -6,7 +6,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.net.URL;
@@ -33,8 +32,6 @@ import mainGUI.panels.LeftPanel;
 import mainGUI.utils.PanelUtils;
 import model.AnalysisSettings;
 import model.LDCService;
-import model.workers.preprocessing.PreprocessingApplyMedianWorker;
-import model.workers.preprocessing.PreprocessingPreviewMedianWorker;
 import net.imagej.display.ImageDisplayService;
 
 /**
@@ -455,7 +452,7 @@ public class PreprocessingPanel extends JPanel{
         if (img == null) return;
 
         setPreprocessingEnabled(false);
-        SwingWorker<Void,Void> previewWorker = new PreprocessingPreviewMedianWorker(img.getProcessor(), isPreviewOn, selectedSettings.getMedianRadius());
+        SwingWorker<Void,Void> previewWorker = selectedSettings.createPreviewMedianWorker(img.getProcessor(), isPreviewOn);
         currentWorker = previewWorker;
         previewWorker.addPropertyChangeListener(evt -> {
         	
@@ -505,8 +502,7 @@ public class PreprocessingPanel extends JPanel{
         setPreprocessingEnabled(false);
         ImagePlus img = leftPanel.updateAndGetImg();
         
-        SwingWorker<Void,Void> applyWorker = new PreprocessingApplyMedianWorker(selectedSettings.medianFilterEnabled(), selectedSettings.getMedianRadius(), 
-        		img.getStack(), doProcessAll, currentSliceIndex);
+        SwingWorker<Void,Void> applyWorker = selectedSettings.createApplyMedianWorker(img.getStack(), doProcessAll, currentSliceIndex);
         currentWorker = applyWorker;
         applyWorker.addPropertyChangeListener(evt -> {
         	
