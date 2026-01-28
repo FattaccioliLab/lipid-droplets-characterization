@@ -15,6 +15,7 @@ import ij.WindowManager;
 import ij.process.ImageProcessor;
 import model.leftpanel.ImageSourceManager;
 import model.leftpanel.PreprocessingManager;
+import model.rightpanel.MeasurementsManager;
 import model.workers.preprocessing.PreprocessingPreviewMedianWorker;
 
 /**
@@ -30,11 +31,15 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	private ImageSourceManager imageSourceManager;
 	private PreprocessingManager preprocessingManager;
 	
+	// For the RightPanel's sub-panels operations.
+	private MeasurementsManager measurementsManager;
+	
 	@Override
 	public void initialize() { 
 		settings = new AnalysisSettings(); 
 		imageSourceManager = new ImageSourceManager();
 		preprocessingManager = new PreprocessingManager();
+		measurementsManager = new MeasurementsManager();
 	}
 	
     // =========================================================================
@@ -155,6 +160,12 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	/** @see PreprocessingApplyMedianWorker */
 	@Override public SwingWorker<Void, Void> createApplyMedianWorker(ImageStack stack, boolean processAll, int targetSlice) {  
 		return preprocessingManager.createApplyMedianWorker(medianFilterEnabled(), getMedianRadius(), stack, processAll, targetSlice);
+	}
+
+	/** @see MeasuresProcessingWorker */
+	@Override public SwingWorker<Void, Void> createMeasuresProcessingWorker() {
+		return measurementsManager.createMeasuresProcessingWorker(showAreaEnabled(), showEquivalentDiameterEnabled(), showMeanEnabled(), 
+				showIntegratedDensityEnabled(), showCircularityEnabled(), analyseExcludeOnEdgesEnabled());
 	}
 
 }

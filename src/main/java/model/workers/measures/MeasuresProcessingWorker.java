@@ -1,5 +1,7 @@
 package model.workers.measures;
 
+import javax.swing.SwingWorker;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -8,17 +10,42 @@ import ij.measure.ResultsTable;
 import ij.plugin.filter.ParticleAnalyzer;
 
 /**
- * Class that take care of processing measurements 
- * */
-public class MeasuresProcessing {
-	
-	/**
-    *  method that generate the results table by setting the measurements of the Analyzer according to those chosen by the user 
-    *  and then starting the particles analyzer. 
-    */
-    public void generateMeasures(boolean showAreaEnabled, boolean showMeanEnabled, boolean showEquivalentDiameterEnabled,
+ * {@link SwingWorker} that take care of processing measurements and showing them.
+ * <p>
+ * Its {@code doInBackground} method generates the results table by setting the measurements of the Analyzer according 
+ * to those chosen by the user and then starting the particles analyzer. 
+ * </p>
+ */
+public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
+    
+    private boolean showAreaEnabled;
+    private boolean showMeanEnabled;
+    private boolean showEquivalentDiameterEnabled;
+    private boolean showIntegratedDensityEnabled;
+    private boolean showCircularityEnabled;
+    private boolean excludeOnEdgesEnabled;
+    
+    /**
+     * Creates a {@code MeasuresProcessingWorker}.
+     * @param showAreaEnabled True if the 'Area' column must be shown in the results.
+     * @param showEquivalentDiameterEnabled True if the 'EquivalentDiameter' column must be shown in the results.
+     * @param showMeanEnabled True if the 'Mean' column must be shown in the results.
+     * @param showIntegratedDensityEnabled True if the 'IntegratedDensity' column must be shown in the results.
+     * @param showCircularityEnabled True if the 'Circularity' column is shown must be the results.
+     * @param excludeOnEdgesEnabled Particle Analyzer option.
+     */
+    public MeasuresProcessingWorker(boolean showAreaEnabled, boolean showEquivalentDiameterEnabled, boolean showMeanEnabled,
     		boolean showIntegratedDensityEnabled, boolean showCircularityEnabled, boolean excludeOnEdgesEnabled) {
-    	
+    	this.showAreaEnabled = showAreaEnabled;
+    	this.showEquivalentDiameterEnabled = showEquivalentDiameterEnabled;
+    	this.showMeanEnabled = showMeanEnabled;
+    	this.showIntegratedDensityEnabled = showIntegratedDensityEnabled;
+    	this.showCircularityEnabled = showCircularityEnabled;
+    	this.excludeOnEdgesEnabled = excludeOnEdgesEnabled;
+    }
+
+	@Override
+	protected Void doInBackground() throws Exception {
        	// set measurements
     	int measurements = 0;
     	measurements += Measurements.CENTROID; // center of the particle (x,y)
@@ -60,7 +87,7 @@ public class MeasuresProcessing {
     	ImagePlus img = WindowManager.getCurrentImage();
     	if (img == null) {
     		IJ.showMessage("Please open an image first (File > Open)");
-    		return;
+    		return null;
     	}
     	
     	// analyze each images of the stack
@@ -77,6 +104,7 @@ public class MeasuresProcessing {
     	if (success) {
     	 	rt.show("Results");
     	}
-    }
+    	return null;
+	}
 	
 }

@@ -12,6 +12,7 @@ import ij.ImageStack;
 import ij.process.ImageProcessor;
 import model.leftpanel.ImageSourceManager;
 import model.leftpanel.PreprocessingManager;
+import model.workers.measures.MeasuresProcessingWorker;
 import model.workers.preprocessing.PreprocessingApplyMedianWorker;
 import model.workers.preprocessing.PreprocessingPreviewMedianWorker;
 
@@ -164,4 +165,10 @@ public interface LDCService extends SciJavaService {
 	 * @see PreprocessingApplyMedianWorker
      */
 	public SwingWorker<Void,Void> createApplyMedianWorker(ImageStack stack, boolean processAll, int targetSlice);
+	
+    /**
+     * Creates a {@link SwingWorker}, that take care of processing measurements and showing them, if executed.
+	 * @see MeasuresProcessingWorker
+     */
+	public SwingWorker<Void,Void> createMeasuresProcessingWorker();
 }

@@ -6,16 +6,17 @@ import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingWorker;
 
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.ui.UIService;
+
 import org.scijava.event.EventService;
 
 import io.scif.services.DatasetIOService;
 import model.LDCService;
-import model.workers.measures.MeasuresProcessing;
 import net.imagej.Dataset;
 import net.imagej.display.ImageDisplayService;
 
@@ -40,13 +41,8 @@ public class RightPanel extends JPanel {
     @Parameter
     private LDCService selectedSettings;
 	
-	private MeasuresProcessing mp;
-	
     public RightPanel(Context ctx) {
-    	
     	ctx.inject(this);
-    	
-    	this.mp = new MeasuresProcessing();
     	
     	
         setBorder(BorderFactory.createTitledBorder(
@@ -60,11 +56,8 @@ public class RightPanel extends JPanel {
         // show measures button
         JButton resultsButton = new JButton("show results");
         resultsButton.addActionListener(e -> {
-        	new Thread(() -> {
-                mp.generateMeasures(selectedSettings.showAreaEnabled(), selectedSettings.showEquivalentDiameterEnabled(),
-                		selectedSettings.showMeanEnabled(), selectedSettings.showIntegratedDensityEnabled(),
-                		selectedSettings.showCircularityEnabled(), selectedSettings.analyseExcludeOnEdgesEnabled());
-            }).start();
+        	SwingWorker<Void,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker();
+        	measuresWorker.execute();
         });
         actionPanel.add(resultsButton);
         
@@ -76,8 +69,5 @@ public class RightPanel extends JPanel {
         actionPanel.add(histogramsButton);
         
         add(actionPanel);
-        
-        
     }
-    
 }
