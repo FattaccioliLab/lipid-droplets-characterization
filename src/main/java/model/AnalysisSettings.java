@@ -55,6 +55,7 @@ public class AnalysisSettings {
 	private boolean median = false;
 	private boolean min = false;
 	private boolean max = false;
+	private boolean excludeOnEdges = false;
 	
 	/**
 	 * @return the calibrate
@@ -404,5 +405,17 @@ public class AnalysisSettings {
 	 */
 	public void setMax(boolean max) {
 		this.max = max;
+	}
+	/**
+	 * @return the excludeOnEdges
+	 */
+	public boolean isExcludeOnEdges() {
+		return excludeOnEdges;
+	}
+	/**
+	 * @param excludeOnEdges the excludeOnEdges to set
+	 */
+	public void setExcludeOnEdges(boolean excludeOnEdges) {
+		this.excludeOnEdges = excludeOnEdges;
 	}
 }
