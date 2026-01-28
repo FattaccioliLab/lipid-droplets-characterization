@@ -1,421 +1,225 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
- * Class that attribute are the setting chosen by the user for the image processing.
+ * A class containing the user's current image processing settings for the plugin.
  */
 public class AnalysisSettings {
-
-	private boolean calibrate = false;
-	private double calibration; // μm per pixel
 	
-	// pre-treatment 
-	private boolean medianFilter = false;
-	private boolean gausianFilter = false;
-	private boolean backgroundSubstraction = false;
-	private boolean darkBackgroud = false;
+    // =========================================================================
+    // SETTINGS
+    // =========================================================================
+	
+    // =============
+    // Preprocessing
+    // =============
+	
+	// Enhance contrast
 	private boolean enhanceContrast = false;
 	
 	public final static double DFL_EC_SATURATED = 0.35; // default saturated value (%)
 	private double enhanceSaturatedPercent = DFL_EC_SATURATED;
 	
+	// Median filter
+	private boolean medianFilter = false;
+	
 	public final static double DFL_MEDIAN_RADIUS = 2.0; // default radius (px)
 	private double medianRadius = DFL_MEDIAN_RADIUS;
 	
-	// thresholding
-	// manual
-	private boolean manualThresholding = false;
-	private boolean threasholdValue = false; // set by user if manualThresholding is true
+	// Gaussian filter (gaussian blur) (not yet used)
+	private boolean gausianFilter = false;
 	
-	// automatic
-	private boolean otsuThreshold = false;
-	private boolean momentsThreshold = false;
-	private boolean triangleThreshold = false;
-	private boolean yenLiThreshold = false;
+	public final static double DFL_GAUSSIAN_RADIUS = 2.0; // default radius (px)
+	private double gaussianRadius = DFL_GAUSSIAN_RADIUS;
 	
-	// slice vs global
-	private boolean globalThreshold = false;
+    // ===========================
+    // Segmentation / thresholding
+    // ===========================
 	
-	// binary mask
-	// morphological operations
-	private boolean erosion = false;
-	private boolean dilation = false;
-	private boolean opening = false;
-	private boolean closing = false;
+	// Possible threshold methods
+	private List<String> thresholdMethodsList = new ArrayList<>(Arrays.asList("Manual", "Otsu", "Moments", "Triangle", "Yen", "Li"));
 	
-	private boolean watershed = false; // bonus
+	// The current threshold method
+	public final static String DFL_THRESHOLD_METHOD = "Manual";
+	private String thresholdMethod = DFL_THRESHOLD_METHOD;
 	
-	// measures
-	private boolean area = false;
-	private boolean equivalentDiameter = false;
-	private boolean feret = false;
-	private boolean circularity = false;
-	private boolean mean = false;
-	private boolean stdDev = false;
-	private boolean integratedDensity;
-	private boolean median = false;
-	private boolean min = false;
-	private boolean max = false;
-	private boolean excludeOnEdges = false;
+	// Threshold range
+	public final static int DFL_THRESHOLD_MIN_VALUE = 0;
+	public final static int DFL_THRESHOLD_MAX_VALUE = 1585;
+	private int thresholdMinValue = DFL_THRESHOLD_MIN_VALUE;
+	private int thresholdMaxValue = DFL_THRESHOLD_MAX_VALUE;
 	
-	/**
-	 * @return the calibrate
-	 */
-	public boolean isCalibrate() {
-		return calibrate;
-	}
-	/**
-	 * @param calibrate the calibrate to set
-	 */
-	public void setCalibrate(boolean calibrate) {
-		this.calibrate = calibrate;
-	}
-	/**
-	 * @return the calibration
-	 */
-	public double getCalibration() {
-		return calibration;
-	}
-	/**
-	 * @param calibration the calibration to set
-	 */
-	public void setCalibration(double calibration) {
-		this.calibration = calibration;
-	}
+	// Dark background option
+	public final static boolean DFL_THRESHOLD_DARK_BACKGROUND = false;
+	private boolean thresholdDarkBackground = DFL_THRESHOLD_DARK_BACKGROUND;
+	
+	// Process one slice or all slices (global)
+	public final static boolean DFL_THRESHOLD_GLOBAL = false;
+	private boolean thresholdGlobal = DFL_THRESHOLD_GLOBAL;
 
-	/**
-	 * @return the medianFilter
-	 */
-	public boolean isMedianFilter() {
-		return medianFilter;
-	}
-	/**
-	 * @param medianFilter the medianFilter to set
-	 */
-	public void setMedianFilter(boolean medianFilter) {
-		this.medianFilter = medianFilter;
-	}
+    // ====================================
+    // Binary mask morphological operations
+    // ====================================
+	
+	public final static boolean DFL_BINARY_MASK_OP = false;
+	private boolean erosion = DFL_BINARY_MASK_OP;
+	private boolean dilation = DFL_BINARY_MASK_OP;
+	private boolean opening = DFL_BINARY_MASK_OP;
+	private boolean closing = DFL_BINARY_MASK_OP;
+	private boolean watershed = DFL_BINARY_MASK_OP; // bonus
+	
+    // =================
+    // Analyse particles
+    // =================
+
+	// Particles sizes (px²)
+	public final static double DFL_ANALYSE_MIN_SIZE = 0;
+	public final static double DFL_ANALYSE_MAX_SIZE = -1; // -1 represents infinity
+	private double analyseMinSize = DFL_ANALYSE_MIN_SIZE;
+	private double analyseMaxSize = DFL_ANALYSE_MAX_SIZE;
+	
+	// Circularity range
+	public final static double DFL_ANALYSE_MIN_CIRCULARITY = 0;
+	public final static double DFL_ANALYSE_MAX_CIRCULARITY = 1;
+	private double analyseMinCircularity = DFL_ANALYSE_MIN_CIRCULARITY;
+	private double analyseMaxCircularity = DFL_ANALYSE_MAX_CIRCULARITY;
+	
+	// Exclude on edges
+	public final static boolean DFL_ANALYSE_EXCL_EDGES = false;
+	private boolean analyseExcludeOnEdges = DFL_ANALYSE_EXCL_EDGES;
 	
 	
-	public boolean isEnhanceContrast() { return enhanceContrast; }
+    // =========================================================================
+    // METHODS (getters / setters)
+    // =========================================================================
+	
+    // =============
+    // Preprocessing
+    // =============
+	
+	// Enhance contrast
+	public boolean enhanceContrastEnabled() { return enhanceContrast; }
 	public void setEnhanceContrast(boolean enhanceContrast) { this.enhanceContrast = enhanceContrast; }
-
+	
 	public double getEnhanceSaturatedPercent() { return enhanceSaturatedPercent; }
-	public void setEnhanceSaturatedPercent(double enhanceSaturatedPercent) { this.enhanceSaturatedPercent = enhanceSaturatedPercent; }
-
+	public void setEnhanceSaturatedPercent(double enhanceSaturatedPercent) { 
+		if (enhanceSaturatedPercent < 0 || enhanceSaturatedPercent > 100) throw new IllegalArgumentException(Double.toString(enhanceSaturatedPercent)+" must be a percentage (range [0 - 100])");
+		this.enhanceSaturatedPercent = enhanceSaturatedPercent; 
+	}
+	
+	// Median filter
+	public boolean medianFilterEnabled() { return medianFilter; }
+	public void setMedianFilter(boolean medianFilter) { this.medianFilter = medianFilter; }
 
 	public double getMedianRadius() { return medianRadius; }
-	public void setMedianRadius(double medianRadius) { this.medianRadius = medianRadius; }
+	public void setMedianRadius(double medianRadius) { 
+		if (medianRadius < 0) throw new IllegalArgumentException(Double.toString(medianRadius)+" must be positive");
+		this.medianRadius = medianRadius; 
+	}
+
+	// Gaussian filter (gaussian blur) (not yet used)
+	public boolean gausianFilterEnabled() { return gausianFilter; }
+	public void setGausianFilter(boolean gausianFilter) { this.gausianFilter = gausianFilter; }
 	
-	/**
-	 * @return the gausianFilter
-	 */
-	public boolean isGausianFilter() {
-		return gausianFilter;
+	public double getGaussianRadius() { return gaussianRadius; }
+	public void setGaussianRadius(double gaussianRadius) {
+		if (gaussianRadius < 0) throw new IllegalArgumentException(Double.toString(gaussianRadius)+" must be positive");
+		this.gaussianRadius = gaussianRadius; 
 	}
-	/**
-	 * @param gausianFilter the gausianFilter to set
-	 */
-	public void setGausianFilter(boolean gausianFilter) {
-		this.gausianFilter = gausianFilter;
+	
+    // ===========================
+    // Segmentation / thresholding
+    // ===========================
+	
+	// Threshold methods
+	public List<String> getThresholdMethodsList() { return new ArrayList<>(thresholdMethodsList); } // new independant copy 
+	
+	// Threshold current method
+	public String getThresholdMethod() { return thresholdMethod; }
+	public void setThresholdMethod(String newThresholdMethod) {
+			if (!thresholdMethodsList.contains(newThresholdMethod)) throw new IllegalArgumentException(newThresholdMethod+" is not an existing method");
+			thresholdMethod = newThresholdMethod;
 	}
-	/**
-	 * @return the backgroundSubstraction
-	 */
-	public boolean isBackgroundSubstraction() {
-		return backgroundSubstraction;
+	
+	// Threshold range
+	public int getThresholdMinValue() { return thresholdMinValue; }
+	public void setThresholdMinValue(int thresholdMinValue) { 
+		if (thresholdMinValue < 0) throw new IllegalArgumentException(Integer.toString(thresholdMinValue)+"must be positive");
+		if (thresholdMinValue > this.thresholdMaxValue) throw new IllegalArgumentException(Integer.toString(thresholdMinValue)+"must be less (or equal) than max threshold value");
+		this.thresholdMinValue = thresholdMinValue;
 	}
-	/**
-	 * @param backgroundSubstraction the backgroundSubstraction to set
-	 */
-	public void setBackgroundSubstraction(boolean backgroundSubstraction) {
-		this.backgroundSubstraction = backgroundSubstraction;
+	public int getThresholdMaxValue() { return thresholdMaxValue; }
+	public void setThresholdMaxValue(int thresholdMaxValue) { 
+		if (thresholdMaxValue < this.thresholdMinValue) throw new IllegalArgumentException(Integer.toString(thresholdMaxValue)+"must be greater (or equal) than min threshold value");
+		this.thresholdMaxValue = thresholdMaxValue;
 	}
-	/**
-	 * @return the darkBackgroud
-	 */
-	public boolean isDarkBackgroud() {
-		return darkBackgroud;
+	
+	// Dark background option
+	public boolean thresholdDarkBackgroundEnabled() { return thresholdDarkBackground; }
+	public void setThresholdDarkBackground(boolean thresholdDarkBackground) { this.thresholdDarkBackground = thresholdDarkBackground; }
+	
+	// Process one slice or all slices
+	public boolean thresholdGlobalEnabled() { return thresholdGlobal; }
+	public void setThresholdGlobal(boolean thresholdGlobal) { this.thresholdGlobal = thresholdGlobal; }
+	
+    // ====================================
+    // Binary mask morphological operations
+    // ====================================
+	
+	public boolean erosionEnabled() { return erosion; }
+	public void setErosion(boolean erosion) { this.erosion = erosion; }
+	
+	public boolean dilationEnabled() { return dilation; }
+	public void setDilation(boolean dilation) { this.dilation = dilation; }
+	
+	public boolean openingEnabled() { return opening; }
+	public void setOpening(boolean opening) { this.opening = opening; }
+	
+	public boolean closingEnabled() { return closing; }
+	public void setClosing(boolean closing) { this.closing = closing; }
+	
+	public boolean watershedEnabled() { return watershed; }
+	public void setWathershed(boolean watershed) { this.watershed = watershed; }
+	
+    // =================
+    // Analyse particles
+    // =================
+
+	// Particles sizes
+	public double getAnalyseMinSize() { return analyseMinSize; }
+	public void setAnalyseMinSize(double analyseMinSize) {
+		if (analyseMinSize < 0) throw new IllegalArgumentException(Double.toString(analyseMinSize)+"must be positive");
+		if (analyseMinSize > this.analyseMaxSize) throw new IllegalArgumentException(Double.toString(analyseMinSize)+"must be less (or equal) than max analyse size");
+		this.analyseMinSize = analyseMinSize;
 	}
-	/**
-	 * @param darkBackgroud the darkBackgroud to set
-	 */
-	public void setDarkBackgroud(boolean darkBackgroud) {
-		this.darkBackgroud = darkBackgroud;
+	public double getAnalyseMaxSize() { return analyseMaxSize; }
+	public void setAnalyseMaxSize(double analyseMaxSize) {
+		if (analyseMaxSize == -1) { // Special case, analyseMaxSize = infinity
+			this.analyseMaxSize = analyseMaxSize;
+			return;
+		}
+		if (analyseMaxSize < this.analyseMinSize) throw new IllegalArgumentException(Double.toString(analyseMaxSize)+"must be greater (or equal) than min analyse size");
+		this.analyseMaxSize = analyseMaxSize;
 	}
-	/**
-	 * @return the threasholdValue
-	 */
-	public boolean isThreasholdValue() {
-		return threasholdValue;
+	
+	// Circularity range
+	public double getAnalyseMinCircularity() { return analyseMinCircularity; }
+	public void setAnalyseMinCircularity(double analyseMinCircularity) {
+		if (analyseMinCircularity < 0) throw new IllegalArgumentException(Double.toString(analyseMinCircularity)+"must be positive");
+		if (analyseMinCircularity > this.analyseMaxCircularity) throw new IllegalArgumentException(Double.toString(analyseMinCircularity)+"must be less (or equal) than max analyse circularity");
+		this.analyseMinCircularity = analyseMinCircularity;
 	}
-	/**
-	 * @param threasholdValue the threasholdValue to set
-	 */
-	public void setThreasholdValue(boolean threasholdValue) {
-		this.threasholdValue = threasholdValue;
+	public double getAnalyseMaxCircularity() { return analyseMaxCircularity; }
+	public void setAnalyseMaxCircularity(double analyseMaxCircularity) {
+		if (analyseMaxCircularity < this.analyseMinCircularity) throw new IllegalArgumentException(Double.toString(analyseMaxCircularity)+"must be greater (or equal) than min analyse circularity");
+		this.analyseMaxCircularity = analyseMaxCircularity;
 	}
-	/**
-	 * @return the otsuThreshold
-	 */
-	public boolean isOtsuThreshold() {
-		return otsuThreshold;
-	}
-	/**
-	 * @param otsuThreshold the otsuThreshold to set
-	 */
-	public void setOtsuThreshold(boolean otsuThreshold) {
-		this.otsuThreshold = otsuThreshold;
-	}
-	/**
-	 * @return the momentsThreshold
-	 */
-	public boolean isMomentsThreshold() {
-		return momentsThreshold;
-	}
-	/**
-	 * @param momentsThreshold the momentsThreshold to set
-	 */
-	public void setMomentsThreshold(boolean momentsThreshold) {
-		this.momentsThreshold = momentsThreshold;
-	}
-	/**
-	 * @return the triangleThreshold
-	 */
-	public boolean isTriangleThreshold() {
-		return triangleThreshold;
-	}
-	/**
-	 * @param triangleThreshold the triangleThreshold to set
-	 */
-	public void setTriangleThreshold(boolean triangleThreshold) {
-		this.triangleThreshold = triangleThreshold;
-	}
-	/**
-	 * @return the yenLiThreshold
-	 */
-	public boolean isYenLiThreshold() {
-		return yenLiThreshold;
-	}
-	/**
-	 * @param yenLiThreshold the yenLiThreshold to set
-	 */
-	public void setYenLiThreshold(boolean yenLiThreshold) {
-		this.yenLiThreshold = yenLiThreshold;
-	}
-	/**
-	 * @return the globalThreshold
-	 */
-	public boolean isGlobalThreshold() {
-		return globalThreshold;
-	}
-	/**
-	 * @param globalThreshold the globalThreshold to set
-	 */
-	public void setGlobalThreshold(boolean globalThreshold) {
-		this.globalThreshold = globalThreshold;
-	}
-	/**
-	 * @return the erosion
-	 */
-	public boolean isErosion() {
-		return erosion;
-	}
-	/**
-	 * @param erosion the erosion to set
-	 */
-	public void setErosion(boolean erosion) {
-		this.erosion = erosion;
-	}
-	/**
-	 * @return the dilation
-	 */
-	public boolean isDilation() {
-		return dilation;
-	}
-	/**
-	 * @param dilation the dilation to set
-	 */
-	public void setDilation(boolean dilation) {
-		this.dilation = dilation;
-	}
-	/**
-	 * @return the opening
-	 */
-	public boolean isOpening() {
-		return opening;
-	}
-	/**
-	 * @param opening the opening to set
-	 */
-	public void setOpening(boolean opening) {
-		this.opening = opening;
-	}
-	/**
-	 * @return the closing
-	 */
-	public boolean isClosing() {
-		return closing;
-	}
-	/**
-	 * @param closing the closing to set
-	 */
-	public void setClosing(boolean closing) {
-		this.closing = closing;
-	}
-	/**
-	 * @return the watershed
-	 */
-	public boolean isWatershed() {
-		return watershed;
-	}
-	/**
-	 * @param watershed the watershed to set
-	 */
-	public void setWatershed(boolean watershed) {
-		this.watershed = watershed;
-	}
-	/**
-	 * @return the area
-	 */
-	public boolean isArea() {
-		return area;
-	}
-	/**
-	 * @param area the area to set
-	 */
-	public void setArea(boolean area) {
-		this.area = area;
-	}
-	/**
-	 * @return the equivalentDiameter
-	 */
-	public boolean isEquivalentDiameter() {
-		return equivalentDiameter;
-	}
-	/**
-	 * @param equivalentDiameter the equivalentDiameter to set
-	 */
-	public void setEquivalentDiameter(boolean equivalentDiameter) {
-		this.equivalentDiameter = equivalentDiameter;
-	}
-	/**
-	 * @return the feret
-	 */
-	public boolean isFeret() {
-		return feret;
-	}
-	/**
-	 * @param feret the feret to set
-	 */
-	public void setFeret(boolean feret) {
-		this.feret = feret;
-	}
-	/**
-	 * @return the circularity
-	 */
-	public boolean isCircularity() {
-		return circularity;
-	}
-	/**
-	 * @param circularity the circularity to set
-	 */
-	public void setCircularity(boolean circularity) {
-		this.circularity = circularity;
-	}
-	/**
-	 * @return the manualThresholding
-	 */
-	public boolean isManualThresholding() {
-		return manualThresholding;
-	}
-	/**
-	 * @param manualThresholding the manualThresholding to set
-	 */
-	public void setManualThresholding(boolean manualThresholding) {
-		this.manualThresholding = manualThresholding;
-	}
-	/**
-	 * @return the mean
-	 */
-	public boolean isMean() {
-		return mean;
-	}
-	/**
-	 * @param mean the mean to set
-	 */
-	public void setMean(boolean mean) {
-		this.mean = mean;
-	}
-	/**
-	 * @return the stdDev
-	 */
-	public boolean isStdDev() {
-		return stdDev;
-	}
-	/**
-	 * @param stdDev the stdDev to set
-	 */
-	public void setStdDev(boolean stdDev) {
-		this.stdDev = stdDev;
-	}
-	/**
-	 * @return the integratedDensity
-	 */
-	public boolean isIntegratedDensity() {
-		return integratedDensity;
-	}
-	/**
-	 * @param integratedDensity the integratedDensity to set
-	 */
-	public void setIntegratedDensity(boolean integratedDensity) {
-		this.integratedDensity = integratedDensity;
-	}
-	/**
-	 * @return the median
-	 */
-	public boolean isMedian() {
-		return median;
-	}
-	/**
-	 * @param median the median to set
-	 */
-	public void setMedian(boolean median) {
-		this.median = median;
-	}
-	/**
-	 * @return the min
-	 */
-	public boolean isMin() {
-		return min;
-	}
-	/**
-	 * @param min the min to set
-	 */
-	public void setMin(boolean min) {
-		this.min = min;
-	}
-	/**
-	 * @return the max
-	 */
-	public boolean isMax() {
-		return max;
-	}
-	/**
-	 * @param max the max to set
-	 */
-	public void setMax(boolean max) {
-		this.max = max;
-	}
-	/**
-	 * @return the excludeOnEdges
-	 */
-	public boolean isExcludeOnEdges() {
-		return excludeOnEdges;
-	}
-	/**
-	 * @param excludeOnEdges the excludeOnEdges to set
-	 */
-	public void setExcludeOnEdges(boolean excludeOnEdges) {
-		this.excludeOnEdges = excludeOnEdges;
-	}
+	
+	// Exclude on edges
+	public boolean analyseExcludeOnEdgesEnabled() { return analyseExcludeOnEdges; }
+	public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges) { this.analyseExcludeOnEdges = analyseExcludeOnEdges; }
+	
 }

@@ -71,6 +71,7 @@ public class RightPanel extends JPanel {
 	private AnalysisSettings selectedSettings;
 	private MeasuresProcessing mp;
 	
+    public RightPanel(Context ctx) {
     public RightPanel(final Context ctx,  AnalysisSettings selectedSettings) {
     	
     	this.selectedSettings = selectedSettings;
