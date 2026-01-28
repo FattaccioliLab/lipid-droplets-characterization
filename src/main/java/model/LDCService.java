@@ -110,6 +110,25 @@ public interface LDCService extends SciJavaService {
 	public boolean analyseExcludeOnEdgesEnabled();
 	public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges);
 	
+    // ============================
+    // Measurements showing options
+    // ============================
+	
+	public boolean showAreaEnabled();
+	public void setShowArea(boolean showArea);
+	
+	public boolean showEquivalentDiameterEnabled();
+	public void setShowEquivalentDiameter(boolean showEquivalentDiameter);
+
+	public boolean showMeanEnabled();
+	public void setShowMean(boolean showMean);
+	
+	public boolean showIntegratedDensityEnabled();
+	public void setShowIntegratedDensity(boolean showIntegratedDensity);
+	
+	public boolean showCircularityEnabled();
+	public void setShowCircularity(boolean showCircularity);
+	
 	
     // =========================================================================
     // OPERATIONS

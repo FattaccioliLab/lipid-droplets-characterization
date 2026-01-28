@@ -118,6 +118,24 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public boolean analyseExcludeOnEdgesEnabled() { return settings.analyseExcludeOnEdgesEnabled(); }
     @Override public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges) { settings.setAnalyseExcludeOnEdges(analyseExcludeOnEdges); }
 
+    // ============================
+    // Measurements showing options
+    // ============================
+    
+	@Override public boolean showAreaEnabled() { return settings.showAreaEnabled(); }
+	@Override public void setShowArea(boolean showArea) { settings.setShowArea(showArea); }
+
+	@Override public boolean showEquivalentDiameterEnabled() { return settings.showEquivalentDiameterEnabled(); }
+	@Override public void setShowEquivalentDiameter(boolean showEquivalentDiameter) { settings.setShowEquivalentDiameter(showEquivalentDiameter); }
+
+	@Override public boolean showMeanEnabled() { return settings.showMeanEnabled(); }
+	@Override public void setShowMean(boolean showMean) { settings.setShowMean(showMean); }
+
+	@Override public boolean showIntegratedDensityEnabled() { return settings.showIntegratedDensityEnabled(); }
+	@Override public void setShowIntegratedDensity(boolean showIntegratedDensity) { settings.setShowIntegratedDensity(showIntegratedDensity); }
+
+	@Override public boolean showCircularityEnabled() { return settings.showCircularityEnabled(); }
+	@Override public void setShowCircularity(boolean showCircularity) { settings.setShowCircularity(showCircularity); }    
     
     // =========================================================================
     // OPERATIONS

@@ -1,4 +1,4 @@
-package core;
+package model.workers.measures;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -6,42 +6,36 @@ import ij.WindowManager;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.ParticleAnalyzer;
-import model.AnalysisSettings;
 
 /**
  * Class that take care of processing measurements 
  * */
 public class MeasuresProcessing {
 	
-	AnalysisSettings selectedSettings;
-	
-	public MeasuresProcessing(AnalysisSettings selectedSettings) {
-		this.selectedSettings = selectedSettings;
-	}
-	
 	/**
     *  method that generate the results table by setting the measurements of the Analyzer according to those chosen by the user 
     *  and then starting the particles analyzer. 
     */
-    public void generateMeasures() {
+    public void generateMeasures(boolean showAreaEnabled, boolean showMeanEnabled, boolean showEquivalentDiameterEnabled,
+    		boolean showIntegratedDensityEnabled, boolean showCircularityEnabled, boolean excludeOnEdgesEnabled) {
     	
        	// set measurements
     	int measurements = 0;
     	measurements += Measurements.CENTROID; // center of the particle (x,y)
     	measurements += Measurements.STACK_POSITION; // image position in stack (z)  	
-    	if (selectedSettings.isArea()) {
+    	if (showAreaEnabled) {
     		measurements += Measurements.AREA;
     	}
-    	if (selectedSettings.isEquivalentDiameter()) {
+    	if (showEquivalentDiameterEnabled) {
     		measurements += Measurements.SHAPE_DESCRIPTORS + Measurements.FERET;
     	}
-    	if (selectedSettings.isMean()) {
+    	if (showMeanEnabled) {
     		measurements += Measurements.MEAN;
     	}
-    	if (selectedSettings.isIntegratedDensity()) {
+    	if (showIntegratedDensityEnabled) {
     		measurements += Measurements.INTEGRATED_DENSITY;
     	}
-    	if (selectedSettings.isCircularity()) {
+    	if (showCircularityEnabled) {
     		measurements += Measurements.CIRCULARITY;
     	}
     	
@@ -54,7 +48,7 @@ public class MeasuresProcessing {
     	// options += ParticleAnalyzer.OVERLAY; // crash the program
     	// options += ParticleAnalyzer.SHOW_OUTLINES; // show outlines of every particles in each images of the stack
     	options += ParticleAnalyzer.DISPLAY_SUMMARY; // show statistics
-    	if (selectedSettings.isExcludeOnEdges()) {
+    	if (excludeOnEdgesEnabled) {
     		options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
     	}
     	
