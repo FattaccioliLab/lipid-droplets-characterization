@@ -144,18 +144,17 @@ public interface LDCService extends SciJavaService {
 	public void replaceCurrentImage(Component parent);
 	
 	/**
-	 * Applies contrast enhancement to the current active image.
-	 * @see PreprocessingManager#applyEnhanceContrast(ImagePlus, double)
+	 * Applies contrast enhancement to the given {@link ImageProcessor}.
+	 * @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, double)
 	 */
-	public void applyEnhanceContrast();
+	public void applyEnhanceContrast(ImageProcessor ip);
 	
     /**
      * Creates a {@link SwingWorker}, that can apply a median filter preview on a given {@link ImageProcessor} if executed.
      * @param ip The image processor to modify.
-     * @param isPreviewOn Whether preview mode is enabled. If it is false it will reset the given image processor.
      * @see PreprocessingPreviewMedianWorker
      */
-	public SwingWorker<Void,Void> createPreviewMedianWorker(ImageProcessor ip, boolean isPreviewOn);
+	public SwingWorker<Void,Void> createPreviewMedianWorker(ImageProcessor ip);
 	
     /**
      * Creates a {@link SwingWorker}, that can apply a median filter on a given {@link ImageStack}, or on an individual {@link ImageProcessor} among the given stack if executed.

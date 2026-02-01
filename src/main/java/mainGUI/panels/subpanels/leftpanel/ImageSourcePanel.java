@@ -49,9 +49,11 @@ public class ImageSourcePanel extends JPanel {
 	    fileSelectButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 	    fileSelectButton.addActionListener(e -> {
 	        if (!leftPanel.isProcessing()) {
-	        	leftPanel.updateAndGetImg();
 	        	try {
 	        		selectedSettings.replaceCurrentImage(this);
+	        		ImagePlus img = leftPanel.updateAndGetImg();
+	        		leftPanel.setOriginalImage(img.duplicate()); // New original ImageProcessor when replacing the current image.
+	        		leftPanel.setPreprocessingDone(false); // reset the preprocessingDone flag of the LeftPanel
 	        	} catch (IllegalArgumentException error) {
 	        		IJ.showMessage("Please open an image first (File > Open)");
 	        	}
@@ -78,6 +80,14 @@ public class ImageSourcePanel extends JPanel {
 
             ImagePlus img = leftPanel.updateAndGetImg();
             boolean hasImage = (img != null);
+            
+            // If an image is opened, and there is no original image, its ImageProcessor copy becomes the original ImageProcessor.
+            if (hasImage && leftPanel.getOriginalImage() == null) 
+            	leftPanel.setOriginalImage(img.duplicate());
+            
+            // If there is no current image, the original ImageProcessor within the MainGui is set null.
+            if (!hasImage)
+            	leftPanel.setOriginalImage(null);
 
             imageStatusLabel.setText(hasImage 
                 ? "<html><center>Image opened:<br>" + img.getTitle() + "</center></html>"

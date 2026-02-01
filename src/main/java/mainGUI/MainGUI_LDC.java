@@ -14,6 +14,7 @@ import javax.swing.SwingConstants;
 import org.scijava.Context;
 import org.scijava.plugin.Parameter;
 
+import ij.ImagePlus;
 import mainGUI.panels.LeftPanel;
 import mainGUI.panels.RightPanel;
 import model.LDCService;
@@ -30,10 +31,13 @@ public class MainGUI_LDC extends JFrame {
     private final JPanel leftContent;
     private final JPanel rightContent;
     
+    // Reference to the original ImageProcessor
+    ImagePlus originalImage = null;
+    
     public MainGUI_LDC(final Context ctx) {
         ctx.inject(this);
     	
-        this.leftContent = new LeftPanel(ctx);
+        this.leftContent = new LeftPanel(ctx, this);
         this.rightContent = new RightPanel(ctx);
         this.leftContent.setPreferredSize(new Dimension(0, 0));
         this.rightContent.setPreferredSize(new Dimension(0, 0));
@@ -76,5 +80,21 @@ public class MainGUI_LDC extends JFrame {
         gbc.gridx = 2;
         gbc.weightx = 0.5; // Allocate remaining 50% of width for rightPanel
         getContentPane().add(rightContent, gbc);
+    }
+    
+    /**
+     * Set the original {@link ImagePlus}, before any process on it.
+     * @param ip The original {@link ImagePlus}.
+     */
+    public void setOriginalImage(ImagePlus originalImg) {
+    	originalImage = originalImg;
+    }
+    
+    /**
+     * Get the original {@link ImagePlus} attribute. Can be {@code null} if no image currently opened.
+     * @return The original image.
+     */
+    public ImagePlus getOriginalImage() {
+    	return originalImage;
     }
 }

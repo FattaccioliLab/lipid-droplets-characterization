@@ -16,18 +16,15 @@ import ij.process.ImageProcessor;
 public class PreprocessingPreviewMedianWorker extends SwingWorker<Void, Void>{
 	
 	private ImageProcessor ip;
-	private boolean isPreviewOn;
 	private double radius;
 	
     /**
      * Creates a {@link PreprocessingPreviewMedianWorker}.
      * @param ip The image processor to modify.
-     * @param isPreviewOn Whether preview mode is enabled. If it is false it will reset the given image processor.
      * @param radius The radius of the median filter.
      */
-	public PreprocessingPreviewMedianWorker(ImageProcessor ip, boolean isPreviewOn, double radius) {
+	public PreprocessingPreviewMedianWorker(ImageProcessor ip, double radius) {
 		this.ip = ip;
-		this.isPreviewOn = isPreviewOn;
 		this.radius = radius;
 	}
 
@@ -37,19 +34,9 @@ public class PreprocessingPreviewMedianWorker extends SwingWorker<Void, Void>{
         // Check cancel before starting
         if (isCancelled()) return null;
 
-        if (isPreviewOn) {
-            ip.reset(); 
-            if (isCancelled()) return null;
-            
-            ip.snapshot(); 
-            if (isCancelled()) return null;
-            
-            if(radius>0) {
-                RankFilters rf = new RankFilters();
-                rf.rank(ip, radius, RankFilters.MEDIAN);
-            }
-        } else {
-            ip.reset();
+        if(radius>0) {
+        	RankFilters rf = new RankFilters();
+        	rf.rank(ip, radius, RankFilters.MEDIAN);
         }
         return null;
     }

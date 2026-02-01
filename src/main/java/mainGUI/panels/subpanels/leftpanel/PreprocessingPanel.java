@@ -29,6 +29,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.YesNoCancelDialog;
+import ij.process.ImageProcessor;
 import mainGUI.panels.LeftPanel;
 import mainGUI.utils.InputUtils;
 import mainGUI.utils.PanelUtils;
@@ -69,6 +70,9 @@ public class PreprocessingPanel extends JPanel{
     
     // Reference to the currently running worker to allow cancellation
     private SwingWorker<Void, Void> currentWorker;
+    
+    // Reference to the last ImageStack before a median preview / apply.
+    ImageStack lastImageStackBeforeMedian = null;
 	
 	public PreprocessingPanel(Context ctx, LeftPanel leftPanel) {
 		
@@ -125,14 +129,7 @@ public class PreprocessingPanel extends JPanel{
 	    medianPreviewCheckbox.setEnabled(selectedSettings.medianFilterEnabled());
 	    medianPreviewCheckbox.addActionListener(e -> {
 	        if (leftPanel.isProcessing()) return; 
-	        performMedianPreviewAsync(
-	            medianPreviewCheckbox.isSelected(), 
-	            () -> {
-	                if (enhanceCheckbox.isSelected()) {
-	                    enhanceContrast();
-	                }
-	            }
-	        );
+	        performMedianPreviewAsync();
 	    });
 
 	    // Loading GIF
@@ -230,6 +227,8 @@ public class PreprocessingPanel extends JPanel{
             applyButton.setEnabled(true);
             return;
         }
+        
+        if (!selectedSettings.medianFilterEnabled()) return;
 
         boolean processAllSlices = false;
         
@@ -265,23 +264,8 @@ public class PreprocessingPanel extends JPanel{
 
         // If applying to stack while preview is active, undo preview first
         if (processAllSlices && medianPreviewCheckbox.isSelected()) {
-            medianPreviewCheckbox.setSelected(false);
-            
-            performMedianPreviewAsync(false, () -> {
-                if (enhanceCheckbox.isSelected()) {
-                     enhanceContrast();
-                }
-                launchApplyWorker(true, img.getCurrentSlice());
-            });
-            return; 
-        }
-        
-        // If applying to current slice (same as preview), just commit changes
-        if (!processAllSlices && medianPreviewCheckbox.isSelected()) {
-            medianPreviewCheckbox.setSelected(false);
-            img.getProcessor().snapshot(); 
-            applyButton.setEnabled(true); 
-            return; 
+        	medianPreviewCheckbox.setSelected(false);
+        	performMedianPreviewAsync(); // reset the preview, synchronously in that case
         }
 
         launchApplyWorker(processAllSlices, img.getCurrentSlice());
@@ -302,10 +286,22 @@ public class PreprocessingPanel extends JPanel{
         enhanceSaturatedSpinner.setEnabled(enabled);
         enhanceSaturatedResetButton.setEnabled(enabled);
         
-        ImagePlus img = leftPanel.updateAndGetImg();
-        if (img != null) {
-            enhanceContrast();
+        // If the option is selected, we just enhance the constrast
+        if (enabled) {
+        	enhanceContrast();
+        } else {
+        	
+        	// otherwise, we replace the current ImageStack with the original stack
+        	ImagePlus img = leftPanel.updateAndGetImg();
+        	img.setStack(leftPanel.getOriginalImage().getStack().duplicate());
+        	img.updateAndDraw();
+        	
+        	// And we apply the median filter preview, if selected
+        	if (selectedSettings.medianFilterEnabled() && medianPreviewCheckbox.isSelected()) {
+        		performMedianPreviewAsync();
+        	}
         }
+        
     }
     
     /**
@@ -314,11 +310,7 @@ public class PreprocessingPanel extends JPanel{
     private void resetSaturatedContrast() {
     	selectedSettings.setEnhanceSaturatedPercent(AnalysisSettings.DFL_EC_SATURATED);
     	enhanceSaturatedSpinner.setValue(AnalysisSettings.DFL_EC_SATURATED);
-    	
-    	ImagePlus img = leftPanel.updateAndGetImg();
-        if (img != null) {
-            enhanceContrast();
-        }
+    	toggleContrast();
     }
     
     // --- Median Filter Section ---
@@ -338,11 +330,6 @@ public class PreprocessingPanel extends JPanel{
 
         if (!enabled && medianPreviewCheckbox.isSelected()) {
             medianPreviewCheckbox.setSelected(false);
-            performMedianPreviewAsync(false, () -> {
-                if (enhanceCheckbox.isSelected()) {
-                    enhanceContrast();
-                }
-            });
         }
     }
     
@@ -357,11 +344,7 @@ public class PreprocessingPanel extends JPanel{
             selectedSettings.setMedianRadius(val);
             
             if (medianPreviewCheckbox.isSelected()) {
-                performMedianPreviewAsync(true, () -> {
-                    if (enhanceCheckbox.isSelected()) {
-                        enhanceContrast();
-                    }
-                });
+                performMedianPreviewAsync();
             }
         } catch (NumberFormatException ex) {
             medianRadiusField.setText(String.valueOf(selectedSettings.getMedianRadius()));
@@ -386,7 +369,7 @@ public class PreprocessingPanel extends JPanel{
      */
     private void cancelCurrentTask() {
         if (currentWorker != null && !currentWorker.isDone()) {
-            IJ.showStatus("Cancelling...");
+            IJ.showStatus("Cancelling current work...");
             // true = interrupt the thread
             currentWorker.cancel(true);
         }
@@ -399,7 +382,7 @@ public class PreprocessingPanel extends JPanel{
     /**
      * Locks or unlocks the UI elements during processing to prevent race conditions.
      * Shows/hides the loading GIF and Cancel button appropriately.
-     * * @param enabled If false, inputs are disabled and loading/cancel controls are shown.
+     * @param enabled If false, inputs are disabled and loading/cancel controls are shown.
      */
     private void setPreprocessingEnabled(boolean enabled) {
         leftPanel.setProcessing(!enabled);
@@ -418,7 +401,7 @@ public class PreprocessingPanel extends JPanel{
         
         enhanceCheckbox.setEnabled(enabled);
         enhanceSaturatedSpinner.setEnabled(enabled && enhanceCheckbox.isSelected());
-        enhanceSaturatedResetButton.setEnabled(enabled);
+        enhanceSaturatedResetButton.setEnabled(enabled && enhanceCheckbox.isSelected());
         
         ImagePlus img = leftPanel.updateAndGetImg();
         leftPanel.setNextButtonEnabled(enabled && img != null && !this.isVisible() == false);
@@ -430,6 +413,9 @@ public class PreprocessingPanel extends JPanel{
      * @param enable true : enables inputs, false : disables inputs
      */
     public void enableUIComponents(boolean enable) {
+    	
+    	if (leftPanel.isPreprocessingDone()) enable = false;
+    	
     	// If components are disabled
     	if (enable == false) {
     		
@@ -473,32 +459,59 @@ public class PreprocessingPanel extends JPanel{
     // =========================================================================
 
     /**
-     * Applies contrast enhancement to the current image using ImageJ's ContrastEnhancer.<br>
-     * If contrast enhancement is not enabled, it applies a contrast enhancement of 0%.
+     * Try to apply contrast enhancement to the current image using ImageJ's ContrastEnhancer<br>
+     * LDC service applies the enhancement only if the option is set, within it.
      */
     private void enhanceContrast() {
-        if (imageDisplayService.getImageDisplays().isEmpty()) return;
-        leftPanel.updateAndGetImg();
-        selectedSettings.applyEnhanceContrast();
+        ImagePlus img = leftPanel.updateAndGetImg();
+        if (img == null) return;
+        selectedSettings.applyEnhanceContrast(img.getProcessor()); // If the option is not enabled, does nothing.
+        img.updateAndDraw();
     }
     
     // =========================================================================
     // MEDIAN FILTER OPERATIONS (ASYNCHRONOUS)
     // =========================================================================
-
+    
     /**
-     * Asynchronously handles the Median Filter Preview logic.
-     * It manages taking snapshots, resetting to clean states, and applying the filter.
-     * Handles cancellation to ensure the image is reset to a clean state.
-     * @param isPreviewOn Whether the preview is being turned on (apply filter) or off (reset).
-     * @param onComplete  Runnable to execute after the worker finishes (e.g., re-applying contrast).
+     * Handles the Median Filter preview logic, called after each toggle of the median filter preview checkbox.
+     *
+     * <p>
+     * If called after unselecting the median preview toggle, it restores the previous {@link ImageStack} state from before the preview (synchronously).
+     * </p>
+     *
+     * <p>
+     * If called after selecting the median preview toggle, it saves the current {@link ImageStack} before launching 
+     * the preview asynchronously.<br>
+     * Cancellation is handled to ensure the image is restored to a clean state.
+     * </p>
      */
-    private void performMedianPreviewAsync(boolean isPreviewOn, Runnable onComplete) {
+    private void performMedianPreviewAsync() {
     	ImagePlus img = leftPanel.updateAndGetImg();
         if (img == null) return;
+    	
+        // Case when restoring from before the preview, synchronously
+    	if (!medianPreviewCheckbox.isSelected()) {
+    		if (lastImageStackBeforeMedian != null) {
+    			img.setStack(lastImageStackBeforeMedian);
+    			enhanceContrast();
+    		}
+    		return;
+    	}
+    	
+    	// save
+    	lastImageStackBeforeMedian = img.getStack().duplicate();
+        
+        // We try to do a preview on an independent copy. 
+        // If it works out, we replace the current's image Processor with this modified ImageProcessor.
+        // 'toProcess' is the ImageProcessor corresponding in the original ImageStack.
+        ImageProcessor toProcess = leftPanel.getOriginalImage().getStack().getProcessor(img.getCurrentSlice()).duplicate();
+        // There is no enhance contrast on the original ImageProcessor, so we apply it if needed.
+        if (selectedSettings.enhanceContrastEnabled()) selectedSettings.applyEnhanceContrast(toProcess);
 
         setPreprocessingEnabled(false);
-        SwingWorker<Void,Void> previewWorker = selectedSettings.createPreviewMedianWorker(img.getProcessor(), isPreviewOn);
+        
+        SwingWorker<Void,Void> previewWorker = selectedSettings.createPreviewMedianWorker(toProcess);
         currentWorker = previewWorker;
         previewWorker.addPropertyChangeListener(evt -> {
         	
@@ -506,30 +519,28 @@ public class PreprocessingPanel extends JPanel{
         	// i.e. when the worker "state" property becomes DONE
             if ("state".equals(evt.getPropertyName())
                     && SwingWorker.StateValue.DONE == evt.getNewValue()) {
+            	
 	            try {
-	                // Check if cancelled
+	                // Check if CANCELLED
 	                if (previewWorker.isCancelled()) {
-	                    // If cancelled, we MUST revert to the snapshot state
-	                    // because rank() might have stopped halfway or finished but we don't want the result.
-	                    img.getProcessor().reset();
-	                    IJ.showStatus("Preview cancelled.");
-	                    enhanceContrast(); // Re-apply contrast enhancement
-	                    
+	                	IJ.showStatus("Median preview cancelled.");
 	                    medianPreviewCheckbox.setSelected(false);
-	                    
+	                // if it went OK
 	                } else {
 	                	previewWorker.get(); // check for exceptions
-	                	if (onComplete != null) onComplete.run();
+	                	img.setProcessor(toProcess); // Applies changes to the current image
+	                	img.updateAndDraw();
 	                    IJ.showStatus("Preview updated.");
 	                }
-	                img.updateAndDraw();
+	                
 	            } catch (CancellationException ce) {
-	                img.getProcessor().reset();
-	                img.updateAndDraw();
-	                IJ.showStatus("Preview cancelled.");
-	            } catch (Exception ex) {
-	                IJ.log("Preview Error: " + ex.getMessage());
-	                ex.printStackTrace();
+	            	IJ.showStatus("Median preview cancelled.");
+                    medianPreviewCheckbox.setSelected(false);
+	            } catch (Exception e) {
+	            	IJ.showStatus("Median preview cancelled.");
+	                IJ.log("Preview Error: " + e.getMessage());
+	                e.printStackTrace();
+                    medianPreviewCheckbox.setSelected(false);
 	            } finally {
 	                setPreprocessingEnabled(true);
 	                currentWorker = null;
@@ -539,16 +550,27 @@ public class PreprocessingPanel extends JPanel{
         previewWorker.execute();
     }
     
+    
     /**
      * Launches a dedicated background worker to apply the filter to the image (or stack).
-     * * @param doProcessAll      True if the whole stack should be processed.
+     * @param doProcessAll      True if the whole stack should be processed.
      * @param currentSliceIndex The index of the current slice (if not processing all).
      */
     private void launchApplyWorker(boolean doProcessAll, int currentSliceIndex) {
         setPreprocessingEnabled(false);
         ImagePlus img = leftPanel.updateAndGetImg();
         
-        SwingWorker<Void,Void> applyWorker = selectedSettings.createApplyMedianWorker(img.getStack(), doProcessAll, currentSliceIndex);
+        // save
+    	lastImageStackBeforeMedian = img.getStack().duplicate();
+        
+        // We try to apply on an independent copy. 
+        // If it works out, we replace the current's image Processor with this modified ImageProcessor.
+        // 'toProcess' is the ImageProcessor corresponding in the original ImageStack.
+        ImageStack toProcess = leftPanel.getOriginalImage().getStack().duplicate();
+        // There is no enhance contrast on the original ImageProcessor, so we apply it if needed.
+        if (selectedSettings.enhanceContrastEnabled()) selectedSettings.applyEnhanceContrast(toProcess.getProcessor(currentSliceIndex));
+    	
+        SwingWorker<Void,Void> applyWorker = selectedSettings.createApplyMedianWorker(toProcess, doProcessAll, currentSliceIndex);
         currentWorker = applyWorker;
         applyWorker.addPropertyChangeListener(evt -> {
         	
@@ -558,24 +580,33 @@ public class PreprocessingPanel extends JPanel{
                 && SwingWorker.StateValue.DONE == evt.getNewValue()) {
 
                 try {
+                	// Check if CANCELLED
                     if (applyWorker.isCancelled()) {
-                    	IJ.showStatus("Apply cancelled.");
+                    	IJ.showStatus("Median filter cancelled.");
+                    	setPreprocessingEnabled(true);
+                    // if it went OK
                     } else {
                     	applyWorker.get(); // exceptions
+	                	img.setStack(toProcess); // Applies changes to the current image
+	                	img.updateAndDraw();
                         IJ.showStatus("Median filter preprocessing done.");
+                        setPreprocessingEnabled(true);
+                        leftPanel.setPreprocessingDone(true);
                     }
-                    img.updateAndDraw();
+                    medianPreviewCheckbox.setEnabled(false);
+
                 } catch (CancellationException ce) {
-                    IJ.showStatus("Apply cancelled.");
-                    img.updateAndDraw();
+                    IJ.showStatus("Median filter cancelled.");
                 } catch (Exception e) {
-                    e.printStackTrace();
+                	IJ.showStatus("Median filter cancelled.");
+	                IJ.log("Preview Error: " + e.getMessage());
+	                e.printStackTrace();
                 } finally {
-                    setPreprocessingEnabled(true);
                     currentWorker = null;
                 }
             }
         });
         applyWorker.execute();
     }
+
 }

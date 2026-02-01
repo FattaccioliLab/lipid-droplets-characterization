@@ -10,6 +10,7 @@ import org.scijava.Context;
 
 import ij.ImagePlus;
 import ij.WindowManager;
+import mainGUI.MainGUI_LDC;
 import mainGUI.panels.subpanels.leftpanel.FooterLeftPanel;
 import mainGUI.panels.subpanels.leftpanel.ImageSourcePanel;
 import mainGUI.panels.subpanels.leftpanel.PreprocessingPanel;
@@ -30,6 +31,9 @@ public class LeftPanel extends JPanel {
 
     // The current image considered
     private ImagePlus img;
+    
+    // Parent container
+    private MainGUI_LDC mainGUI;
 
     // Layout Containers
     private ImageSourcePanel imageSourcePanel;
@@ -38,14 +42,18 @@ public class LeftPanel extends JPanel {
 
     // State Flags
     private volatile boolean isProcessing = false; 
+    private boolean preprocessingDone = false;
 
     /**
      * Constructs the LeftPanel, by initializing the main layout and initializing + assembling the sub-panels.
-     * * @param ctx              The SciJava context for injection.
+     * @param ctx              The SciJava context for injection.
+     * @param mainGUI          The parent component.
      * @param selectedSettings The model object holding analysis parameters.
      */
-    public LeftPanel(Context ctx) {
+    public LeftPanel(Context ctx, MainGUI_LDC mainGUI) {
         ctx.inject(this);
+        
+        this.mainGUI = mainGUI;
 
         setLayout(new BorderLayout());
 
@@ -93,6 +101,15 @@ public class LeftPanel extends JPanel {
     /** @param isProcessing The new value of the {@code isProcessing} boolean. */
     public void setProcessing(boolean isProcessing) { this.isProcessing = isProcessing; }
     
+    /** @return boolean value indicating if a preprocessing workflow has been done. */
+    public boolean isPreprocessingDone() { return preprocessingDone; }
+    
+    /** 
+     * If true, locks PreprocessingPanel's UI components. Called when a preprocessing workflow has been done.
+     * @param preprocessingDone The new value of the {@code preprocessingDone} boolean. 
+     */
+    public void setPreprocessingDone(boolean preprocessingDone) { this.preprocessingDone = preprocessingDone; }
+    
     // =========================================================================
     // Enabling / disabling footer navigation buttons
     // =========================================================================
@@ -121,5 +138,25 @@ public class LeftPanel extends JPanel {
     public ImagePlus updateAndGetImg() { 
     	img = WindowManager.getCurrentImage();
     	return img; 
+    }
+    
+    // =========================================================================
+    // Setting the original ImageProcessor
+    // =========================================================================
+    
+    /**
+     * Set the original {@link ImagePlus}, before any process on it.
+     * @param ip The original {@link ImagePlus}.
+     */
+    public void setOriginalImage(ImagePlus originalImg) {
+    	mainGUI.setOriginalImage(originalImg);
+    }
+    
+    /**
+     * Get the original {@link ImagePlus} attribute. Can be {@code null} if no image currently opened.
+     * @return The original image.
+     */
+    public ImagePlus getOriginalImage() {
+    	return mainGUI.getOriginalImage();
     }
 }
