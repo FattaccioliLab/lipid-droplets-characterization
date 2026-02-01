@@ -468,6 +468,36 @@ public class PreprocessingPanel extends JPanel{
     	}
     }
     
+    /**
+     * Reset the pre-processing panel UI components, for when the image is reseted.
+     * */
+    public void resetUIComponents() {
+    	enhanceCheckbox.setEnabled(true);
+		enhanceSaturatedSpinner.setEnabled(false);
+		enhanceSaturatedResetButton.setEnabled(false);
+		
+		medianCheckbox.setEnabled(true);
+		medianRadiusResetButton.setEnabled(false);
+		medianRadiusField.setEnabled(false);
+		medianApplyRangeField.setEnabled(false);
+		applyButton.setEnabled(false);
+		
+		// Inputs take their original values
+		
+		selectedSettings.setEnhanceContrast(false);
+		selectedSettings.setEnhanceSaturatedPercent(AnalysisSettings.DFL_EC_SATURATED);
+		
+		enhanceCheckbox.setSelected(false);
+		enhanceSaturatedSpinner.setValue(AnalysisSettings.DFL_EC_SATURATED);
+		
+		selectedSettings.setMedianFilter(false);
+		selectedSettings.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
+		
+		medianCheckbox.setSelected(false);
+		medianRadiusField.setText(Double.toString(AnalysisSettings.DFL_MEDIAN_RADIUS));
+		medianApplyRangeField.setText("");
+    }
+    
     // =========================================================================
     // ENHANCE CONTRAST OPERATION
     // =========================================================================

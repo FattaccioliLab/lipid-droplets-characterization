@@ -37,7 +37,7 @@ public class ImageSourcePanel extends JPanel {
 		
 		// Initialization of the panel layout
 		super();
-		PanelUtils.createVerticalPanel(this, "Image Source", 150);
+		PanelUtils.createVerticalPanel(this, "Image Source", 170);
 		
 		ctx.inject(this);
 		this.leftPanel = leftPanel;
@@ -45,11 +45,13 @@ public class ImageSourcePanel extends JPanel {
 	    imageStatusLabel = new JLabel("<html><center>No image opened.<br>Please open one.</center></html>", SwingConstants.CENTER);
 	    imageStatusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+	    // File select button
+	    
 	    JButton fileSelectButton = new JButton("Replace image");
 	    fileSelectButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 	    fileSelectButton.addActionListener(e -> {
 	        if (!leftPanel.isProcessing()) {
-	        	leftPanel.updateAndGetImg();
+	        	leftPanel.updateAndGetImg(); // this method call seem useless
 	        	try {
 	        		selectedSettings.replaceCurrentImage(this);
 	        	} catch (IllegalArgumentException error) {
@@ -57,11 +59,32 @@ public class ImageSourcePanel extends JPanel {
 	        	}
 	        }
 	    });
+	    
+	    // Reset image button
+
+	    JButton resetImageButton = new JButton("Reset image");
+	    resetImageButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    resetImageButton.addActionListener(e -> {
+	    	if (!leftPanel.isProcessing()) {
+	    		try {
+	    			if (leftPanel.isProcessing()) {
+	    				return;
+	    			}
+	    			selectedSettings.resetCurrentImage();
+	    			leftPanel.resetPanels();
+	    		}catch (IllegalArgumentException error) {
+	    			IJ.showMessage("Please open an image first (File > Open)");
+	    		}catch (IllegalStateException error) {
+	    			IJ.showMessage(error.getMessage());
+	    		}
+	    	}
+	    });
 
 	    add(Box.createVerticalStrut(5));
 	    add(imageStatusLabel);
 	    add(Box.createVerticalStrut(10));
 	    add(fileSelectButton);
+	    add(resetImageButton);
 	    add(Box.createVerticalStrut(5));
 	    
 	    

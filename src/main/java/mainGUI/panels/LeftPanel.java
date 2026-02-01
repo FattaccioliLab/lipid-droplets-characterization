@@ -30,7 +30,7 @@ public class LeftPanel extends JPanel {
 
     // The current image considered
     private ImagePlus img;
-
+  
     // Layout Containers
     private ImageSourcePanel imageSourcePanel;
     private PreprocessingPanel preprocessingPanel;
@@ -122,4 +122,19 @@ public class LeftPanel extends JPanel {
     	img = WindowManager.getCurrentImage();
     	return img; 
     }
+    
+    
+    // =========================================================================
+    // Reseting panels
+    // =========================================================================
+    
+    /**
+     * Reset the image treatment panels, for when the image is reseted.
+     * */
+    public void resetPanels() {
+    	preprocessingPanel.resetUIComponents();
+    	// add here the resetUIComponents method call for the incoming threshold and measurement panels 
+    }
+    
+    
 }
