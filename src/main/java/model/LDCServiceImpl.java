@@ -149,6 +149,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     /** @see ImageSourceManager#replaceCurrentImage(ImagePlus, Component) */
 	@Override public void replaceCurrentImage(Component parent) { imageSourceManager.replaceCurrentImage(WindowManager.getCurrentImage(), parent); }
 
+	/** @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, double) */
+	@Override public void applyEnhanceContrast(ImageProcessor ip) { preprocessingManager.applyEnhanceContrast(ip, enhanceContrastEnabled(), getEnhanceSaturatedPercent()); }
 	/** @see ImageSourceManager#resetCurrentImage(ImagePlus) */
 	@Override public void resetCurrentImage() { imageSourceManager.resetCurrentImage(WindowManager.getCurrentImage()); }
 	
@@ -156,8 +158,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	@Override public void applyEnhanceContrast() { preprocessingManager.applyEnhanceContrast(WindowManager.getCurrentImage(), enhanceContrastEnabled(),getEnhanceSaturatedPercent()); }
 
 	/** @see PreprocessingPreviewMedianWorker */
-	@Override public SwingWorker<Void, Void> createPreviewMedianWorker(ImageProcessor ip, boolean isPreviewOn) {
-		return preprocessingManager.createPreviewMedianWorker(ip, isPreviewOn, getMedianRadius());
+	@Override public SwingWorker<Void, Void> createPreviewMedianWorker(ImageProcessor ip) {
+		return preprocessingManager.createPreviewMedianWorker(ip, getMedianRadius());
 	}
 
 	/** @see PreprocessingApplyMedianWorker */
