@@ -149,6 +149,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     /** @see ImageSourceManager#replaceCurrentImage(ImagePlus, Component) */
 	@Override public void replaceCurrentImage(Component parent) { imageSourceManager.replaceCurrentImage(WindowManager.getCurrentImage(), parent); }
 
+	/** @see ImageSourceManager#resetCurrentImage(ImagePlus) */
+	@Override public void resetCurrentImage() { imageSourceManager.resetCurrentImage(WindowManager.getCurrentImage()); }
+	
 	/** @see PreprocessingManager#applyEnhanceContrast(ImagePlus, double) */
 	@Override public void applyEnhanceContrast() { preprocessingManager.applyEnhanceContrast(WindowManager.getCurrentImage(), enhanceContrastEnabled(),getEnhanceSaturatedPercent()); }
 
