@@ -1,9 +1,7 @@
 package mainGUI.panels;
 
-import java.awt.Color;
 import java.awt.GridLayout;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
@@ -42,12 +40,9 @@ public class RightPanel extends JPanel {
     private LDCService selectedSettings;
 	
     public RightPanel(Context ctx) {
+    	super();
+    	
     	ctx.inject(this);
-    	
-    	
-        setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(Color.GREEN, 2)
-        ));
  
         // measures treatment panel
         JPanel actionPanel = new JPanel();

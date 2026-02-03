@@ -45,18 +45,17 @@ public class ImageSourcePanel extends JPanel {
 	    imageStatusLabel = new JLabel("<html><center>No image opened.<br>Please open one.</center></html>", SwingConstants.CENTER);
 	    imageStatusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-	    // File select button
+	    // Replace image button
 	    
-	    JButton fileSelectButton = new JButton("Replace image");
-	    fileSelectButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-	    fileSelectButton.addActionListener(e -> {
+	    JButton replaceImageButton = new JButton("Replace image");
+	    replaceImageButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    replaceImageButton.addActionListener(e -> {
 	        if (!leftPanel.isProcessing()) {
-	        	leftPanel.updateAndGetImg(); // this method call seem useless
 	        	try {
 	        		selectedSettings.replaceCurrentImage(this);
 	        		ImagePlus img = leftPanel.updateAndGetImg();
 	        		leftPanel.setOriginalImage(img.duplicate()); // New original ImageProcessor when replacing the current image.
-	        		leftPanel.setPreprocessingDone(false); // reset the preprocessingDone flag of the LeftPanel
+	        		leftPanel.resetPanels();
 	        	} catch (IllegalArgumentException error) {
 	        		IJ.showMessage("Please open an image first (File > Open)");
 	        	}
@@ -70,10 +69,9 @@ public class ImageSourcePanel extends JPanel {
 	    resetImageButton.addActionListener(e -> {
 	    	if (!leftPanel.isProcessing()) {
 	    		try {
-	    			if (leftPanel.isProcessing()) {
-	    				return;
-	    			}
 	    			selectedSettings.resetCurrentImage();
+	    			ImagePlus img = leftPanel.updateAndGetImg();
+	    			leftPanel.setOriginalImage(img.duplicate()); // New original ImageProcessor when replacing the current image.
 	    			leftPanel.resetPanels();
 	    		}catch (IllegalArgumentException error) {
 	    			IJ.showMessage("Please open an image first (File > Open)");
@@ -86,9 +84,10 @@ public class ImageSourcePanel extends JPanel {
 	    add(Box.createVerticalStrut(5));
 	    add(imageStatusLabel);
 	    add(Box.createVerticalStrut(10));
-	    add(fileSelectButton);
+	    add(replaceImageButton);
+	    add(Box.createVerticalStrut(10));
 	    add(resetImageButton);
-	    add(Box.createVerticalStrut(5));
+	    add(Box.createVerticalStrut(10));
 	    
 	    
 		startImageWatcher();
@@ -118,7 +117,7 @@ public class ImageSourcePanel extends JPanel {
                 : "<html><center>No image opened.<br>Please open one.</center></html>");
 
             PreprocessingPanel ppp = leftPanel.getPreprocessingPanel();
-            ppp.enableUIComponents(hasImage);
+            ppp.enableUIComponents(hasImage, false);
             leftPanel.setNextButtonEnabled(hasImage && !ppp.isVisible() == false);
         });
         imageWatcher.start();

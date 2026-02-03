@@ -201,7 +201,7 @@ public class PreprocessingPanel extends JPanel{
 	    JPanel applyRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 	    applyRow.setAlignmentX(Component.LEFT_ALIGNMENT);
 	    
-	    applyButton = new JButton("Apply median filter");
+	    applyButton = new JButton("Apply preprocessing parameters");
 	    applyButton.addActionListener(e -> {
 	        if (leftPanel.isProcessing()) return;
 	        applyButton.setEnabled(false);
@@ -216,7 +216,7 @@ public class PreprocessingPanel extends JPanel{
 	}
 	
     /**
-     * The main entry point for the "Apply" button logic.
+     * The main entry point for the "Apply preprocessing parameters" button logic.
      * Checks if stack processing is needed, handles preview state conflicts, 
      * and launches the appropriate worker.
      */
@@ -228,47 +228,50 @@ public class PreprocessingPanel extends JPanel{
             return;
         }
         
-        if (!selectedSettings.medianFilterEnabled()) return;
-
-        boolean processAllSlices = false;
+        // If median filter is enabled : applies eventually enhance contrast + applies median filter + locks preprocessing UI at the end
+        if (selectedSettings.medianFilterEnabled()) {
+	
+	        boolean processAllSlices = false;
+	        
+	        // We consider the new stack, according to the given ranges
+	        int oldStackSize = img.getStackSize();
+	        ImageStack oldStack = img.getImageStack();
+	        ImageStack newRangedStack = InputUtils.parseSliceRanges(medianApplyRangeField.getText(), oldStackSize, oldStack);
+	        if (newRangedStack.getSize() == 0) { // median filter processing cancelled if no images
+	        	applyButton.setEnabled(true);
+	        	IJ.showMessage("No images available.");
+	        	return;
+	        }
+	        
+	        if (selectedSettings.medianFilterEnabled() && newRangedStack.size() > 1) {
+	            YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Process Stack?", 
+	                "Do you want to process all " + newRangedStack.size() + " images?\nThere is no undo.");
+	            if (d.cancelPressed()) {
+	                applyButton.setEnabled(true);
+	                return;
+	            }
+	            
+	            // We process all given slices
+	            processAllSlices = d.yesPressed();
+	            
+	            // If the newRangedStack is equal to the original (old) stack, then there is no newRangedStack.
+	            if (newRangedStack == img.getImageStack()) {
+	    	        newRangedStack = null; 
+	            }
+	        }
+	
+	        // If applying to stack while preview is active, undo preview first
+	        if (processAllSlices && medianPreviewCheckbox.isSelected()) {
+	        	medianPreviewCheckbox.setSelected(false);
+	        	performMedianPreviewAsync(); // reset the preview, synchronously in that case
+	        }
+	
+	        launchApplyWorker(processAllSlices, img.getCurrentSlice(), newRangedStack);
         
-        
-        // We consider the new stack, according to the given ranges
-        int oldStackSize = img.getStackSize();
-        ImageStack oldStack = img.getImageStack();
-        ImageStack newRangedStack = InputUtils.parseSliceRanges(medianApplyRangeField.getText(), oldStackSize, oldStack);
-        if (newRangedStack.getSize() == 0) { // median filter processing cancelled if no images
-        	applyButton.setEnabled(true);
-        	IJ.showMessage("No images available.");
-        	return;
+	    // Else : don't change actual image (which can be contrast enhanced or unmodified) + locks preprocessing UI here
+        } else {
+        	leftPanel.setPreprocessingDone(true);
         }
-        
-        if (selectedSettings.medianFilterEnabled() && newRangedStack.size() > 1) {
-            YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Process Stack?", 
-                "Do you want to process all " + newRangedStack.size() + " images?\nThere is no undo.");
-            if (d.cancelPressed()) {
-                applyButton.setEnabled(true);
-                return;
-            }
-            
-            // We process all given slices
-            processAllSlices = d.yesPressed();
-            
-            // If it is a new stack and we decided to process all given images : we update the current stack
-            if (newRangedStack != img.getImageStack() && processAllSlices) {
-            	img.setStack(newRangedStack);
-            	img.setDimensions(img.getNChannels(), newRangedStack.getSize(), img.getNFrames());
-            	img.updateAndDraw();
-            }
-        }
-
-        // If applying to stack while preview is active, undo preview first
-        if (processAllSlices && medianPreviewCheckbox.isSelected()) {
-        	medianPreviewCheckbox.setSelected(false);
-        	performMedianPreviewAsync(); // reset the preview, synchronously in that case
-        }
-
-        launchApplyWorker(processAllSlices, img.getCurrentSlice());
     }
     
     // =========================================================================
@@ -330,6 +333,7 @@ public class PreprocessingPanel extends JPanel{
 
         if (!enabled && medianPreviewCheckbox.isSelected()) {
             medianPreviewCheckbox.setSelected(false);
+            performMedianPreviewAsync(); // reset median filter preview
         }
     }
     
@@ -343,8 +347,16 @@ public class PreprocessingPanel extends JPanel{
             
             selectedSettings.setMedianRadius(val);
             
-            if (medianPreviewCheckbox.isSelected()) {
-                performMedianPreviewAsync();
+            // If median filter preview is enabled
+            if (selectedSettings.medianFilterEnabled() && medianPreviewCheckbox.isSelected()) {
+            	// reset median preview first
+            	lastImageStackBeforeMedian = null;
+            	medianPreviewCheckbox.setSelected(false);
+            	performMedianPreviewAsync();
+            	
+            	// then re-apply apply median filter
+            	medianPreviewCheckbox.setSelected(true);
+            	performMedianPreviewAsync();
             }
         } catch (NumberFormatException ex) {
             medianRadiusField.setText(String.valueOf(selectedSettings.getMedianRadius()));
@@ -358,7 +370,7 @@ public class PreprocessingPanel extends JPanel{
         selectedSettings.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
         medianRadiusField.setText(String.valueOf(AnalysisSettings.DFL_MEDIAN_RADIUS));
 
-        if (medianCheckbox.isSelected()) {
+        if (selectedSettings.medianFilterEnabled()) {
         	updateMedianRadiusFromField();
         }
     }
@@ -409,10 +421,11 @@ public class PreprocessingPanel extends JPanel{
     
     /**
      * Enables, or disables, UI components (inputs) of this preprocessing panel.<br>
-     * If it disables, inputs are reseted to their default value.
+     * If it disables, inputs can be reseted to their default value.
      * @param enable true : enables inputs, false : disables inputs
+     * @param resetParameters true : reset parameters. Taken into account ONLY if {@code enable} == {@code false}.
      */
-    public void enableUIComponents(boolean enable) {
+    public void enableUIComponents(boolean enable, boolean resetParameters) {
     	
     	if (leftPanel.isPreprocessingDone()) enable = false;
     	
@@ -426,6 +439,7 @@ public class PreprocessingPanel extends JPanel{
     		enhanceSaturatedResetButton.setEnabled(enable);
     		
     		medianCheckbox.setEnabled(enable);
+    		medianPreviewCheckbox.setEnabled(enable);
     		medianRadiusResetButton.setEnabled(enable);
     		medianRadiusField.setEnabled(enable);
     		medianApplyRangeField.setEnabled(enable);
@@ -433,18 +447,21 @@ public class PreprocessingPanel extends JPanel{
     		
     		// Inputs take their original values
     		
-    		selectedSettings.setEnhanceContrast(enable);
-    		selectedSettings.setEnhanceSaturatedPercent(AnalysisSettings.DFL_EC_SATURATED);
-    		
-    		enhanceCheckbox.setSelected(enable);
-    		enhanceSaturatedSpinner.setValue(AnalysisSettings.DFL_EC_SATURATED);
-    		
-    		selectedSettings.setMedianFilter(enable);
-    		selectedSettings.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
-    		
-    		medianCheckbox.setSelected(enable);
-    		medianRadiusField.setText(Double.toString(AnalysisSettings.DFL_MEDIAN_RADIUS));
-    		medianApplyRangeField.setText("");
+    		if (resetParameters) {
+    			selectedSettings.setEnhanceContrast(enable);
+        		selectedSettings.setEnhanceSaturatedPercent(AnalysisSettings.DFL_EC_SATURATED);
+        		
+        		enhanceCheckbox.setSelected(enable);
+        		enhanceSaturatedSpinner.setValue(AnalysisSettings.DFL_EC_SATURATED);
+        		
+        		selectedSettings.setMedianFilter(enable);
+        		selectedSettings.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
+        		
+        		medianCheckbox.setSelected(enable);
+        		medianPreviewCheckbox.setSelected(enable);
+        		medianRadiusField.setText(Double.toString(AnalysisSettings.DFL_MEDIAN_RADIUS));
+        		medianApplyRangeField.setText("");
+    		}
     		
     	// If components are enabled
     	} else {
@@ -458,30 +475,9 @@ public class PreprocessingPanel extends JPanel{
      * Reset the pre-processing panel UI components, for when the image is reseted.
      * */
     public void resetUIComponents() {
-    	enhanceCheckbox.setEnabled(true);
-		enhanceSaturatedSpinner.setEnabled(false);
-		enhanceSaturatedResetButton.setEnabled(false);
-		
-		medianCheckbox.setEnabled(true);
-		medianRadiusResetButton.setEnabled(false);
-		medianRadiusField.setEnabled(false);
-		medianApplyRangeField.setEnabled(false);
-		applyButton.setEnabled(false);
-		
-		// Inputs take their original values
-		
-		selectedSettings.setEnhanceContrast(false);
-		selectedSettings.setEnhanceSaturatedPercent(AnalysisSettings.DFL_EC_SATURATED);
-		
-		enhanceCheckbox.setSelected(false);
-		enhanceSaturatedSpinner.setValue(AnalysisSettings.DFL_EC_SATURATED);
-		
-		selectedSettings.setMedianFilter(false);
-		selectedSettings.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
-		
-		medianCheckbox.setSelected(false);
-		medianRadiusField.setText(Double.toString(AnalysisSettings.DFL_MEDIAN_RADIUS));
-		medianApplyRangeField.setText("");
+    	leftPanel.setPreprocessingDone(false);
+    	enableUIComponents(false, true); // disables UI components
+    	enableUIComponents(true, true); // enable ONLY enhance contrast and median filter checkboxes
     }
     
     // =========================================================================
@@ -522,11 +518,15 @@ public class PreprocessingPanel extends JPanel{
     	
         // Case when restoring from before the preview, synchronously
     	if (!medianPreviewCheckbox.isSelected()) {
+    		// If there is an ImageStack saved before a preview, restore it and end
     		if (lastImageStackBeforeMedian != null) {
     			img.setStack(lastImageStackBeforeMedian);
     			enhanceContrast();
+    			return;
+    		// If there was no ImageStack saved before preview, perform median preview since original stack
+    		} else {
+    			img.setStack(leftPanel.getOriginalImage().getStack().duplicate());
     		}
-    		return;
     	}
     	
     	// save
@@ -580,13 +580,23 @@ public class PreprocessingPanel extends JPanel{
         previewWorker.execute();
     }
     
-    
     /**
      * Launches a dedicated background worker to apply the filter to the image (or stack).
      * @param doProcessAll      True if the whole stack should be processed.
      * @param currentSliceIndex The index of the current slice (if not processing all).
      */
     private void launchApplyWorker(boolean doProcessAll, int currentSliceIndex) {
+    	launchApplyWorker(doProcessAll, currentSliceIndex, null);
+    }
+    
+    /**
+     * Launches a dedicated background worker to apply the filter to the image (or stack).<br>
+     * If a {@code newRangedStack} is given, it considers it.
+     * @param doProcessAll      True if the whole stack should be processed.
+     * @param currentSliceIndex The index of the current slice (if not processing all).
+     * @param newRangedStack    A sub-stack of the current image's stack to consider. If {@code null}, the original stack is considered.
+     */
+    private void launchApplyWorker(boolean doProcessAll, int currentSliceIndex, ImageStack newRangedStack) {
         setPreprocessingEnabled(false);
         ImagePlus img = leftPanel.updateAndGetImg();
         
@@ -594,9 +604,17 @@ public class PreprocessingPanel extends JPanel{
     	lastImageStackBeforeMedian = img.getStack().duplicate();
         
         // We try to apply on an independent copy. 
-        // If it works out, we replace the current's image Processor with this modified ImageProcessor.
-        // 'toProcess' is the ImageProcessor corresponding in the original ImageStack.
-        ImageStack toProcess = leftPanel.getOriginalImage().getStack().duplicate();
+        // If it works out, we replace the current's image Stack with this modified ImageStack.
+    	ImageStack toProcess;
+    	if (newRangedStack == null) {
+    		// 'toProcess' is the ImageStack corresponding in the original ImageStack.
+            toProcess = leftPanel.getOriginalImage().getStack().duplicate();
+    	} else {
+    		// 'toProcess' is a given ImageStack, corresponding to a sub-stack of the original ImageStack.
+    		toProcess = newRangedStack.duplicate();
+    	}
+        
+        
         // There is no enhance contrast on the original ImageProcessor, so we apply it if needed.
         if (selectedSettings.enhanceContrastEnabled()) selectedSettings.applyEnhanceContrast(toProcess.getProcessor(currentSliceIndex));
     	
@@ -623,7 +641,6 @@ public class PreprocessingPanel extends JPanel{
                         setPreprocessingEnabled(true);
                         leftPanel.setPreprocessingDone(true);
                     }
-                    medianPreviewCheckbox.setEnabled(false);
 
                 } catch (CancellationException ce) {
                     IJ.showStatus("Median filter cancelled.");
