@@ -143,6 +143,12 @@ public interface LDCService extends SciJavaService {
      */
 	public void replaceCurrentImage(Component parent);
 	
+    /**
+     * Reset the content of the current {@link ImagePlus} active image with the originally opened one<br>
+     * The LDC implementation delegates the operation to the {@link ImageSourceManager} class.
+     */
+	public void resetCurrentImage();
+	
 	/**
 	 * Applies contrast enhancement to the given {@link ImageProcessor}.
 	 * @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, double)

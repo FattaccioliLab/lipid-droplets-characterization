@@ -151,6 +151,11 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 
 	/** @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, double) */
 	@Override public void applyEnhanceContrast(ImageProcessor ip) { preprocessingManager.applyEnhanceContrast(ip, enhanceContrastEnabled(), getEnhanceSaturatedPercent()); }
+	/** @see ImageSourceManager#resetCurrentImage(ImagePlus) */
+	@Override public void resetCurrentImage() { imageSourceManager.resetCurrentImage(WindowManager.getCurrentImage()); }
+	
+	/** @see PreprocessingManager#applyEnhanceContrast(ImagePlus, double) */
+	@Override public void applyEnhanceContrast() { preprocessingManager.applyEnhanceContrast(WindowManager.getCurrentImage(), enhanceContrastEnabled(),getEnhanceSaturatedPercent()); }
 
 	/** @see PreprocessingPreviewMedianWorker */
 	@Override public SwingWorker<Void, Void> createPreviewMedianWorker(ImageProcessor ip) {

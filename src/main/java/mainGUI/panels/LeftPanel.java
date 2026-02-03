@@ -35,6 +35,7 @@ public class LeftPanel extends JPanel {
     // Parent container
     private MainGUI_LDC mainGUI;
 
+  
     // Layout Containers
     private ImageSourcePanel imageSourcePanel;
     private PreprocessingPanel preprocessingPanel;
@@ -159,4 +160,18 @@ public class LeftPanel extends JPanel {
     public ImagePlus getOriginalImage() {
     	return mainGUI.getOriginalImage();
     }
+    
+    // =========================================================================
+    // Reseting panels
+    // =========================================================================
+    
+    /**
+     * Reset the image treatment panels, for when the image is reseted.
+     * */
+    public void resetPanels() {
+    	preprocessingPanel.resetUIComponents();
+    	// add here the resetUIComponents method call for the incoming threshold and measurement panels 
+    }
+    
+    
 }
