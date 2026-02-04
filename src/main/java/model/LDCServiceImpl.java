@@ -16,6 +16,7 @@ import ij.process.ImageProcessor;
 import model.leftpanel.ImageSourceManager;
 import model.leftpanel.PreprocessingManager;
 import model.leftpanel.ThresholdingManager;
+import model.rightpanel.MeasurementsManager;
 import model.workers.preprocessing.PreprocessingPreviewMedianWorker;
 
 /**
@@ -30,8 +31,10 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	// For the LeftPanel's sub-panels operations.
 	private ImageSourceManager imageSourceManager;
 	private PreprocessingManager preprocessingManager;
-	
 	private ThresholdingManager thresholdingManager;
+  
+	// For the RightPanel's sub-panels operations.
+	private MeasurementsManager measurementsManager;
 	
 	@Override
 	public void initialize() { 
@@ -39,6 +42,7 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 		imageSourceManager = new ImageSourceManager();
 		preprocessingManager = new PreprocessingManager();
 		thresholdingManager = new ThresholdingManager();
+		measurementsManager = new MeasurementsManager();
 	}
 	
     // =========================================================================
@@ -165,6 +169,24 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public boolean analyseExcludeOnEdgesEnabled() { return settings.analyseExcludeOnEdgesEnabled(); }
     @Override public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges) { settings.setAnalyseExcludeOnEdges(analyseExcludeOnEdges); }
 
+    // ============================
+    // Measurements showing options
+    // ============================
+    
+	@Override public boolean showAreaEnabled() { return settings.showAreaEnabled(); }
+	@Override public void setShowArea(boolean showArea) { settings.setShowArea(showArea); }
+
+	@Override public boolean showEquivalentDiameterEnabled() { return settings.showEquivalentDiameterEnabled(); }
+	@Override public void setShowEquivalentDiameter(boolean showEquivalentDiameter) { settings.setShowEquivalentDiameter(showEquivalentDiameter); }
+
+	@Override public boolean showMeanEnabled() { return settings.showMeanEnabled(); }
+	@Override public void setShowMean(boolean showMean) { settings.setShowMean(showMean); }
+
+	@Override public boolean showIntegratedDensityEnabled() { return settings.showIntegratedDensityEnabled(); }
+	@Override public void setShowIntegratedDensity(boolean showIntegratedDensity) { settings.setShowIntegratedDensity(showIntegratedDensity); }
+
+	@Override public boolean showCircularityEnabled() { return settings.showCircularityEnabled(); }
+	@Override public void setShowCircularity(boolean showCircularity) { settings.setShowCircularity(showCircularity); }    
     
     // =========================================================================
     // OPERATIONS
@@ -173,17 +195,26 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     /** @see ImageSourceManager#replaceCurrentImage(ImagePlus, Component) */
 	@Override public void replaceCurrentImage(Component parent) { imageSourceManager.replaceCurrentImage(WindowManager.getCurrentImage(), parent); }
 
-	/** @see PreprocessingManager#applyEnhanceContrast(ImagePlus, double) */
-	@Override public void applyEnhanceContrast() { preprocessingManager.applyEnhanceContrast(WindowManager.getCurrentImage(), enhanceContrastEnabled(),getEnhanceSaturatedPercent()); }
+	/** @see ImageSourceManager#resetCurrentImage(ImagePlus) */
+	@Override public void resetCurrentImage() { imageSourceManager.resetCurrentImage(WindowManager.getCurrentImage()); }
+	
+	/** @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, double) */
+	@Override public void applyEnhanceContrast(ImageProcessor ip) { preprocessingManager.applyEnhanceContrast(ip, enhanceContrastEnabled(), getEnhanceSaturatedPercent()); }
 
 	/** @see PreprocessingPreviewMedianWorker */
-	@Override public SwingWorker<Void, Void> createPreviewMedianWorker(ImageProcessor ip, boolean isPreviewOn) {
-		return preprocessingManager.createPreviewMedianWorker(ip, isPreviewOn, getMedianRadius());
+	@Override public SwingWorker<Void, Void> createPreviewMedianWorker(ImageProcessor ip) {
+		return preprocessingManager.createPreviewMedianWorker(ip, getMedianRadius());
 	}
 
 	/** @see PreprocessingApplyMedianWorker */
 	@Override public SwingWorker<Void, Void> createApplyMedianWorker(ImageStack stack, boolean processAll, int targetSlice) {  
 		return preprocessingManager.createApplyMedianWorker(medianFilterEnabled(), getMedianRadius(), stack, processAll, targetSlice);
+	}
+
+	/** @see MeasuresProcessingWorker */
+	@Override public SwingWorker<Void, Void> createMeasuresProcessingWorker() {
+		return measurementsManager.createMeasuresProcessingWorker(showAreaEnabled(), showEquivalentDiameterEnabled(), showMeanEnabled(), 
+				showIntegratedDensityEnabled(), showCircularityEnabled(), analyseExcludeOnEdgesEnabled());
 	}
 
 }

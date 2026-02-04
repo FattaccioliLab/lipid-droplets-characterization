@@ -7,6 +7,7 @@ import javax.swing.JFileChooser;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.io.FileInfo;
 import mainGUI.panels.subpanels.leftpanel.ImageSourcePanel;
 
 /**
@@ -39,10 +40,47 @@ public class ImageSourceManager {
         File imageFile = fileChooser.getSelectedFile();
         ImagePlus newImage = IJ.openImage(imageFile.getAbsolutePath());
         if (newImage == null) return;
+        
+        // update the file informations
+        FileInfo newFi = newImage.getOriginalFileInfo();
+        currentImg.setFileInfo(newFi);
 
         currentImg.setStack(newImage.getTitle(), newImage.getStack());
         currentImg.setCalibration(newImage.getCalibration());
         currentImg.setDimensions(newImage.getNChannels(), newImage.getNSlices(), newImage.getNFrames());
         currentImg.updateAndDraw();
     }
+    
+    /**
+     * Reset the image currently opened, replace the current image with the one without any modification.
+     * 
+     * @param currentImg The currently active image whose content will be replaced.
+	 * @throws IllegalArgumentException if {@code currentImg} is {@code null}.
+	 * @throws IllegalStateException if the image has no source file or cannot be reloaded.
+     */
+    public void resetCurrentImage(ImagePlus currentImg) {
+		if (currentImg == null) {
+			throw new IllegalArgumentException("No current image.");
+		}
+		
+		FileInfo fi = currentImg.getOriginalFileInfo();
+
+		if (fi == null || fi.directory == null || fi.fileName == null) {
+			throw new IllegalStateException("The current image has no source file on disk and cannot be reset."); 
+		}
+		
+		String fullPath = fi.directory + fi.fileName;
+		
+		ImagePlus initialImg = IJ.openImage(fullPath);
+		
+		if (initialImg == null) {
+	        throw new IllegalStateException("Could not reload file from: " + fullPath);
+	    }
+		
+    	currentImg.setStack(initialImg.getTitle(), initialImg.getStack());
+        currentImg.setCalibration(initialImg.getCalibration());
+        currentImg.setDimensions(initialImg.getNChannels(), initialImg.getNSlices(), initialImg.getNFrames());
+        currentImg.updateAndDraw();
+    }
+    
 }

@@ -5,7 +5,7 @@ import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 
 /**
- * Simply creates a new {@link ImageJ} interface, containing aswell the plugin content (from src/test/java).<br>
+ * Simply creates a new {@link ImageJ} interface, containing aswell the plugin content (from src/main/java).<br>
  * Entry point for debug, instantly opens the {@code MainGUI_LDC}.
  */
 public class TestPlugin {

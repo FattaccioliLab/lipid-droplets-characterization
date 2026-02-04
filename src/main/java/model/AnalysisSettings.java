@@ -91,6 +91,16 @@ public class AnalysisSettings {
 	public final static boolean DFL_ANALYSE_EXCL_EDGES = false;
 	private boolean analyseExcludeOnEdges = DFL_ANALYSE_EXCL_EDGES;
 	
+    // ============================
+    // Measurements showing options
+    // ============================
+	
+	public final static boolean DFL_SHOWING_OPT = false;
+	private boolean showArea = DFL_SHOWING_OPT;
+	private boolean showEquivalentDiameter = DFL_SHOWING_OPT;
+	private boolean showMean = DFL_SHOWING_OPT;
+	private boolean showIntegratedDensity = DFL_SHOWING_OPT;
+	private boolean showCircularity = DFL_SHOWING_OPT;
 	
     // =========================================================================
     // METHODS (getters / setters)
@@ -218,5 +228,24 @@ public class AnalysisSettings {
 	// Exclude on edges
 	public boolean analyseExcludeOnEdgesEnabled() { return analyseExcludeOnEdges; }
 	public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges) { this.analyseExcludeOnEdges = analyseExcludeOnEdges; }
+	
+    // ============================
+    // Measurements showing options
+    // ============================
+	
+	public boolean showAreaEnabled() { return showArea; }
+	public void setShowArea(boolean showArea) { this.showArea = showArea; }
+	
+	public boolean showEquivalentDiameterEnabled() { return showEquivalentDiameter; }
+	public void setShowEquivalentDiameter(boolean showEquivalentDiameter) { this.showEquivalentDiameter = showEquivalentDiameter; }
+
+	public boolean showMeanEnabled() { return showMean; }
+	public void setShowMean(boolean showMean) { this.showMean = showMean; }
+	
+	public boolean showIntegratedDensityEnabled() { return showIntegratedDensity; }
+	public void setShowIntegratedDensity(boolean showIntegratedDensity) { this.showIntegratedDensity = showIntegratedDensity; }
+	
+	public boolean showCircularityEnabled() { return showCircularity; }
+	public void setShowCircularity(boolean showCircularity) { this.showCircularity = showCircularity; }
 	
 }
