@@ -226,6 +226,7 @@ public class LeftPanel extends JPanel {
      * */
     public void resetPanels() {
     	preprocessingPanel.resetUIComponents();
+    	thresholdingPanel.resetUIComponents();
     	// add here the resetUIComponents method call for the incoming threshold and measurement panels 
     }
     

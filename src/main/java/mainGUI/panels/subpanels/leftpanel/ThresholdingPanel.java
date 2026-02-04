@@ -222,7 +222,6 @@ public class ThresholdingPanel extends JPanel {
         boolean isManual = "Manual".equals(method);
         boolean isDark = darkBackgroundCheckbox.isSelected();
 
-        //System.out.println("inside of updateThresholdLogic ");
         
         service.setThresholdMethod(method);
 
@@ -231,27 +230,6 @@ public class ThresholdingPanel extends JPanel {
             service.previewManualThreshold(img);
             darkBackgroundCheckbox.setEnabled(!isManual);	//if manual mode, hide dark BG check box
             
-            /*the goal is to illustrate the inverse values in the slider and spinner when darkBG is checked and in Manual mode, 
-             * will handle it later. Not enough time ;)
-             * it seems unnecessary to have the option of Dark BG in manual mode, bcz user has the full control with sliders to change the BG
-        	 * */
-           /* if(isDark) {
-            	int tmp = minSlider.getValue();
-            	minSlider.setValue(maxSlider.getValue());
-            	maxSlider.setValue(tmp);
-
-            	tmp=(int) minSpinner.getValue();
-            	minSpinner.setValue(maxSpinner.getValue());
-            	maxSpinner.setValue(tmp);
-            }{
-            	int tmp = minSlider.getValue();
-            	minSlider.setValue(maxSlider.getValue());
-            	maxSlider.setValue(tmp);
-
-            	tmp=(int) minSpinner.getValue();
-            	minSpinner.setValue(maxSpinner.getValue());
-            	maxSpinner.setValue(tmp);
-            }*/
         } else {
             enableSliders(false);
             double[] computed = service.previewAutoThreshold(img, method, isDark);
@@ -278,7 +256,8 @@ public class ThresholdingPanel extends JPanel {
         if(isApplied) {
             enableUIComponents(false);
             IJ.showStatus("Threshold applied.");
-            //this.appliedOnImg = img;
+            //refreshHistogramData();
+            setVisible(true);
         }
     }
     
@@ -318,18 +297,8 @@ public class ThresholdingPanel extends JPanel {
         slider.setValue(current);
     }
     
-    //private ImagePlus appliedOnImg;
     
     public void enableUIComponents(boolean enabled) {
-    	/*if(appliedOnImg != leftPanel.updateAndGetImg()) {	//new image loaded
-    		isApplied = false;
-    	}*/
-    	
-    	//have to optimise here: in the current state, when the apply button is pressed, the Segementation/thresholding UI gets invisible. 
-    	//no way to get back without quiting the app. 
-    	//it would be interesting, if we could make it like : when apply button is clicked the UI gets disabled, 
-    	//but when the image is closed and a new img is opened, this UI will be visible.
-    	//TO DO
     	
         if (isApplied && enabled) return; 
         
@@ -354,5 +323,19 @@ public class ThresholdingPanel extends JPanel {
             enableSliders(false);
             histogramPanel.setHistogram(null);
         }
+    }
+    
+    
+    
+    /**
+     * Reset the Thresholding panel UI components, when the image is reset.
+     * */
+    public void resetUIComponents() {
+    	isApplied = false;
+        enableUIComponents(true);
+    	minSlider.setValue(0);
+    	minSlider.setValue(0);
+    	maxSlider.setValue(0);
+    	maxSpinner.setValue(0);
     }
 }
