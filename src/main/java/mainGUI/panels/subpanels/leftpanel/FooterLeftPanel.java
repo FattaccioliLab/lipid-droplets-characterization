@@ -35,10 +35,20 @@ public class FooterLeftPanel extends JPanel{
         nextButton = new JButton("Next");
         
         PreprocessingPanel ppp = leftPanel.getPreprocessingPanel();
+        ThresholdingPanel tp = leftPanel.getThresholdingPanel();
+
+        //leftPanel.goToPrevStep(); // Delegate to LeftPanel
+
 
         nextButton.addActionListener(e -> {
             if(leftPanel.isProcessing()) return;
+            
+            //leftPanel.goToNextStep();
+
             ppp.setVisible(false);
+            tp.setVisible(true);
+            tp.updateThresholdLogic();
+            
             prevButton.setEnabled(true);
             nextButton.setEnabled(false);
             revalidate();
@@ -47,7 +57,10 @@ public class FooterLeftPanel extends JPanel{
 
         prevButton.addActionListener(e -> {
             if(leftPanel.isProcessing()) return;
+            //leftPanel.goToNextStep();
+
             ppp.setVisible(true);
+            tp.setVisible(false);
             prevButton.setEnabled(false);
             nextButton.setEnabled(true);
             revalidate();

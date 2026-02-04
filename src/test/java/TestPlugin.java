@@ -2,6 +2,7 @@ import javax.swing.WindowConstants;
 
 import mainGUI.MainGUI_LDC;
 import net.imagej.ImageJ;
+import net.imagej.patcher.LegacyInjector;
 
 /**
  * Simply creates a new {@link ImageJ} interface, containing aswell the plugin content (from src/test/java).<br>
@@ -10,6 +11,7 @@ import net.imagej.ImageJ;
 public class TestPlugin {
 
 	public static void main(final String[] args) {
+		LegacyInjector.preinit();
 		final ImageJ ij = new ImageJ();
 		ij.launch(args);
 		
