@@ -14,6 +14,7 @@ import mainGUI.MainGUI_LDC;
 import mainGUI.panels.subpanels.leftpanel.FooterLeftPanel;
 import mainGUI.panels.subpanels.leftpanel.ImageSourcePanel;
 import mainGUI.panels.subpanels.leftpanel.PreprocessingPanel;
+import mainGUI.panels.subpanels.leftpanel.ThresholdingPanel;
 
 /**
  * The left side of the plugin main GUI.
@@ -39,11 +40,16 @@ public class LeftPanel extends JPanel {
     // Layout Containers
     private ImageSourcePanel imageSourcePanel;
     private PreprocessingPanel preprocessingPanel;
+    private ThresholdingPanel thresholdingPanel;
+    
     private FooterLeftPanel footerLeftPanel;
 
     // State Flags
-    private volatile boolean isProcessing = false; 
-    private boolean preprocessingDone = false;
+    private volatile boolean isProcessing = false; 	//it's false when no img is selected or a task is running to partially disable the interface
+    private boolean preprocessingDone = false;  
+  
+    // State tracking
+    private int currentStepIndex = 0; // 0 = Preprocessing, 1 = Thresholding 
 
     /**
      * Constructs the LeftPanel, by initializing the main layout and initializing + assembling the sub-panels.
@@ -61,7 +67,7 @@ public class LeftPanel extends JPanel {
         JPanel mainContainer = new JPanel();
         mainContainer.setLayout(new BoxLayout(mainContainer, BoxLayout.Y_AXIS));
 
-        // ImageSourcePanel
+        // ImageSourcePanel (Always visible)
         imageSourcePanel = new ImageSourcePanel(ctx, this);
         mainContainer.add(imageSourcePanel);
         mainContainer.add(Box.createVerticalStrut(10));
@@ -69,6 +75,11 @@ public class LeftPanel extends JPanel {
         // PreprocessingPanel
         preprocessingPanel = new PreprocessingPanel(ctx, this);
         mainContainer.add(preprocessingPanel);
+        
+        //Thresholding - Initially Hidden
+        thresholdingPanel = new ThresholdingPanel(ctx, this);
+        thresholdingPanel.setVisible(false); // Hidden by default
+        mainContainer.add(thresholdingPanel);
         
         // FooterLeftPanel
         footerLeftPanel = new FooterLeftPanel(ctx, this);
@@ -84,6 +95,9 @@ public class LeftPanel extends JPanel {
     
     /** @return The {@link PreprocessingPanel} JPanel (the top sub-panel) */
     public PreprocessingPanel getPreprocessingPanel() { return preprocessingPanel; }
+    
+    /** @return The {@link ThresholdingPanel} JPanel (next page's sub-panel) */
+    public ThresholdingPanel getThresholdingPanel() {return thresholdingPanel;}
     
     /** @return The {@link ImageSourceControl} JPanel (the center sub-panel) */
     public ImageSourcePanel getImageSourcePanel() { return imageSourcePanel; }
@@ -119,13 +133,19 @@ public class LeftPanel extends JPanel {
      * Enables (or disables) the footer's 'Next' button. Delegates the operation to its sub-panel.
      * @param enabled true : enables, false : disables
      */
-    public void setNextButtonEnabled(boolean enabled) { footerLeftPanel.setNextButtonEnabled(enabled); }
+    public void setNextButtonEnabled(boolean enabled) { 
+    	//goToNextStep();
+    	footerLeftPanel.setNextButtonEnabled(enabled); 
+    }
     
     /**
      * Enables (or disables) the footer's 'Prev' button. Delegates the operation to its sub-panel.
      * @param enabled true : enables, false : disables
      */
-    public void setPrevButtonEnabled(boolean enabled) { footerLeftPanel.setPrevButtonEnabled(enabled); }
+    public void setPrevButtonEnabled(boolean enabled) { 
+    	//goToPrevStep();
+    	footerLeftPanel.setPrevButtonEnabled(enabled); 
+    }
     
     
     // =========================================================================
@@ -141,6 +161,42 @@ public class LeftPanel extends JPanel {
     	return img; 
     }
     
+    // =========================================================================
+    // Navigation Logic
+    // =========================================================================
+    
+	  public void goToNextStep() {
+        if (currentStepIndex == 0) {
+            // Switch: Preprocessing -> Thresholding
+            preprocessingPanel.setVisible(false);
+            if(thresholdingPanel != null) {
+                thresholdingPanel.setVisible(true);
+                thresholdingPanel.updateThresholdLogic(); // Trigger preview for default method
+            }else {
+            	System.out.println("thresholdingPanel null");
+            }
+
+            currentStepIndex = 1;
+            
+            // Update Footer Buttons
+            footerLeftPanel.setPrevButtonEnabled(true);
+            footerLeftPanel.setNextButtonEnabled(false); // No step 2 yet
+        }
+    }
+	
+	  public void goToPrevStep() {
+        if (currentStepIndex == 1) {
+            // Switch: Thresholding -> Preprocessing
+            thresholdingPanel.setVisible(false);
+            preprocessingPanel.setVisible(true);
+            currentStepIndex = 0;
+            
+            // Update Footer Buttons
+            footerLeftPanel.setPrevButtonEnabled(false);
+            footerLeftPanel.setNextButtonEnabled(true);
+        }
+    }
+	
     // =========================================================================
     // Setting the original ImageProcessor
     // =========================================================================

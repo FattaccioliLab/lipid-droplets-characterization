@@ -48,7 +48,7 @@ public class AnalysisSettings {
 	
 	// Threshold range
 	public final static int DFL_THRESHOLD_MIN_VALUE = 0;
-	public final static int DFL_THRESHOLD_MAX_VALUE = 1585;
+	public final static int DFL_THRESHOLD_MAX_VALUE = 255;
 	private int thresholdMinValue = DFL_THRESHOLD_MIN_VALUE;
 	private int thresholdMaxValue = DFL_THRESHOLD_MAX_VALUE;
 	
@@ -157,13 +157,10 @@ public class AnalysisSettings {
 	// Threshold range
 	public int getThresholdMinValue() { return thresholdMinValue; }
 	public void setThresholdMinValue(int thresholdMinValue) { 
-		if (thresholdMinValue < 0) throw new IllegalArgumentException(Integer.toString(thresholdMinValue)+"must be positive");
-		if (thresholdMinValue > this.thresholdMaxValue) throw new IllegalArgumentException(Integer.toString(thresholdMinValue)+"must be less (or equal) than max threshold value");
 		this.thresholdMinValue = thresholdMinValue;
 	}
 	public int getThresholdMaxValue() { return thresholdMaxValue; }
 	public void setThresholdMaxValue(int thresholdMaxValue) { 
-		if (thresholdMaxValue < this.thresholdMinValue) throw new IllegalArgumentException(Integer.toString(thresholdMaxValue)+"must be greater (or equal) than min threshold value");
 		this.thresholdMaxValue = thresholdMaxValue;
 	}
 	

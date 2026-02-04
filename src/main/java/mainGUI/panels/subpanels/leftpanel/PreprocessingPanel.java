@@ -142,7 +142,7 @@ public class PreprocessingPanel extends JPanel{
 	    }
 	    loadingLabel.setVisible(false);
 	    
-	    // Cancel Button (Small Red 'X' or text)
+	    // Cancel Button
 	    cancelButton = new JButton("Cancel");
 	    cancelButton.setMargin(new Insets(0, 5, 0, 5)); // Compact
 	    cancelButton.setForeground(Color.RED);

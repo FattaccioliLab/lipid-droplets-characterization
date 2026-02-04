@@ -98,8 +98,13 @@ public class ImageSourcePanel extends JPanel {
      * Updates UI enable/disable states based on image presence and processing status.
      */
     private void startImageWatcher() {
+    	
         Timer imageWatcher = new Timer(300, e -> {
             if (leftPanel.isProcessing()) return;
+            
+         	// Check if the other panels are initialized yet
+            if ((leftPanel.getPreprocessingPanel() == null) ||
+            		(leftPanel.getThresholdingPanel() == null)) return;
 
             ImagePlus img = leftPanel.updateAndGetImg();
             boolean hasImage = (img != null);
@@ -117,8 +122,13 @@ public class ImageSourcePanel extends JPanel {
                 : "<html><center>No image opened.<br>Please open one.</center></html>");
 
             PreprocessingPanel ppp = leftPanel.getPreprocessingPanel();
+            ThresholdingPanel tp = leftPanel.getThresholdingPanel();
+
             ppp.enableUIComponents(hasImage, false);
+            tp.enableUIComponents(hasImage);
+
             leftPanel.setNextButtonEnabled(hasImage && !ppp.isVisible() == false);
+            leftPanel.setPrevButtonEnabled(hasImage && !tp.isVisible()==false);
         });
         imageWatcher.start();
     }

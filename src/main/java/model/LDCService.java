@@ -72,6 +72,23 @@ public interface LDCService extends SciJavaService {
 	public boolean thresholdGlobalEnabled();
 	public void setThresholdGlobal(boolean thresholdGlobal);
 	
+	/** Preview manual threshold on the image */
+    public void previewManualThreshold(ImagePlus imp);
+    
+    /** * Preview auto threshold. 
+     * @return double[] {min, max} calculated.
+     */
+    public double[] previewAutoThreshold(ImagePlus imp, String method, boolean darkBackground);
+    
+    /** Apply final conversion to mask */
+    public boolean applyThreshold(ImagePlus imp);
+    public void resetThreshold(ImagePlus imp);
+    
+    public void setThresholdMinValue(int value);
+    public void setThresholdMaxValue(int value);
+    
+    public void setThresholdMethod(String method);
+	
     // ====================================
     // Binary mask morphological operations
     // ====================================

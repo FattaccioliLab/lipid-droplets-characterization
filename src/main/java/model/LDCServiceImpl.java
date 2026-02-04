@@ -15,6 +15,7 @@ import ij.WindowManager;
 import ij.process.ImageProcessor;
 import model.leftpanel.ImageSourceManager;
 import model.leftpanel.PreprocessingManager;
+import model.leftpanel.ThresholdingManager;
 import model.rightpanel.MeasurementsManager;
 import model.workers.preprocessing.PreprocessingPreviewMedianWorker;
 
@@ -30,7 +31,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	// For the LeftPanel's sub-panels operations.
 	private ImageSourceManager imageSourceManager;
 	private PreprocessingManager preprocessingManager;
-	
+	private ThresholdingManager thresholdingManager;
+  
 	// For the RightPanel's sub-panels operations.
 	private MeasurementsManager measurementsManager;
 	
@@ -39,6 +41,7 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 		settings = new AnalysisSettings(); 
 		imageSourceManager = new ImageSourceManager();
 		preprocessingManager = new PreprocessingManager();
+		thresholdingManager = new ThresholdingManager();
 		measurementsManager = new MeasurementsManager();
 	}
 	
@@ -84,6 +87,49 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 
     @Override public boolean thresholdGlobalEnabled() { return settings.thresholdGlobalEnabled(); }
     @Override public void setThresholdGlobal(boolean thresholdGlobal) { settings.setThresholdGlobal(thresholdGlobal); }
+    
+    @Override
+    public void previewManualThreshold(ImagePlus imp) {
+    	//i tried to add darkBG in manual mode, but it seems unnecessary, 
+    	//user has full control with sliders to change the backround into dark or red
+    	
+    	/*int maxVal;
+    	int minVal;
+    	if(isDark) {	//have to invert
+    		maxVal = AnalysisSettings.DFL_THRESHOLD_MAX_VALUE;
+    		minVal = settings.getThresholdMaxValue();
+    	}else {
+    		maxVal=settings.getThresholdMaxValue();
+    		minVal=settings.getThresholdMinValue();
+    	}*/
+        thresholdingManager.setManualThreshold(imp, settings.getThresholdMinValue(), settings.getThresholdMaxValue());
+    }
+
+    @Override
+    public double[] previewAutoThreshold(ImagePlus imp, String method, boolean darkBackground) {
+        return thresholdingManager.setAutoThreshold(imp, method, darkBackground);
+    }
+
+    @Override
+    public boolean applyThreshold(ImagePlus imp) {
+        return thresholdingManager.applyThreshold(imp);
+    }
+    
+    @Override
+    public void resetThreshold(ImagePlus imp) {
+    	thresholdingManager.resetThreshold(imp);
+    }
+    
+    public void setThresholdMinValue(int value) {
+    	settings.setThresholdMinValue(value);
+    }
+    public void setThresholdMaxValue(int value) {
+    	settings.setThresholdMaxValue(value);
+    }
+    
+    public void setThresholdMethod(String method) {
+    	settings.setThresholdMethod(method);
+    }
 
     // ====================================
     // Binary mask morphological operations
