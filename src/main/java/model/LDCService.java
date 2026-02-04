@@ -151,6 +151,7 @@ public interface LDCService extends SciJavaService {
 	
 	/**
 	 * Applies contrast enhancement to the given {@link ImageProcessor}.
+	 * @param ip The image processor to modify.
 	 * @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, double)
 	 */
 	public void applyEnhanceContrast(ImageProcessor ip);
