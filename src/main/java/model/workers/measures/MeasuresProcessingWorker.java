@@ -20,7 +20,7 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     
     private boolean showAreaEnabled;
     private boolean showMeanEnabled;
-    private boolean showEquivalentDiameterEnabled;
+    private boolean showMedianEnabled;
     private boolean showIntegratedDensityEnabled;
     private boolean showCircularityEnabled;
     private boolean excludeOnEdgesEnabled;
@@ -28,16 +28,16 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     /**
      * Creates a {@code MeasuresProcessingWorker}.
      * @param showAreaEnabled True if the 'Area' column must be shown in the results.
-     * @param showEquivalentDiameterEnabled True if the 'EquivalentDiameter' column must be shown in the results.
+     * @param showMedianEnabled True if the 'Median' column must be shown in the results.
      * @param showMeanEnabled True if the 'Mean' column must be shown in the results.
      * @param showIntegratedDensityEnabled True if the 'IntegratedDensity' column must be shown in the results.
      * @param showCircularityEnabled True if the 'Circularity' column is shown must be the results.
      * @param excludeOnEdgesEnabled Particle Analyzer option.
      */
-    public MeasuresProcessingWorker(boolean showAreaEnabled, boolean showEquivalentDiameterEnabled, boolean showMeanEnabled,
+    public MeasuresProcessingWorker(boolean showAreaEnabled, boolean showMedianEnabled, boolean showMeanEnabled,
     		boolean showIntegratedDensityEnabled, boolean showCircularityEnabled, boolean excludeOnEdgesEnabled) {
     	this.showAreaEnabled = showAreaEnabled;
-    	this.showEquivalentDiameterEnabled = showEquivalentDiameterEnabled;
+    	this.showMedianEnabled = showMedianEnabled;
     	this.showMeanEnabled = showMeanEnabled;
     	this.showIntegratedDensityEnabled = showIntegratedDensityEnabled;
     	this.showCircularityEnabled = showCircularityEnabled;
@@ -53,11 +53,11 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	if (showAreaEnabled) {
     		measurements += Measurements.AREA;
     	}
-    	if (showEquivalentDiameterEnabled) {
-    		measurements += Measurements.SHAPE_DESCRIPTORS + Measurements.FERET;
-    	}
     	if (showMeanEnabled) {
     		measurements += Measurements.MEAN;
+    	}
+    	if (showMedianEnabled) {
+    		measurements += Measurements.MEDIAN;
     	}
     	if (showIntegratedDensityEnabled) {
     		measurements += Measurements.INTEGRATED_DENSITY;

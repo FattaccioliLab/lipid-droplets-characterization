@@ -33,39 +33,20 @@ public class FooterLeftPanel extends JPanel{
         prevButton = new JButton("Prev");
         prevButton.setEnabled(false);
         nextButton = new JButton("Next");
-        
-        PreprocessingPanel ppp = leftPanel.getPreprocessingPanel();
-        ThresholdingPanel tp = leftPanel.getThresholdingPanel();
-
-        //leftPanel.goToPrevStep(); // Delegate to LeftPanel
-
 
         nextButton.addActionListener(e -> {
             if(leftPanel.isProcessing()) return;
+            leftPanel.goToNextStep();
             
-            //leftPanel.goToNextStep();
-
-            ppp.setVisible(false);
-            tp.setVisible(true);
-            tp.updateThresholdLogic();
-            
-            prevButton.setEnabled(true);
-            nextButton.setEnabled(false);
-            revalidate();
-            repaint();
         });
+        nextButton.setFocusPainted(false);
 
         prevButton.addActionListener(e -> {
             if(leftPanel.isProcessing()) return;
-            //leftPanel.goToNextStep();
-
-            ppp.setVisible(true);
-            tp.setVisible(false);
-            prevButton.setEnabled(false);
-            nextButton.setEnabled(true);
-            revalidate();
-            repaint();
+            leftPanel.goToPrevStep();
+            
         });
+        prevButton.setFocusPainted(false);
 
         add(prevButton);
         add(nextButton);

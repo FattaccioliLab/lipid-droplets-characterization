@@ -11,6 +11,7 @@ import org.scijava.Context;
 import ij.ImagePlus;
 import ij.WindowManager;
 import mainGUI.MainGUI_LDC;
+import mainGUI.panels.subpanels.leftpanel.ParticleAnalysisParamsPanel;
 import mainGUI.panels.subpanels.leftpanel.FooterLeftPanel;
 import mainGUI.panels.subpanels.leftpanel.ImageSourcePanel;
 import mainGUI.panels.subpanels.leftpanel.PreprocessingPanel;
@@ -41,7 +42,7 @@ public class LeftPanel extends JPanel {
     private ImageSourcePanel imageSourcePanel;
     private PreprocessingPanel preprocessingPanel;
     private ThresholdingPanel thresholdingPanel;
-    
+    private ParticleAnalysisParamsPanel particleAnalysisParamsPanel;
     private FooterLeftPanel footerLeftPanel;
 
     // State Flags
@@ -80,6 +81,11 @@ public class LeftPanel extends JPanel {
         thresholdingPanel = new ThresholdingPanel(ctx, this);
         thresholdingPanel.setVisible(false); // Hidden by default
         mainContainer.add(thresholdingPanel);
+        
+        //Particle analysis params - Initially Hidden
+        particleAnalysisParamsPanel = new ParticleAnalysisParamsPanel(ctx, this);
+        particleAnalysisParamsPanel.setVisible(false); // Hidden by default
+        mainContainer.add(particleAnalysisParamsPanel);
         
         // FooterLeftPanel
         footerLeftPanel = new FooterLeftPanel(ctx, this);
@@ -176,18 +182,24 @@ public class LeftPanel extends JPanel {
         if (currentStepIndex == 0) {
             // Switch: Preprocessing -> Thresholding
             preprocessingPanel.setVisible(false);
-            if(thresholdingPanel != null) {
-                thresholdingPanel.setVisible(true);
-                thresholdingPanel.updateThresholdLogic(); // Trigger preview for default method
-            }else {
-            	System.out.println("thresholdingPanel null");
-            }
+            thresholdingPanel.setVisible(true);
+            thresholdingPanel.updateThresholdLogic(); // Trigger preview for default method
 
             currentStepIndex = 1;
             
             // Update Footer Buttons
             footerLeftPanel.setPrevButtonEnabled(true);
-            footerLeftPanel.setNextButtonEnabled(false); // No step 2 yet
+            footerLeftPanel.setNextButtonEnabled(true);
+            
+        } else if (currentStepIndex == 1) {
+        	// Switch: Thresholding -> Particle analysis parameters
+        	thresholdingPanel.setVisible(false);
+            particleAnalysisParamsPanel.setVisible(true);
+            
+            currentStepIndex = 2;
+            
+            // Update Footer Buttons
+            footerLeftPanel.setNextButtonEnabled(false); // Nothing after
         }
     }
 	
@@ -200,7 +212,16 @@ public class LeftPanel extends JPanel {
             
             // Update Footer Buttons
             footerLeftPanel.setPrevButtonEnabled(false);
-            footerLeftPanel.setNextButtonEnabled(true);
+            
+        } else if (currentStepIndex == 2) {
+        	// Switch: Particle analysis parameters -> Thresholding
+        	particleAnalysisParamsPanel.setVisible(false);
+        	thresholdingPanel.setVisible(true);
+            currentStepIndex = 1;
+        	
+        	// Update Footer Buttons
+            footerLeftPanel.setPrevButtonEnabled(true);
+        	footerLeftPanel.setNextButtonEnabled(true);
         }
     }
 	
@@ -234,6 +255,7 @@ public class LeftPanel extends JPanel {
     public void resetPanels() {
     	preprocessingPanel.resetUIComponents();
     	thresholdingPanel.resetUIComponents();
+    	particleAnalysisParamsPanel.resetUIComponents();
     	// add here the resetUIComponents method call for the incoming threshold and measurement panels 
     }
     

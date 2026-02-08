@@ -143,9 +143,6 @@ public class ImageSourcePanel extends JPanel {
 
             ppp.enableUIComponents(hasImage, false);
             tp.enableUIComponents(hasImage);
-
-            leftPanel.setNextButtonEnabled(hasImage && !ppp.isVisible() == false);
-            leftPanel.setPrevButtonEnabled(hasImage && !tp.isVisible()==false);
         });
         imageWatcher.start();
     }

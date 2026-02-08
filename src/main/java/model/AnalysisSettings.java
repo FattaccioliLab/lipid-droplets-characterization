@@ -97,7 +97,7 @@ public class AnalysisSettings {
 	
 	public final static boolean DFL_SHOWING_OPT = false;
 	private boolean showArea = DFL_SHOWING_OPT;
-	private boolean showEquivalentDiameter = DFL_SHOWING_OPT;
+	private boolean showMedian = DFL_SHOWING_OPT;
 	private boolean showMean = DFL_SHOWING_OPT;
 	private boolean showIntegratedDensity = DFL_SHOWING_OPT;
 	private boolean showCircularity = DFL_SHOWING_OPT;
@@ -236,8 +236,8 @@ public class AnalysisSettings {
 	public boolean showAreaEnabled() { return showArea; }
 	public void setShowArea(boolean showArea) { this.showArea = showArea; }
 	
-	public boolean showEquivalentDiameterEnabled() { return showEquivalentDiameter; }
-	public void setShowEquivalentDiameter(boolean showEquivalentDiameter) { this.showEquivalentDiameter = showEquivalentDiameter; }
+	public boolean showMedianEnabled() { return showMedian; }
+	public void setShowMedian(boolean showMedian) { this.showMedian = showMedian; }
 
 	public boolean showMeanEnabled() { return showMean; }
 	public void setShowMean(boolean showMean) { this.showMean = showMean; }
