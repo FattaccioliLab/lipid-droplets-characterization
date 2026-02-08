@@ -8,6 +8,7 @@ import ij.WindowManager;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.ParticleAnalyzer;
+import ij.plugin.frame.RoiManager;
 
 /**
  * {@link SwingWorker} that take care of processing measurements and showing them.
@@ -102,8 +103,15 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	}
     	
     	if (success) {
-    	 	rt.show("Results");
+    	 	//rt.show("Results");
     	}
+    	
+//		close the ROI manager window that appear with the ParticlesAnalyzer WIP
+//    	RoiManager rm = RoiManager.getInstance();
+//        if (rm != null) {
+//            rm.close();
+//        }
+    	
     	return null;
 	}
 	
