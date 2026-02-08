@@ -33,6 +33,8 @@ public class ImageSourcePanel extends JPanel {
 	
 	private JLabel imageStatusLabel;
 	
+	private JLabel infosNbSlicesLabel;
+	
 	public ImageSourcePanel(Context ctx, LeftPanel leftPanel) {
 		
 		// Initialization of the panel layout
@@ -44,6 +46,11 @@ public class ImageSourcePanel extends JPanel {
 		
 	    imageStatusLabel = new JLabel("<html><center>No image opened.<br>Please open one.</center></html>", SwingConstants.CENTER);
 	    imageStatusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    
+	    // Current number of slices considered / original number of slices
+	    
+	    infosNbSlicesLabel = new JLabel("", SwingConstants.CENTER);
+	    infosNbSlicesLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 	    // Replace image button
 	    
@@ -56,6 +63,7 @@ public class ImageSourcePanel extends JPanel {
 	        		ImagePlus img = leftPanel.updateAndGetImg();
 	        		leftPanel.setOriginalImage(img.duplicate()); // New original ImageProcessor when replacing the current image.
 	        		leftPanel.resetPanels();
+	        		updateUIInfosNbSlices();
 	        	} catch (IllegalArgumentException error) {
 	        		IJ.showMessage("Please open an image first (File > Open)");
 	        	}
@@ -73,6 +81,7 @@ public class ImageSourcePanel extends JPanel {
 	    			ImagePlus img = leftPanel.updateAndGetImg();
 	    			leftPanel.setOriginalImage(img.duplicate()); // New original ImageProcessor when replacing the current image.
 	    			leftPanel.resetPanels();
+	    			updateUIInfosNbSlices();
 	    		}catch (IllegalArgumentException error) {
 	    			IJ.showMessage("Please open an image first (File > Open)");
 	    		}catch (IllegalStateException error) {
@@ -83,6 +92,8 @@ public class ImageSourcePanel extends JPanel {
 
 	    add(Box.createVerticalStrut(5));
 	    add(imageStatusLabel);
+	    add(Box.createVerticalStrut(5));
+	    add(infosNbSlicesLabel);
 	    add(Box.createVerticalStrut(10));
 	    add(replaceImageButton);
 	    add(Box.createVerticalStrut(10));
@@ -110,12 +121,18 @@ public class ImageSourcePanel extends JPanel {
             boolean hasImage = (img != null);
             
             // If an image is opened, and there is no original image, its ImageProcessor copy becomes the original ImageProcessor.
-            if (hasImage && leftPanel.getOriginalImage() == null) 
+            if (hasImage && leftPanel.getOriginalImage() == null) {
             	leftPanel.setOriginalImage(img.duplicate());
+            	updateUIInfosNbSlices();
+            }
             
             // If there is no current image, the original ImageProcessor within the MainGui is set null.
-            if (!hasImage)
+            if (!hasImage) {
             	leftPanel.setOriginalImage(null);
+            	leftPanel.resetPanels();
+            	updateUIInfosNbSlices();
+            }
+
 
             imageStatusLabel.setText(hasImage 
                 ? "<html><center>Image opened:<br>" + img.getTitle() + "</center></html>"
@@ -131,6 +148,26 @@ public class ImageSourcePanel extends JPanel {
             leftPanel.setPrevButtonEnabled(hasImage && !tp.isVisible()==false);
         });
         imageWatcher.start();
+    }
+    
+    /**
+     * Updates the {@link JLabel} containing the number of current considered slices / original slices.
+     */
+    public void updateUIInfosNbSlices() {
+    	int nbOriginalSlices = 0;
+    	int nbCurrentSlices = 0;
+    	
+    	ImagePlus originalImg = leftPanel.getOriginalImage();
+    	if (originalImg != null) nbOriginalSlices = originalImg.getStackSize();
+    	
+    	ImagePlus currentImg = leftPanel.updateAndGetImg();
+    	if (currentImg != null) nbCurrentSlices = currentImg.getStackSize();
+    	
+    	if (nbOriginalSlices == 0) { // If there is no originl image (= no image currently considered)
+    		infosNbSlicesLabel.setText("");
+    	} else {
+    		infosNbSlicesLabel.setText("Number of slices considered : "+ nbCurrentSlices +"/" + nbOriginalSlices);
+    	}
     }
 
 }

@@ -161,6 +161,13 @@ public class LeftPanel extends JPanel {
     	return img; 
     }
     
+    /**
+     * Updates the {@link ImageSourcePanel} with the current number of slices considered / number of original slices.
+     */
+    public void updateUIInfosNbSlices() {
+    	imageSourcePanel.updateUIInfosNbSlices();
+    }
+    
     // =========================================================================
     // Navigation Logic
     // =========================================================================
@@ -198,12 +205,12 @@ public class LeftPanel extends JPanel {
     }
 	
     // =========================================================================
-    // Setting the original ImageProcessor
+    // Setting the original ImagePlus
     // =========================================================================
     
     /**
      * Set the original {@link ImagePlus}, before any process on it.
-     * @param ip The original {@link ImagePlus}.
+     * @param originalImg The original {@link ImagePlus}.
      */
     public void setOriginalImage(ImagePlus originalImg) {
     	mainGUI.setOriginalImage(originalImg);

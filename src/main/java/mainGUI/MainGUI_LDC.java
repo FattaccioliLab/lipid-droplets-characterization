@@ -31,7 +31,7 @@ public class MainGUI_LDC extends JFrame {
     private final JPanel leftContent;
     private final JPanel rightContent;
     
-    // Reference to the original ImageProcessor
+    // Reference to the original ImagePlus
     ImagePlus originalImage = null;
     
     public MainGUI_LDC(final Context ctx) {
