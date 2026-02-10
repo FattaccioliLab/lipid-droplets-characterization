@@ -26,7 +26,7 @@ public class FooterLeftPanel extends JPanel{
 		// Initialization of the panel layout
 		super(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         setAlignmentX(Component.LEFT_ALIGNMENT);
-        setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
         
         ctx.inject(this);
 

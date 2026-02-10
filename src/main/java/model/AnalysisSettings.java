@@ -75,9 +75,9 @@ public class AnalysisSettings {
     // Analyse particles
     // =================
 
-	// Particles sizes (px²)
+	// Particle size (px)
 	public final static double DFL_ANALYSE_MIN_SIZE = 0;
-	public final static double DFL_ANALYSE_MAX_SIZE = -1; // -1 represents infinity
+	public final static double DFL_ANALYSE_MAX_SIZE = Double.MAX_VALUE; // infinity
 	private double analyseMinSize = DFL_ANALYSE_MIN_SIZE;
 	private double analyseMaxSize = DFL_ANALYSE_MAX_SIZE;
 	

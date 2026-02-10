@@ -20,6 +20,8 @@ import net.imagej.display.ImageDisplayService;
 
 @SuppressWarnings("serial")
 public class RightPanel extends JPanel {
+	
+	private LeftPanel leftPanel;
 
 	@Parameter
 	private DatasetIOService datasetIOService;
@@ -39,10 +41,10 @@ public class RightPanel extends JPanel {
     @Parameter
     private LDCService selectedSettings;
 	
-    public RightPanel(Context ctx) {
+    public RightPanel(Context ctx, LeftPanel leftPanel) {
     	super();
-    	
     	ctx.inject(this);
+    	this.leftPanel = leftPanel;
  
         // measures treatment panel
         JPanel actionPanel = new JPanel();
@@ -51,6 +53,7 @@ public class RightPanel extends JPanel {
         // show measures button
         JButton resultsButton = new JButton("show results");
         resultsButton.addActionListener(e -> {
+        	leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
         	SwingWorker<Void,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker();
         	measuresWorker.execute();
         });
@@ -59,6 +62,7 @@ public class RightPanel extends JPanel {
         // generate histograms button
         JButton histogramsButton = new JButton("histograms");
         histogramsButton.addActionListener(e -> {
+        	leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
         	// TODO
         });
         actionPanel.add(histogramsButton);

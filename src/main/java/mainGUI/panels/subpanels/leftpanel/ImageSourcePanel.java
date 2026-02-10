@@ -39,7 +39,7 @@ public class ImageSourcePanel extends JPanel {
 		
 		// Initialization of the panel layout
 		super();
-		PanelUtils.createVerticalPanel(this, "Image Source", 170);
+		PanelUtils.createVerticalPanel(this, "Image Source", 75);
 		
 		ctx.inject(this);
 		this.leftPanel = leftPanel;
@@ -138,11 +138,7 @@ public class ImageSourcePanel extends JPanel {
                 ? "<html><center>Image opened:<br>" + img.getTitle() + "</center></html>"
                 : "<html><center>No image opened.<br>Please open one.</center></html>");
 
-            PreprocessingPanel ppp = leftPanel.getPreprocessingPanel();
-            ThresholdingPanel tp = leftPanel.getThresholdingPanel();
-
-            ppp.enableUIComponents(hasImage, false);
-            tp.enableUIComponents(hasImage);
+            leftPanel.enablePanels(hasImage);
         });
         imageWatcher.start();
     }

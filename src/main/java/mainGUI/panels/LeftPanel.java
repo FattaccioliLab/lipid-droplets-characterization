@@ -83,7 +83,7 @@ public class LeftPanel extends JPanel {
         mainContainer.add(thresholdingPanel);
         
         //Particle analysis params - Initially Hidden
-        particleAnalysisParamsPanel = new ParticleAnalysisParamsPanel(ctx, this);
+        particleAnalysisParamsPanel = new ParticleAnalysisParamsPanel(ctx);
         particleAnalysisParamsPanel.setVisible(false); // Hidden by default
         mainContainer.add(particleAnalysisParamsPanel);
         
@@ -99,18 +99,20 @@ public class LeftPanel extends JPanel {
     // Sub-panel getters
     // =========================================================================
     
-    /** @return The {@link PreprocessingPanel} JPanel (the top sub-panel) */
+    /** @return The {@link ImageSourceControl} JPanel (the top sub-panel) */
+    public ImageSourcePanel getImageSourcePanel() { return imageSourcePanel; }
+    
+    /** @return The {@link PreprocessingPanel} JPanel (the 1st center sub-panel) */
     public PreprocessingPanel getPreprocessingPanel() { return preprocessingPanel; }
     
-    /** @return The {@link ThresholdingPanel} JPanel (next page's sub-panel) */
+    /** @return The {@link ThresholdingPanel} JPanel (the 2nd center sub-panel) */
     public ThresholdingPanel getThresholdingPanel() {return thresholdingPanel;}
     
-    /** @return The {@link ImageSourceControl} JPanel (the center sub-panel) */
-    public ImageSourcePanel getImageSourcePanel() { return imageSourcePanel; }
+    /** @return The {@link ParticleAnalysisParamsPanel} JPanel (the 3rd center sub-panel) */
+    public ParticleAnalysisParamsPanel getParticleAnalysisParamsPanel() { return particleAnalysisParamsPanel; }
     
     /** @return The {@link FooterLeftPanel} JPanel (the bottom sub-panel) */
     public FooterLeftPanel getFooterLeftPanel() { return footerLeftPanel; }
-    
     
     // =========================================================================
     // States getters / setters
@@ -246,17 +248,28 @@ public class LeftPanel extends JPanel {
     }
     
     // =========================================================================
-    // Reseting panels
+    // Enabling/Disabling and reseting panels
     // =========================================================================
     
     /**
-     * Reset the image treatment panels, for when the image is reseted.
+     * Enable or disable UI components of sub panels.
+     * @param enable true : enable, false : disable
+     */
+    public void enablePanels(boolean enable) {
+        preprocessingPanel.enableUIComponents(enable, false);
+        thresholdingPanel.enableUIComponents(enable);
+        particleAnalysisParamsPanel.enableUIComponents(enable);
+        // add here the enableUIComponents method call for the incoming sub panels
+    }
+    
+    /**
+     * Reset sub panels, for when the image is reseted.
      * */
     public void resetPanels() {
     	preprocessingPanel.resetUIComponents();
     	thresholdingPanel.resetUIComponents();
     	particleAnalysisParamsPanel.resetUIComponents();
-    	// add here the resetUIComponents method call for the incoming threshold and measurement panels 
+    	// add here the resetUIComponents method call for the incoming sub panels
     }
     
     
