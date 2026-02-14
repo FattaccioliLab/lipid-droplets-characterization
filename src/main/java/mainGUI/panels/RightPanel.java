@@ -1,19 +1,24 @@
 package mainGUI.panels;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTable;
-import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
 import org.scijava.Context;
@@ -21,6 +26,8 @@ import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.ui.UIService;
 
+import ij.IJ;
+import ij.ImagePlus;
 import ij.measure.ResultsTable;
 
 import org.scijava.event.EventService;
@@ -51,8 +58,9 @@ public class RightPanel extends JPanel {
     @Parameter
     private LDCService selectedSettings;
 	
-    // container panel for the data table
-    private JPanel viewPanel;
+    private JPanel viewPanel; // container panel for the data table
+    
+    private ResultsTable currentTable; // reference for the table currently shown 
     
     public RightPanel(Context ctx) {
     	super();
@@ -61,7 +69,8 @@ public class RightPanel extends JPanel {
     	
     	ctx.inject(this);
     	
-    	JPanel controlBar = new JPanel();
+    	JPanel headerPanel = new JPanel();
+        JPanel footerPanel = new JPanel();
     	
         // show measures button
         JButton resultsButton = new JButton("show results");
@@ -82,30 +91,56 @@ public class RightPanel extends JPanel {
         	
         	measuresWorker.execute();
         });
-        controlBar.add(resultsButton);
+        headerPanel.add(resultsButton);
         
         // generate histograms button
         JButton histogramsButton = new JButton("histograms");
         histogramsButton.addActionListener(e -> {
-        	// TODO
+        	// check if the table is null or empty
+        	if (currentTable == null || currentTable.getCounter() == 0) {
+        		IJ.showMessage("No data to plot");
+        		return ;
+        	}
+        	
+        	List<ImagePlus> plots = selectedSettings.generateHistograms(currentTable);
+        	showHistograms(plots);
         });
-        controlBar.add(histogramsButton);
+        headerPanel.add(histogramsButton);
         
         // generate statistics button
         JButton statisticButton = new JButton("Statistics");
         statisticButton.addActionListener(e -> {
-        	// TODO
+        	showTable(selectedSettings.calculateSummaryTable(currentTable));
         });
-    	controlBar.add(statisticButton);
+    	footerPanel.add(statisticButton);
     	
     	// export csv button
         JButton exportButton = new JButton("export");
         exportButton.addActionListener(e -> {
-        	// TODO
+        	// check if the table is null or empty
+        	if (currentTable == null || currentTable.getCounter() == 0) {
+        		IJ.showMessage("No data to export.");
+        		return;
+        	}
+        	
+        	// setup file chooser window
+        	JFileChooser fileChooser = new JFileChooser();
+        	fileChooser.setDialogTitle("Save data as CSV");
+        	fileChooser.setSelectedFile(new File("Results.csv"));
+        	fileChooser.setFileFilter(new FileNameExtensionFilter("CSV Files", "csv"));
+        	int userSelection = fileChooser.showSaveDialog(this);
+        		
+        	if (userSelection == JFileChooser.APPROVE_OPTION) {
+        		// getting path
+        		String path = fileChooser.getSelectedFile().getAbsolutePath();
+        		
+        		selectedSettings.exportResultsTable(currentTable, path);
+            }
         });
-    	controlBar.add(exportButton);
+        footerPanel.add(exportButton);
     	
-    	add(controlBar, BorderLayout.NORTH);
+    	add(headerPanel, BorderLayout.NORTH);
+    	add(footerPanel, BorderLayout.SOUTH);
     	
     	// table panel initialization
     	viewPanel = new JPanel();
@@ -116,9 +151,14 @@ public class RightPanel extends JPanel {
     }
     
     
-    public void showTable(ResultsTable rt) {
+    /**
+     * Write and add show the data of a ResultsTable in the center panel of the right panel.
+     * @param rt ResutsTable
+     */
+    private void showTable(ResultsTable rt) {
     	viewPanel.removeAll(); // reseting panel
     	
+    	// check if the table is null or empty
     	if (rt == null || rt.getCounter() == 0) {
     		// there is no data yet
     		JLabel l = new JLabel("no data yet");
@@ -131,6 +171,10 @@ public class RightPanel extends JPanel {
     	}
 
     	// creation of JTable with data from the ResultsTable
+    	
+    	this.currentTable = rt; // update current table 
+
+        viewPanel.removeAll();
  
     	String[] originalHeadings = rt.getHeadings();
     	
@@ -168,6 +212,56 @@ public class RightPanel extends JPanel {
     	viewPanel.add(scrollTable, BorderLayout.CENTER);
     	
     	viewPanel.revalidate();
+        viewPanel.repaint();
+    }
+    
+    
+    /**
+     * Show histograms in the viewPanel.
+     * @param plots List of ImagePlus histograms. 
+     */
+    private void showHistograms(List<ImagePlus> plots) {
+    	viewPanel.removeAll();
+    	
+    	// check that plots isn't null or empty 
+    	if (plots == null || plots.isEmpty()) {
+    		JLabel l = new JLabel("No histograms generated.");
+    		l.setHorizontalAlignment(JLabel.CENTER);
+    		viewPanel.add(l, BorderLayout.CENTER);
+    	} else {
+    		
+    		JPanel gridPanel = new JPanel(new GridLayout(0, 1, 5, 5)); 
+    		
+    		for (ImagePlus imp : plots) {
+    			// conversion of ImagePlus to ImageIcon
+    			ImageIcon icon = new ImageIcon(imp.getImage());
+    			JLabel label = new JLabel(icon);
+    			
+    			label.setBorder(BorderFactory.createTitledBorder(imp.getTitle()));
+    			label.setHorizontalAlignment(JLabel.CENTER);
+    			
+    			// add double click listener to open histogram into a new window
+    			label.addMouseListener(new MouseAdapter() {
+    		        @Override
+    		        public void mouseClicked(MouseEvent e) {
+    		            if (e.getClickCount() == 2) {
+    		            	ImagePlus popup = imp.duplicate();
+    		                popup.setTitle(imp.getTitle());
+    		                popup.show();
+    		            }
+    		        }
+    		    });
+    			
+    			gridPanel.add(label);
+    		}
+    		
+    		JScrollPane scrollPane = new JScrollPane(gridPanel);
+    		scrollPane.getVerticalScrollBar().setUnitIncrement(16); 
+    		
+    		viewPanel.add(scrollPane, BorderLayout.CENTER);
+    	}
+
+        viewPanel.revalidate();
         viewPanel.repaint();
     }
 }
