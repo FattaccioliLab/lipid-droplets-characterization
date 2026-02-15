@@ -54,11 +54,11 @@ public class RightPanel extends JPanel {
 	@Parameter
 	private ImageDisplayService displayService;
 	
-  @Parameter
-  private EventService eventService;
+	@Parameter
+	private EventService eventService;
     
-  @Parameter
-  private LDCService selectedSettings;
+	@Parameter
+	private LDCService selectedSettings;
 
     private JPanel viewPanel; // container panel for the data table
     
@@ -66,8 +66,8 @@ public class RightPanel extends JPanel {
     
     public RightPanel(Context ctx, LeftPanel leftPanel) {
     	super();
-      ctx.inject(this);
-      this.leftPanel = leftPanel;
+    	ctx.inject(this);
+    	this.leftPanel = leftPanel;
     	
     	setLayout(new BorderLayout());
     	
@@ -77,7 +77,7 @@ public class RightPanel extends JPanel {
         // show measures button
         JButton resultsButton = new JButton("show results");
         resultsButton.addActionListener(e -> {
-          leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
+        	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
         	ResultsTable rt = ResultsTable.getResultsTable();
         	rt.reset();
@@ -100,7 +100,7 @@ public class RightPanel extends JPanel {
         // generate histograms button
         JButton histogramsButton = new JButton("histograms");
         histogramsButton.addActionListener(e -> {
-          leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
+        	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
         	// check if the table is null or empty
         	if (currentTable == null || currentTable.getCounter() == 0) {
@@ -116,6 +116,7 @@ public class RightPanel extends JPanel {
         // generate statistics button
         JButton statisticButton = new JButton("Statistics");
         statisticButton.addActionListener(e -> {
+        	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
         	showTable(selectedSettings.calculateSummaryTable(currentTable));
         });
     	footerPanel.add(statisticButton);
