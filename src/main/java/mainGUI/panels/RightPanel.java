@@ -39,6 +39,8 @@ import net.imagej.display.ImageDisplayService;
 
 @SuppressWarnings("serial")
 public class RightPanel extends JPanel {
+	
+	private LeftPanel leftPanel;
 
 	@Parameter
 	private DatasetIOService datasetIOService;
@@ -52,22 +54,22 @@ public class RightPanel extends JPanel {
 	@Parameter
 	private ImageDisplayService displayService;
 	
-    @Parameter
-    private EventService eventService;
+  @Parameter
+  private EventService eventService;
     
-    @Parameter
-    private LDCService selectedSettings;
-	
+  @Parameter
+  private LDCService selectedSettings;
+
     private JPanel viewPanel; // container panel for the data table
     
     private ResultsTable currentTable; // reference for the table currently shown 
     
-    public RightPanel(Context ctx) {
+    public RightPanel(Context ctx, LeftPanel leftPanel) {
     	super();
+      ctx.inject(this);
+      this.leftPanel = leftPanel;
     	
     	setLayout(new BorderLayout());
-    	
-    	ctx.inject(this);
     	
     	JPanel headerPanel = new JPanel();
         JPanel footerPanel = new JPanel();
@@ -75,6 +77,8 @@ public class RightPanel extends JPanel {
         // show measures button
         JButton resultsButton = new JButton("show results");
         resultsButton.addActionListener(e -> {
+          leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
+          
         	ResultsTable rt = ResultsTable.getResultsTable();
         	rt.reset();
         	SwingWorker<Void,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker();
@@ -96,6 +100,8 @@ public class RightPanel extends JPanel {
         // generate histograms button
         JButton histogramsButton = new JButton("histograms");
         histogramsButton.addActionListener(e -> {
+          leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
+          
         	// check if the table is null or empty
         	if (currentTable == null || currentTable.getCounter() == 0) {
         		IJ.showMessage("No data to plot");

@@ -137,8 +137,8 @@ public interface LDCService extends SciJavaService {
 	public boolean showAreaEnabled();
 	public void setShowArea(boolean showArea);
 	
-	public boolean showEquivalentDiameterEnabled();
-	public void setShowEquivalentDiameter(boolean showEquivalentDiameter);
+	public boolean showMedianEnabled();
+	public void setShowMedian(boolean showMedian);
 
 	public boolean showMeanEnabled();
 	public void setShowMean(boolean showMean);

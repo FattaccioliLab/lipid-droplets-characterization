@@ -19,30 +19,42 @@ import ij.plugin.frame.RoiManager;
  */
 public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     
+	private double minSize;
+	private double maxSize;
+	private double minCircularity;
+	private double maxCircularity;
+    private boolean excludeOnEdgesEnabled;
     private boolean showAreaEnabled;
     private boolean showMeanEnabled;
-    private boolean showEquivalentDiameterEnabled;
+    private boolean showMedianEnabled;
     private boolean showIntegratedDensityEnabled;
     private boolean showCircularityEnabled;
-    private boolean excludeOnEdgesEnabled;
     
     /**
      * Creates a {@code MeasuresProcessingWorker}.
+     * @param minSize minimum particle size (px).
+     * @param maxSize maximum particle size (px).
+     * @param minCircularity minimum particle circularity.
+     * @param maxCircularity maximum particle circularity.
+     * @param excludeOnEdgesEnabled Particle Analyzer option.
      * @param showAreaEnabled True if the 'Area' column must be shown in the results.
-     * @param showEquivalentDiameterEnabled True if the 'EquivalentDiameter' column must be shown in the results.
+     * @param showMedianEnabled True if the 'Median' column must be shown in the results.
      * @param showMeanEnabled True if the 'Mean' column must be shown in the results.
      * @param showIntegratedDensityEnabled True if the 'IntegratedDensity' column must be shown in the results.
      * @param showCircularityEnabled True if the 'Circularity' column is shown must be the results.
-     * @param excludeOnEdgesEnabled Particle Analyzer option.
      */
-    public MeasuresProcessingWorker(boolean showAreaEnabled, boolean showEquivalentDiameterEnabled, boolean showMeanEnabled,
-    		boolean showIntegratedDensityEnabled, boolean showCircularityEnabled, boolean excludeOnEdgesEnabled) {
+    public MeasuresProcessingWorker(double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
+    		boolean showAreaEnabled, boolean showMedianEnabled, boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled) {
+    	this.minSize = minSize;
+    	this.maxSize = maxSize;
+    	this.minCircularity = minCircularity;
+    	this.maxCircularity = maxCircularity;
+    	this.excludeOnEdgesEnabled = excludeOnEdgesEnabled;
     	this.showAreaEnabled = showAreaEnabled;
-    	this.showEquivalentDiameterEnabled = showEquivalentDiameterEnabled;
+    	this.showMedianEnabled = showMedianEnabled;
     	this.showMeanEnabled = showMeanEnabled;
     	this.showIntegratedDensityEnabled = showIntegratedDensityEnabled;
     	this.showCircularityEnabled = showCircularityEnabled;
-    	this.excludeOnEdgesEnabled = excludeOnEdgesEnabled;
     }
 
 	@Override
@@ -54,11 +66,11 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	if (showAreaEnabled) {
     		measurements += Measurements.AREA;
     	}
-    	if (showEquivalentDiameterEnabled) {
-    		measurements += Measurements.SHAPE_DESCRIPTORS + Measurements.FERET;
-    	}
     	if (showMeanEnabled) {
     		measurements += Measurements.MEAN;
+    	}
+    	if (showMedianEnabled) {
+    		measurements += Measurements.MEDIAN;
     	}
     	if (showIntegratedDensityEnabled) {
     		measurements += Measurements.INTEGRATED_DENSITY;
@@ -72,7 +84,7 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	
     	// set options for Particles Analyzer
     	int options = 0;
-    	options += ParticleAnalyzer.ELLIPSE;  // show overlay of detected particles
+    	// options += ParticleAnalyzer.ELLIPSE;  // show overlay of detected particles
     	// options += ParticleAnalyzer.OVERLAY; // crash the program
     	// options += ParticleAnalyzer.SHOW_OUTLINES; // show outlines of every particles in each images of the stack
     	// options += ParticleAnalyzer.DISPLAY_SUMMARY; // show statistics
@@ -80,9 +92,7 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     		options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
     	}
     	
-    	double minCirc = 0.8; 
-    	double maxCirc = 1.0; 
-    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, rt, 100.0, Double.POSITIVE_INFINITY, minCirc, maxCirc);
+    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, rt, minSize, maxSize, minCircularity, maxCircularity);
 
     	// get current image
     	ImagePlus img = WindowManager.getCurrentImage();
@@ -91,8 +101,8 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     		return null;
     	}
     	
-    	// analyze each images of the stack
-    	boolean success = false;
+    	// analyze each image of the stack
+    	boolean success = true;
     	int stackSize = img.getStackSize();
     	for (int i = 1; i <= stackSize; i++) {
     	    img.setSlice(i);

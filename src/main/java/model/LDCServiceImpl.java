@@ -178,8 +178,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	@Override public boolean showAreaEnabled() { return settings.showAreaEnabled(); }
 	@Override public void setShowArea(boolean showArea) { settings.setShowArea(showArea); }
 
-	@Override public boolean showEquivalentDiameterEnabled() { return settings.showEquivalentDiameterEnabled(); }
-	@Override public void setShowEquivalentDiameter(boolean showEquivalentDiameter) { settings.setShowEquivalentDiameter(showEquivalentDiameter); }
+	@Override public boolean showMedianEnabled() { return settings.showMedianEnabled(); }
+	@Override public void setShowMedian(boolean showMedian) { settings.setShowMedian(showMedian); }
 
 	@Override public boolean showMeanEnabled() { return settings.showMeanEnabled(); }
 	@Override public void setShowMean(boolean showMean) { settings.setShowMean(showMean); }
@@ -215,8 +215,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 
 	/** @see MeasuresProcessingWorker */
 	@Override public SwingWorker<Void, Void> createMeasuresProcessingWorker() {
-		return measurementsManager.createMeasuresProcessingWorker(showAreaEnabled(), showEquivalentDiameterEnabled(), showMeanEnabled(), 
-				showIntegratedDensityEnabled(), showCircularityEnabled(), analyseExcludeOnEdgesEnabled());
+		return measurementsManager.createMeasuresProcessingWorker(
+				getAnalyseMinSize(), getAnalyseMaxSize(), getAnalyseMinCircularity(), getAnalyseMaxCircularity(), analyseExcludeOnEdgesEnabled(), 
+				showAreaEnabled(), showMedianEnabled(), showMeanEnabled(), showIntegratedDensityEnabled(), showCircularityEnabled());
 	}
 
 	@Override public void exportResultsTable(ResultsTable rt, String path) {

@@ -637,6 +637,7 @@ public class PreprocessingPanel extends JPanel{
                     	applyWorker.get(); // exceptions
 	                	img.setStack(toProcess); // Applies changes to the current image
 	                	img.updateAndDraw();
+	                	leftPanel.updateUIInfosNbSlices();
                         IJ.showStatus("Median filter preprocessing done.");
                         setPreprocessingEnabled(true);
                         leftPanel.setPreprocessingDone(true);

@@ -7,7 +7,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
@@ -28,24 +27,24 @@ public class MainGUI_LDC extends JFrame {
 	@Parameter
     private LDCService selectedSettings;
     
-    private final JPanel leftContent;
-    private final JPanel rightContent;
+    private final LeftPanel leftContent;
+    private final RightPanel rightContent;
     
-    // Reference to the original ImageProcessor
+    // Reference to the original ImagePlus
     ImagePlus originalImage = null;
     
     public MainGUI_LDC(final Context ctx) {
         ctx.inject(this);
     	
         this.leftContent = new LeftPanel(ctx, this);
-        this.rightContent = new RightPanel(ctx);
+        this.rightContent = new RightPanel(ctx, this.leftContent);
         this.leftContent.setPreferredSize(new Dimension(0, 0));
         this.rightContent.setPreferredSize(new Dimension(0, 0));
         
         // Initialization of the MainGUI itself
         
         //Set the initial size
-        setSize(800, 600);
+        setSize(800, 650);
         
         //Set the MINIMUM size (User cannot resize smaller than this)
         setMinimumSize(new Dimension(800, 600));
