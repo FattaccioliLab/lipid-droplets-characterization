@@ -8,6 +8,7 @@ import ij.WindowManager;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.ParticleAnalyzer;
+import ij.plugin.frame.RoiManager;
 
 /**
  * {@link SwingWorker} that take care of processing measurements and showing them.
@@ -74,7 +75,7 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	options += ParticleAnalyzer.ELLIPSE;  // show overlay of detected particles
     	// options += ParticleAnalyzer.OVERLAY; // crash the program
     	// options += ParticleAnalyzer.SHOW_OUTLINES; // show outlines of every particles in each images of the stack
-    	options += ParticleAnalyzer.DISPLAY_SUMMARY; // show statistics
+    	// options += ParticleAnalyzer.DISPLAY_SUMMARY; // show statistics
     	if (excludeOnEdgesEnabled) {
     		options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
     	}
@@ -101,9 +102,18 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	    }
     	}
     	
-    	if (success) {
-    	 	rt.show("Results");
-    	}
+//    	if (success) {
+//    	 	rt.show("Results");
+//    	}
+    	
+		// close the ROI manager window that appear with the ParticlesAnalyzer WIP
+    	RoiManager rm = RoiManager.getInstance();
+        if (rm != null) {
+        	rm.setVisible(false);
+        	rm.reset();
+        	rm.close();
+        }
+    	
     	return null;
 	}
 	

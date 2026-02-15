@@ -1,6 +1,7 @@
 package model;
 
 import java.awt.Component;
+import java.io.IOException;
 import java.util.List;
 
 import javax.swing.SwingWorker;
@@ -12,6 +13,7 @@ import org.scijava.service.Service;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.WindowManager;
+import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 import model.leftpanel.ImageSourceManager;
 import model.leftpanel.PreprocessingManager;
@@ -217,4 +219,15 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 				showIntegratedDensityEnabled(), showCircularityEnabled(), analyseExcludeOnEdgesEnabled());
 	}
 
+	@Override public void exportResultsTable(ResultsTable rt, String path) {
+		measurementsManager.exportResultsTable(rt, path);
+	}
+	
+	@Override public ResultsTable calculateSummaryTable(ResultsTable rt) {
+		return measurementsManager.calculateSummaryTable(rt);
+	}
+	
+	@Override public List<ImagePlus> generateHistograms(ResultsTable rt) {
+		return measurementsManager.generateHistograms(rt);
+	}
 }
