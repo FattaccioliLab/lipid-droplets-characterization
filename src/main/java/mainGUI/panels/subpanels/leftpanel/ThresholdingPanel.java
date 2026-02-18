@@ -317,6 +317,7 @@ public class ThresholdingPanel extends JPanel {
     
     
     public void enableUIComponents(boolean enabled) {
+    	resetButton.setEnabled(enabled);
     	
         if (isApplied && enabled) return; 
         
