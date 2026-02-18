@@ -84,7 +84,7 @@ public interface LDCService extends SciJavaService {
     
     /** Apply final conversion to mask */
     public boolean applyThreshold(ImagePlus imp);
-    public void resetThreshold(ImagePlus imp);
+    public boolean resetThreshold(ImagePlus imp);
     
     public void setThresholdMinValue(int value);
     public void setThresholdMaxValue(int value);
