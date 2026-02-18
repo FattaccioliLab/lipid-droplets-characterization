@@ -118,8 +118,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     }
     
     @Override
-    public void resetThreshold(ImagePlus imp) {
-    	thresholdingManager.resetThreshold(imp);
+    public boolean resetThreshold(ImagePlus imp) {
+    	return thresholdingManager.resetThreshold(imp);
     }
     
     public void setThresholdMinValue(int value) {

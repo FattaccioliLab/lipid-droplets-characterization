@@ -52,6 +52,7 @@ public class ThresholdingPanel extends JPanel {
     private JButton applyButton;
     private JButton resetButton;
     private boolean isApplied = false;
+    private boolean isReset = false;
 
     public ThresholdingPanel(Context ctx, LeftPanel leftPanel) {
         super();
@@ -118,9 +119,9 @@ public class ThresholdingPanel extends JPanel {
         //having reset button only for method reset is not interesting to me. user can do so just by sliding the bar to 0, 0.
         
         // 6. Reset Button
-        //resetButton = new JButton("Reset");
-        //resetButton.addActionListener(e -> service.resetThreshold(leftPanel.updateAndGetImg()));
-        //buttonRow.add(resetButton);
+        resetButton = new JButton("Reset Thresholding");
+        resetButton.addActionListener(e -> resetThreshold());
+        buttonRow.add(resetButton);
         
         add(buttonRow);
     }
@@ -228,6 +229,7 @@ public class ThresholdingPanel extends JPanel {
         if (isManual) {
             enableSliders(true);
             service.previewManualThreshold(img);
+            darkBackgroundCheckbox.setSelected(false);
             darkBackgroundCheckbox.setEnabled(!isManual);	//if manual mode, hide dark BG check box
             
         } else {
@@ -258,6 +260,22 @@ public class ThresholdingPanel extends JPanel {
             IJ.showStatus("Threshold applied.");
             //refreshHistogramData();
             setVisible(true);
+        }
+    }
+    
+    
+    private void resetThreshold() {
+        ImagePlus img = leftPanel.updateAndGetImg();
+        if(img == null) return;
+        isReset = service.resetThreshold(img);
+        if(isReset) {
+            isApplied = false;
+            enableUIComponents(true);
+            IJ.showStatus("Threshold reset.");
+            //refreshHistogramData();
+            setVisible(true);
+            resetUIComponents();
+            methodComboBox.setSelectedIndex(0);  //putting back to the manual method
         }
     }
     
