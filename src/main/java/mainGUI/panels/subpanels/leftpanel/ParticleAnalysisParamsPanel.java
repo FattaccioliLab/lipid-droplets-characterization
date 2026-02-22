@@ -494,7 +494,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	// PARTICLE SETTINGS
         noMaxCheckbox.setEnabled(enable);
         minSizeField.setEnabled(enable);
-        maxSizeField.setEnabled(enable);
+        maxSizeField.setEnabled(!noMaxCheckbox.isSelected());
         minCircularityField.setEnabled(enable);
         maxCircularityField.setEnabled(enable);
         excludeOnEdgesCheckbox.setEnabled(enable);
