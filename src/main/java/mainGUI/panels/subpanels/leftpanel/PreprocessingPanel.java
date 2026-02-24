@@ -193,6 +193,7 @@ public class PreprocessingPanel extends JPanel{
 	    rangeRow.add(new JLabel("  Range (stack slices):  "), BorderLayout.WEST);
 	    medianApplyRangeField = new JTextField();
 	    medianApplyRangeField.setToolTipText("Example: 1-3,5,8-10");
+	    medianApplyRangeField.setEnabled(false);
 	    rangeRow.add(medianApplyRangeField, BorderLayout.CENTER);
 
 	    add(Box.createVerticalStrut(10));
