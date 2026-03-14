@@ -12,7 +12,6 @@ import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -224,6 +223,9 @@ public class PreprocessingPanel extends JPanel{
 	    add(finalizationPanel);
 	    
 	    add(Box.createVerticalStrut(10));
+	    
+	    // UI components disabled at start
+	    enableUIComponents(false, false);
 	}
 	
     /**
@@ -240,7 +242,7 @@ public class PreprocessingPanel extends JPanel{
      * </p>
      */
     private void runApplyLogic() {
-    	ImagePlus img = leftPanel.updateAndGetImg();
+    	ImagePlus img = leftPanel.getCurrentImage();
         if (img == null) {
             IJ.showMessage("No image", "Please open an image first.");
             applyButton.setEnabled(true);
@@ -302,8 +304,8 @@ public class PreprocessingPanel extends JPanel{
         	if (slices != null) img.setStack(InputUtils.buildStackFromSlices(slices, copy.getImageStack()));
         	
         	leftPanel.updateUIInfosNbSlices();
-        	
         	leftPanel.setPreprocessingDone(true);
+        	leftPanel.updateWorkflowIndex(1);
         }
     }
     
@@ -328,7 +330,7 @@ public class PreprocessingPanel extends JPanel{
         } else {
         	
         	// otherwise, we replace the current ImageStack with the original stack
-        	ImagePlus img = leftPanel.updateAndGetImg();
+        	ImagePlus img = leftPanel.getCurrentImage();
         	img.setStack(leftPanel.getOriginalImage().getStack().duplicate());
         	img.updateAndDraw();
         	
@@ -447,8 +449,10 @@ public class PreprocessingPanel extends JPanel{
         enhanceSaturatedSpinner.setEnabled(enabled && enhanceCheckbox.isSelected());
         enhanceSaturatedResetButton.setEnabled(enabled && enhanceCheckbox.isSelected());
         
-        ImagePlus img = leftPanel.updateAndGetImg();
-        leftPanel.setNextButtonEnabled(enabled && img != null && !this.isVisible() == false);
+        // Disables "Next" button during preprocessing (enabled = false)
+        // Enables "Next" button once preprocessing is done (enabled = true)
+        ImagePlus img = leftPanel.getCurrentImage();
+        leftPanel.getFooterLeftPanel().setNextButtonEnabled(enabled && img != null && !this.isVisible() == false);
     }
     
     /**
@@ -522,7 +526,7 @@ public class PreprocessingPanel extends JPanel{
      * LDC service applies the enhancement only if the option is set, within it.
      */
     private void enhanceContrast() {
-        ImagePlus img = leftPanel.updateAndGetImg();
+        ImagePlus img = leftPanel.getCurrentImage();
         if (img == null) return;
         selectedSettings.applyEnhanceContrast(img.getProcessor()); // If the option is not enabled, does nothing.
         img.updateAndDraw();
@@ -546,7 +550,7 @@ public class PreprocessingPanel extends JPanel{
      * </p>
      */
     private void performMedianPreviewAsync() {
-    	ImagePlus img = leftPanel.updateAndGetImg();
+    	ImagePlus img = leftPanel.getCurrentImage();
         if (img == null) return;
     	
         // Case when restoring from before the preview, synchronously
@@ -631,7 +635,7 @@ public class PreprocessingPanel extends JPanel{
      */
     private void launchApplyWorker(boolean doProcessAll, int currentSliceIndex, Set<Integer> slices) {
         setPreprocessingEnabled(false);
-        ImagePlus img = leftPanel.updateAndGetImg();
+        ImagePlus img = leftPanel.getCurrentImage();
         
         // save
     	lastImageStackBeforeMedian = img.getStack().duplicate();
@@ -670,6 +674,7 @@ public class PreprocessingPanel extends JPanel{
                         IJ.showStatus("Median filter preprocessing done.");
                         setPreprocessingEnabled(true);
                         leftPanel.setPreprocessingDone(true);
+                        leftPanel.updateWorkflowIndex(1);
                     }
 
                 } catch (CancellationException ce) {

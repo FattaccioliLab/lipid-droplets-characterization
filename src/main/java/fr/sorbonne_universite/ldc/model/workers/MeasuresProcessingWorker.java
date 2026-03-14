@@ -4,7 +4,6 @@ import javax.swing.SwingWorker;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.WindowManager;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.ParticleAnalyzer;
@@ -29,6 +28,7 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     private boolean showMedianEnabled;
     private boolean showIntegratedDensityEnabled;
     private boolean showCircularityEnabled;
+    private ImagePlus img;
     
     /**
      * Creates a {@code MeasuresProcessingWorker}.
@@ -42,9 +42,11 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
      * @param showMeanEnabled True if the 'Mean' column must be shown in the results.
      * @param showIntegratedDensityEnabled True if the 'IntegratedDensity' column must be shown in the results.
      * @param showCircularityEnabled True if the 'Circularity' column is shown must be the results.
+     * @param img The current image to consider.
      */
     public MeasuresProcessingWorker(double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
-    		boolean showAreaEnabled, boolean showMedianEnabled, boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled) {
+    		boolean showAreaEnabled, boolean showMedianEnabled, boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled,
+    		ImagePlus img) {
     	this.minSize = minSize;
     	this.maxSize = maxSize;
     	this.minCircularity = minCircularity;
@@ -55,6 +57,7 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	this.showMeanEnabled = showMeanEnabled;
     	this.showIntegratedDensityEnabled = showIntegratedDensityEnabled;
     	this.showCircularityEnabled = showCircularityEnabled;
+    	this.img = img;
     }
 
 	@Override
@@ -95,7 +98,6 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, rt, minSize, maxSize, minCircularity, maxCircularity);
 
     	// get current image
-    	ImagePlus img = WindowManager.getCurrentImage();
     	if (img == null) {
     		IJ.showMessage("Please open an image first (File > Open)");
     		return null;
@@ -112,9 +114,9 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	    }
     	}
     	
-//    	if (success) {
-//    	 	rt.show("Results");
-//    	}
+    	// if (success) {
+    	//	rt.show("Results");
+    	// }
     	
 		// close the ROI manager window that appear with the ParticlesAnalyzer WIP
     	RoiManager rm = RoiManager.getInstance();

@@ -30,8 +30,11 @@ public class MainGUI_LDC extends JFrame {
     private final LeftPanel leftContent;
     private final RightPanel rightContent;
     
-    // Reference to the original ImagePlus
-    ImagePlus originalImage = null;
+    
+    // The current ImagePlus considered
+    private ImagePlus currentImage = null;
+    // Reference to the original ImagePlus considered
+    private ImagePlus originalImage = null;
     
     public MainGUI_LDC(final Context ctx) {
         ctx.inject(this);
@@ -81,19 +84,19 @@ public class MainGUI_LDC extends JFrame {
         getContentPane().add(rightContent, gbc);
     }
     
-    /**
-     * Set the original {@link ImagePlus}, before any process on it.
-     * @param ip The original {@link ImagePlus}.
-     */
-    public void setOriginalImage(ImagePlus originalImg) {
-    	originalImage = originalImg;
-    }
+    // =========================================================================
+    // Image management getters / setters
+    // =========================================================================
     
-    /**
-     * Get the original {@link ImagePlus} attribute. Can be {@code null} if no image currently opened.
-     * @return The original image.
-     */
-    public ImagePlus getOriginalImage() {
-    	return originalImage;
-    }
+    /** @param originalImg The original {@link ImagePlus}, before any process on it */
+    public void setOriginalImage(ImagePlus originalImg) { this.originalImage = originalImg; }
+    
+    /** @return The original image. Can be {@code null} if no image currently opened. */
+    public ImagePlus getOriginalImage() { return originalImage; }
+    
+    /** @param currentImg The currently considered {@link ImagePlus}. */
+    public void setCurrentImage(ImagePlus currentImg) { this.currentImage = currentImg; }
+    
+    /** @return The currently considered {@link ImagePlus}. Can be {@code null} if no image currently considered. */
+    public ImagePlus getCurrentImage() { return this.currentImage; }
 }

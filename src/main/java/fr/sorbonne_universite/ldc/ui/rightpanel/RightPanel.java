@@ -1,7 +1,6 @@
 package fr.sorbonne_universite.ldc.ui.rightpanel;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -83,7 +82,7 @@ public class RightPanel extends JPanel {
           
         	ResultsTable rt = ResultsTable.getResultsTable();
         	rt.reset();
-        	SwingWorker<Void,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker();
+        	SwingWorker<Void,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(leftPanel.getCurrentImage());
         	
         	// adding property change listener to the worker to show the table when the asynchronous task is completed
         	measuresWorker.addPropertyChangeListener(new PropertyChangeListener() {
@@ -119,7 +118,8 @@ public class RightPanel extends JPanel {
         JButton statisticButton = new JButton("Statistics");
         statisticButton.addActionListener(e -> {
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
-        	showTable(selectedSettings.calculateSummaryTable(currentTable));
+        	ImagePlus currentImg = leftPanel.getCurrentImage();
+        	showTable(selectedSettings.calculateSummaryTable(currentTable, currentImg.getCalibration(), currentImg.getWidth(), currentImg.getHeight()));
         });
     	footerPanel.add(statisticButton);
     	

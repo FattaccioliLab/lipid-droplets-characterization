@@ -1,9 +1,11 @@
 package fr.sorbonne_universite.ldc.ui.leftpanel.subpanels;
 
 import java.awt.Component;
+import java.io.File;
 
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -17,6 +19,8 @@ import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.WindowManager;
+import ij.io.FileInfo;
 
 /**
  * Creates the top panel of the {@link LeftPanel}, containing image status and the "Replace Image" button.
@@ -57,17 +61,9 @@ public class ImageSourcePanel extends JPanel {
 	    JButton replaceImageButton = new JButton("Replace image");
 	    replaceImageButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 	    replaceImageButton.addActionListener(e -> {
-	        if (!leftPanel.isProcessing()) {
-	        	try {
-	        		selectedSettings.replaceCurrentImage(this);
-	        		ImagePlus img = leftPanel.updateAndGetImg();
-	        		leftPanel.setOriginalImage(img.duplicate()); // New original ImageProcessor when replacing the current image.
-	        		leftPanel.resetPanels();
-	        		updateUIInfosNbSlices();
-	        	} catch (IllegalArgumentException error) {
-	        		IJ.showMessage("Please open an image first (File > Open)");
-	        	}
-	        }
+	    	if (!leftPanel.isProcessing()) {
+	    		replaceButtonAction();
+	    	}
 	    });
 	    
 	    // Reset image button
@@ -76,17 +72,7 @@ public class ImageSourcePanel extends JPanel {
 	    resetImageButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 	    resetImageButton.addActionListener(e -> {
 	    	if (!leftPanel.isProcessing()) {
-	    		try {
-	    			selectedSettings.resetCurrentImage();
-	    			ImagePlus img = leftPanel.updateAndGetImg();
-	    			leftPanel.setOriginalImage(img.duplicate()); // New original ImageProcessor when replacing the current image.
-	    			leftPanel.resetPanels();
-	    			updateUIInfosNbSlices();
-	    		}catch (IllegalArgumentException error) {
-	    			IJ.showMessage("Please open an image first (File > Open)");
-	    		}catch (IllegalStateException error) {
-	    			IJ.showMessage(error.getMessage());
-	    		}
+	    		resetButtonAction();
 	    	}
 	    });
 
@@ -99,7 +85,6 @@ public class ImageSourcePanel extends JPanel {
 	    add(Box.createVerticalStrut(10));
 	    add(resetImageButton);
 	    add(Box.createVerticalStrut(10));
-	    
 	    
 		startImageWatcher();
 	}
@@ -114,34 +99,89 @@ public class ImageSourcePanel extends JPanel {
             if (leftPanel.isProcessing()) return;
             
          	// Check if the other panels are initialized yet
-            if ((leftPanel.getPreprocessingPanel() == null) ||
-            		(leftPanel.getThresholdingPanel() == null)) return;
-
-            ImagePlus img = leftPanel.updateAndGetImg();
-            boolean hasImage = (img != null);
+            if (leftPanel.getPreprocessingPanel() == null 
+            		|| leftPanel.getThresholdingPanel() == null 
+            		|| leftPanel.getPreprocessingPanel() == null) 
+            	return;
             
-            // If an image is opened, and there is no original image, its ImageProcessor copy becomes the original ImageProcessor.
-            if (hasImage && leftPanel.getOriginalImage() == null) {
-            	leftPanel.setOriginalImage(img.duplicate());
-            	updateUIInfosNbSlices();
+            ImagePlus currentImgLDC = leftPanel.getCurrentImage();
+            ImagePlus originalImgLDC = leftPanel.getOriginalImage();
+            ImagePlus currentImg = WindowManager.getCurrentImage();
+            
+            // Checks if the current LDC image window has been closed, updates attributes if it is the case
+            if (currentImgLDC != null && currentImgLDC.getWindow() == null) {
+            	leftPanel.setCurrentImage(null);
+            	currentImgLDC = null;
             }
             
-            // If there is no current image, the original ImageProcessor within the MainGui is set null.
-            if (!hasImage) {
-            	leftPanel.setOriginalImage(null);
-            	leftPanel.resetPanels();
-            	updateUIInfosNbSlices();
+            // If there is no current LDC image opened, we might do something, otherwise we don't change anything
+            if (currentImgLDC == null) {
+            	
+                // If another current image is opened, then this another image becomes the new current LDC image to consider
+                if (currentImg != null) {
+                	
+                	leftPanel.setOriginalImage(currentImg.duplicate()); // original image saved
+                	leftPanel.setCurrentImage(currentImg);
+                	updateUIInfosNbSlices();
+                	imageStatusLabel.setText("<html><center>Image opened:<br>" + currentImg.getTitle() + "</center></html>");
+                	leftPanel.enablePanels(true);
+                	
+                // If there is an original LDC image previously saved, and there is no other current image opened, 
+                // then we reset and lock LeftPanel sub-panels
+                // This case guarantees that after closing a current LDC image, it will reset and lock UI only once until a new image is opened.
+                } else if (originalImgLDC != null && currentImg == null) {
+                	
+                	leftPanel.setOriginalImage(null);
+                	updateUIInfosNbSlices();
+                	imageStatusLabel.setText("<html><center>No image opened.<br>Please open one.</center></html>");
+                	leftPanel.resetPanels();
+                	leftPanel.enablePanels(false);
+                }
+            	
             }
-
-
-            imageStatusLabel.setText(hasImage 
-                ? "<html><center>Image opened:<br>" + img.getTitle() + "</center></html>"
-                : "<html><center>No image opened.<br>Please open one.</center></html>");
-
-            leftPanel.enablePanels(hasImage);
         });
         imageWatcher.start();
     }
+    
+    // =========================================================================
+    // UI ACTIONS
+    // =========================================================================
+    
+    /**
+     * Replaces the current image, by calling the {@code replaceCurrentImage} method.
+     */
+    private void replaceButtonAction() {
+        try {
+        	int oldWorkflowIndex = leftPanel.getWorkflowIndex();
+        	ImagePlus currentImgLDC = leftPanel.getCurrentImage();
+        	replaceCurrentImage(currentImgLDC);
+        	leftPanel.setOriginalImage(currentImgLDC.duplicate()); // New original ImagePlus when replacing the current image.
+        	updateUIInfosNbSlices();
+        	imageStatusLabel.setText("<html><center>Image opened:<br>" + currentImgLDC.getTitle() + "</center></html>");
+        	leftPanel.resetPanels();
+            leftPanel.enablePanels(true);
+        	if (oldWorkflowIndex > 0) IJ.showMessage("Workflow reseted to preprocessing.");;
+        } catch (IllegalArgumentException error) {
+        	IJ.showMessage("Please open an image first (File > Open)");
+        }
+    }
+    
+    /**
+     * Resets the current image, by calling the {@code resetCurrentImage} method.
+     */
+    private void resetButtonAction() {
+		try {
+			int oldWorkflowIndex = leftPanel.getWorkflowIndex();
+			resetCurrentImage(leftPanel.getCurrentImage(), leftPanel.getOriginalImage());
+    		updateUIInfosNbSlices();
+    		leftPanel.resetPanels();
+        	leftPanel.enablePanels(true);
+    		if (oldWorkflowIndex > 0) IJ.showMessage("Workflow reseted to preprocessing.");;
+		}catch (IllegalArgumentException error) {
+			IJ.showMessage("Please open an image first (File > Open)");
+		}
+    }
+    
     
     /**
      * Updates the {@link JLabel} containing the number of current considered slices / original slices.
@@ -153,7 +193,7 @@ public class ImageSourcePanel extends JPanel {
     	ImagePlus originalImg = leftPanel.getOriginalImage();
     	if (originalImg != null) nbOriginalSlices = originalImg.getStackSize();
     	
-    	ImagePlus currentImg = leftPanel.updateAndGetImg();
+    	ImagePlus currentImg = leftPanel.getCurrentImage();
     	if (currentImg != null) nbCurrentSlices = currentImg.getStackSize();
     	
     	if (nbOriginalSlices == 0) { // If there is no originl image (= no image currently considered)
@@ -161,6 +201,66 @@ public class ImageSourcePanel extends JPanel {
     	} else {
     		infosNbSlicesLabel.setText("Number of slices considered : "+ nbCurrentSlices +"/" + nbOriginalSlices);
     	}
+    }
+    
+    // =========================================================================
+    // CURRENT IMAGE REPLACEMENT / RESET
+    // =========================================================================
+    
+	/**
+	 * Opens a file chooser and replaces the content of the given {@link ImagePlus} with an image loaded from disk.
+	 * <p>
+	 * The replacement is done in place: the image stack, calibration and dimensions
+	 * of {@code currentImg} are updated to match the newly opened image.
+	 * </p>
+	 * <p>
+	 * If the file chooser is cancelled or the selected file cannot be opened, the method returns without modifying the current image.
+	 * </p>
+	 *
+	 * @param currentImg					The currently active image whose content will be replaced.
+	 * @throws IllegalArgumentException		if {@code currentImg} is {@code null}.
+	 */
+    private void replaceCurrentImage(ImagePlus currentImg) {
+    	if (currentImg == null) throw new IllegalArgumentException("No current image.");
+    	
+        JFileChooser fileChooser = new JFileChooser();
+        if (fileChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+
+        File imageFile = fileChooser.getSelectedFile();
+        ImagePlus newImage = IJ.openImage(imageFile.getAbsolutePath());
+        if (newImage == null) return;
+        
+        // Updates file informations
+        FileInfo newFi = newImage.getOriginalFileInfo();
+        currentImg.setFileInfo(newFi);
+
+        currentImg.setStack(newImage.getTitle(), newImage.getStack());
+        currentImg.setCalibration(newImage.getCalibration());
+        currentImg.setDimensions(newImage.getNChannels(), newImage.getNSlices(), newImage.getNFrames());
+        currentImg.updateAndDraw();
+        currentImg.repaintWindow();
+    }
+    
+    /**
+     * Resets the image currently opened, by replacing it with the one without any modifications.
+     * 
+     * @param currentImg					The currently active image whose content will be replaced.
+     * @param originalImg					The original {@code currentImg} before modifications.
+	 * @throws IllegalArgumentException		if {@code currentImg} is {@code null} or {@code originalImg} is {@code null}.
+     */
+    private void resetCurrentImage(ImagePlus currentImg, ImagePlus originalImg) {
+		if (currentImg == null) throw new IllegalArgumentException("No current image.");
+		if (originalImg == null) throw new IllegalArgumentException("No original image.");
+		
+		// Saves the current title (without the "DUP_" prefix added by the duplication)
+	    String currentTitle = currentImg.getTitle();
+		
+    	currentImg.setStack(originalImg.getTitle(), originalImg.getStack());
+        currentImg.setCalibration(originalImg.getCalibration());
+        currentImg.setDimensions(originalImg.getNChannels(), originalImg.getNSlices(), originalImg.getNFrames());
+        currentImg.setTitle(currentTitle);
+        currentImg.updateAndDraw();
+        currentImg.repaintWindow();
     }
 
 }
