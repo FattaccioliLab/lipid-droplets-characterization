@@ -76,7 +76,7 @@ public class RightPanel extends JPanel {
         JPanel footerPanel = new JPanel();
     	
         // show measures button
-        JButton resultsButton = new JButton("show results");
+        JButton resultsButton = new JButton("Show results");
         resultsButton.addActionListener(e -> {
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
@@ -99,7 +99,7 @@ public class RightPanel extends JPanel {
         headerPanel.add(resultsButton);
         
         // generate histograms button
-        JButton histogramsButton = new JButton("histograms");
+        JButton histogramsButton = new JButton("Histograms");
         histogramsButton.addActionListener(e -> {
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
@@ -124,7 +124,7 @@ public class RightPanel extends JPanel {
     	footerPanel.add(statisticButton);
     	
     	// export csv button
-        JButton exportButton = new JButton("export");
+        JButton exportButton = new JButton("Export");
         exportButton.addActionListener(e -> {
         	// check if the table is null or empty
         	if (currentTable == null || currentTable.getCounter() == 0) {
@@ -147,6 +147,11 @@ public class RightPanel extends JPanel {
             }
         });
         footerPanel.add(exportButton);
+        
+        // Batch mode button, creating batch window
+        JButton batchButton = new JButton("Batch mode");
+        batchButton.addActionListener(e -> new BatchWindow(ctx, leftPanel.getMainGUI()));
+        footerPanel.add(batchButton);
     	
     	add(headerPanel, BorderLayout.NORTH);
     	add(footerPanel, BorderLayout.SOUTH);

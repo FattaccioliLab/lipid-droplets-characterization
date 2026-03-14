@@ -1,5 +1,6 @@
 package fr.sorbonne_universite.ldc.model;
 
+import java.io.File;
 import java.util.List;
 
 import javax.swing.SwingWorker;
@@ -12,6 +13,8 @@ import fr.sorbonne_universite.ldc.model.leftpanel.PreprocessingManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.ThresholdingManager;
 import fr.sorbonne_universite.ldc.model.rightpanel.MeasurementsManager;
 import fr.sorbonne_universite.ldc.model.workers.PreprocessingPreviewMedianWorker;
+import fr.sorbonne_universite.ldc.ui.rightpanel.BatchWindow;
+import fr.sorbonne_universite.ldc.model.workers.BatchWorker;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
@@ -214,5 +217,13 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	
 	@Override public List<ImagePlus> generateHistograms(ResultsTable rt) {
 		return measurementsManager.generateHistograms(rt);
+	}
+	
+	// ============
+    // Batch mode
+    // ============
+	
+	@Override public SwingWorker<Void,Void> createBatchWorker(File inputDirectory, File outputFile, BatchWindow bw){
+		return new BatchWorker(settings.clone(), inputDirectory, outputFile, bw);
 	}
 }

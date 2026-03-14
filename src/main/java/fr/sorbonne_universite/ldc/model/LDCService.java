@@ -1,5 +1,6 @@
 package fr.sorbonne_universite.ldc.model;
 
+import java.io.File;
 import java.util.List;
 
 import javax.swing.SwingWorker;
@@ -7,9 +8,11 @@ import javax.swing.SwingWorker;
 import org.scijava.service.SciJavaService;
 
 import fr.sorbonne_universite.ldc.model.leftpanel.PreprocessingManager;
+import fr.sorbonne_universite.ldc.model.workers.BatchWorker;
 import fr.sorbonne_universite.ldc.model.workers.MeasuresProcessingWorker;
 import fr.sorbonne_universite.ldc.model.workers.PreprocessingApplyMedianWorker;
 import fr.sorbonne_universite.ldc.model.workers.PreprocessingPreviewMedianWorker;
+import fr.sorbonne_universite.ldc.ui.rightpanel.BatchWindow;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
@@ -215,4 +218,17 @@ public interface LDCService extends SciJavaService {
      * @return List that contain ImagePlus Object of histograms for each column of the table.
      */
     public List<ImagePlus> generateHistograms(ResultsTable rt);
+    
+    // ============
+    // Batch mode
+    // ============
+    
+    /**
+     * Creates a {@link SwingWorker}, that has the goal of applying particle analysis on a whole given {@code directory}.
+	 * @param inputDirectory	The input directory where it has to find '.tif' and '.tiff' files.
+	 * @param outputFile		The output '.csv' where it writes the results.
+	 * @param bw				A reference to the {@link BatchWindow} creating this worker, needed to update the progress bar.
+     * @see BatchWorker
+     */
+    public SwingWorker<Void,Void> createBatchWorker(File inputDirectory, File outputFile, BatchWindow bw);
 }

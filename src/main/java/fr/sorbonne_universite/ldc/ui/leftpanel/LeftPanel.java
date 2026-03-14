@@ -32,7 +32,6 @@ public class LeftPanel extends JPanel {
     
     // Parent container
     private MainGUI_LDC mainGUI;
-
   
     // Layout Containers
     private ImageSourcePanel imageSourcePanel;
@@ -91,10 +90,13 @@ public class LeftPanel extends JPanel {
 
         add(mainContainer, BorderLayout.NORTH);
         
-        // Enables only the current workflow step panel at start (PreprocessingPanel)
-        enablePanels(true);
+        // Disables all sub-panels at the start.
+        enablePanels(false);
         
     }
+    
+    /** @return The {@link MainGUI_LDC} JFrame */
+    public MainGUI_LDC getMainGUI() { return mainGUI; }
     
     // =========================================================================
     // Sub-panel getters

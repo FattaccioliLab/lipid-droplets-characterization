@@ -66,21 +66,11 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	int measurements = 0;
     	measurements += Measurements.CENTROID; // center of the particle (x,y)
     	measurements += Measurements.STACK_POSITION; // image position in stack (z)  	
-    	if (showAreaEnabled) {
-    		measurements += Measurements.AREA;
-    	}
-    	if (showMeanEnabled) {
-    		measurements += Measurements.MEAN;
-    	}
-    	if (showMedianEnabled) {
-    		measurements += Measurements.MEDIAN;
-    	}
-    	if (showIntegratedDensityEnabled) {
-    		measurements += Measurements.INTEGRATED_DENSITY;
-    	}
-    	if (showCircularityEnabled) {
-    		measurements += Measurements.CIRCULARITY;
-    	}
+    	if (showAreaEnabled) measurements += Measurements.AREA;
+    	if (showMeanEnabled) measurements += Measurements.MEAN;
+    	if (showMedianEnabled) measurements += Measurements.MEDIAN;
+    	if (showIntegratedDensityEnabled) measurements += Measurements.INTEGRATED_DENSITY;
+    	if (showCircularityEnabled) measurements += Measurements.CIRCULARITY;
     	
     	// set particlesAnalyzer
     	ResultsTable rt = ResultsTable.getResultsTable();
