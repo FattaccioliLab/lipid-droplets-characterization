@@ -150,7 +150,13 @@ public class RightPanel extends JPanel {
         
         // Batch mode button, creating batch window
         JButton batchButton = new JButton("Batch mode");
-        batchButton.addActionListener(e -> new BatchWindow(ctx, leftPanel.getMainGUI()));
+        batchButton.addActionListener(e -> {
+           	if (leftPanel.getWorkflowIndex() < 2) {
+        		IJ.showMessage("Please complete thresholding before batch mode.");
+        	} else {
+        		new BatchWindow(ctx, leftPanel.getMainGUI());
+        	}
+        });
         footerPanel.add(batchButton);
     	
     	add(headerPanel, BorderLayout.NORTH);
