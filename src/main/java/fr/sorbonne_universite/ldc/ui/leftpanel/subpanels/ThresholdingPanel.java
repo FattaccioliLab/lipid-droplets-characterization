@@ -141,7 +141,7 @@ public class ThresholdingPanel extends JPanel {
     }
 
     private void refreshHistogramData() {
-        ImagePlus img = leftPanel.updateAndGetImg();
+        ImagePlus img = leftPanel.getCurrentImage();
         if (img != null) {
             // Get raw 8-bit histogram (256 bins)
             int[] stats = img.getProcessor().getHistogram();
@@ -216,7 +216,7 @@ public class ThresholdingPanel extends JPanel {
     public void updateThresholdLogic() {
         if (isApplied) return;
 
-        ImagePlus img = leftPanel.updateAndGetImg();
+        ImagePlus img = leftPanel.getCurrentImage();
         if (img == null) return;
 
         String method = (String) methodComboBox.getSelectedItem();
@@ -225,13 +225,13 @@ public class ThresholdingPanel extends JPanel {
 
         
         service.setThresholdMethod(method);
+        
+        darkBackgroundCheckbox.setEnabled(!isManual);	//if manual mode, disables dark BG check box, otherwise enables it
 
         if (isManual) {
-            enableSliders(true);
+            enableSliders(methodComboBox.isEnabled()); // Sliders enabled if the method combo box with "Manual" is also enabled
             service.previewManualThreshold(img);
             darkBackgroundCheckbox.setSelected(false);
-            darkBackgroundCheckbox.setEnabled(!isManual);	//if manual mode, hide dark BG check box
-            
         } else {
             enableSliders(false);
             double[] computed = service.previewAutoThreshold(img, method, isDark);
@@ -252,20 +252,19 @@ public class ThresholdingPanel extends JPanel {
     }
 
     private void applyThreshold() {
-        ImagePlus img = leftPanel.updateAndGetImg();
+        ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
         isApplied = service.applyThreshold(img);
         if(isApplied) {
-            enableUIComponents(false);
             IJ.showStatus("Threshold applied.");
             //refreshHistogramData();
-            setVisible(true);
+            leftPanel.updateWorkflowIndex(2);
         }
     }
     
     
     private void resetThreshold() {
-        ImagePlus img = leftPanel.updateAndGetImg();
+        ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
         isReset = service.resetThreshold(img);
         if(isReset) {
@@ -335,8 +334,8 @@ public class ThresholdingPanel extends JPanel {
         } else {
         	if(isManual) {
             	minSlider.setValue(0);
-            	minSlider.setValue(0);
             	maxSlider.setValue(0);
+            	minSpinner.setValue(0);
             	maxSpinner.setValue(0);
         	}
             enableSliders(false);
@@ -351,10 +350,18 @@ public class ThresholdingPanel extends JPanel {
      * */
     public void resetUIComponents() {
     	isApplied = false;
-        enableUIComponents(true);
-    	minSlider.setValue(0);
+    	
+    	service.setThresholdMethod("Manual");
+    	methodComboBox.setSelectedItem(service.getThresholdMethod());
+    	
+    	darkBackgroundCheckbox.setSelected(false);
+    	service.setThresholdDarkBackground(darkBackgroundCheckbox.isSelected());
+    	
     	minSlider.setValue(0);
     	maxSlider.setValue(0);
+    	minSpinner.setValue(0);
     	maxSpinner.setValue(0);
+    	service.setThresholdMinValue(0);
+    	service.setThresholdMaxValue(0);
     }
 }

@@ -7,7 +7,16 @@ import java.util.List;
 /**
  * A class containing the user's current image processing settings for the plugin.
  */
-public class AnalysisSettings {
+public class AnalysisSettings implements Cloneable {
+	
+    @Override
+    public AnalysisSettings clone() {
+        try {
+            return (AnalysisSettings) super.clone(); // Shallow copy, enough in our case
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(); // Cannot happen
+        }
+    }
 	
     // =========================================================================
     // SETTINGS

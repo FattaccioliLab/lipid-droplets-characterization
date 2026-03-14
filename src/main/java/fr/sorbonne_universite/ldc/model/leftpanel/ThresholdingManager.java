@@ -1,5 +1,6 @@
 package fr.sorbonne_universite.ldc.model.leftpanel;
 
+import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.ThresholdingPanel;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -7,7 +8,7 @@ import ij.process.ImageProcessor;
 
 /**
  * Provides segmentation/thresholding operations. 
- * Used by the {@link fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.ThresholdingPanel}.
+ * Used by the {@link ThresholdingPanel}.
  */
 public class ThresholdingManager {
 
@@ -46,7 +47,7 @@ public class ThresholdingManager {
         return true;
     }
 
-/**
+    /**
      * Creates a NEW binary mask image based on the current threshold settings.
      * The original image is left unchanged.
      * @param originalImp The source image (will not be modified).

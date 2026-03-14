@@ -1,7 +1,6 @@
 package fr.sorbonne_universite.ldc.model;
 
-import java.awt.Component;
-import java.io.IOException;
+import java.io.File;
 import java.util.List;
 
 import javax.swing.SwingWorker;
@@ -10,14 +9,15 @@ import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
 
-import fr.sorbonne_universite.ldc.model.leftpanel.ImageSourceManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.PreprocessingManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.ThresholdingManager;
 import fr.sorbonne_universite.ldc.model.rightpanel.MeasurementsManager;
 import fr.sorbonne_universite.ldc.model.workers.PreprocessingPreviewMedianWorker;
+import fr.sorbonne_universite.ldc.ui.rightpanel.BatchWindow;
+import fr.sorbonne_universite.ldc.model.workers.BatchWorker;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.WindowManager;
+import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 
@@ -31,7 +31,6 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	private AnalysisSettings settings;
 	
 	// For the LeftPanel's sub-panels operations.
-	private ImageSourceManager imageSourceManager;
 	private PreprocessingManager preprocessingManager;
 	private ThresholdingManager thresholdingManager;
   
@@ -41,7 +40,6 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	@Override
 	public void initialize() { 
 		settings = new AnalysisSettings(); 
-		imageSourceManager = new ImageSourceManager();
 		preprocessingManager = new PreprocessingManager();
 		thresholdingManager = new ThresholdingManager();
 		measurementsManager = new MeasurementsManager();
@@ -78,60 +76,19 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // ===========================
 
     @Override public List<String> getThresholdMethodsList() { return settings.getThresholdMethodsList(); }
-
     @Override public String getThresholdMethod() { return settings.getThresholdMethod(); }
+    @Override public void setThresholdMethod(String method) { settings.setThresholdMethod(method); }
 
     @Override public int getThresholdMinValue() { return settings.getThresholdMinValue(); }
     @Override public int getThresholdMaxValue() { return settings.getThresholdMaxValue(); }
+    @Override public void setThresholdMinValue(int value) { settings.setThresholdMinValue(value); }
+    @Override public void setThresholdMaxValue(int value) { settings.setThresholdMaxValue(value); }
 
     @Override public boolean thresholdDarkBackgroundEnabled() { return settings.thresholdDarkBackgroundEnabled(); }
     @Override public void setThresholdDarkBackground(boolean thresholdDarkBackground) { settings.setThresholdDarkBackground(thresholdDarkBackground); }
 
     @Override public boolean thresholdGlobalEnabled() { return settings.thresholdGlobalEnabled(); }
     @Override public void setThresholdGlobal(boolean thresholdGlobal) { settings.setThresholdGlobal(thresholdGlobal); }
-    
-    @Override
-    public void previewManualThreshold(ImagePlus imp) {
-    	//i tried to add darkBG in manual mode, but it seems unnecessary, 
-    	//user has full control with sliders to change the backround into dark or red
-    	
-    	/*int maxVal;
-    	int minVal;
-    	if(isDark) {	//have to invert
-    		maxVal = AnalysisSettings.DFL_THRESHOLD_MAX_VALUE;
-    		minVal = settings.getThresholdMaxValue();
-    	}else {
-    		maxVal=settings.getThresholdMaxValue();
-    		minVal=settings.getThresholdMinValue();
-    	}*/
-        thresholdingManager.setManualThreshold(imp, settings.getThresholdMinValue(), settings.getThresholdMaxValue());
-    }
-
-    @Override
-    public double[] previewAutoThreshold(ImagePlus imp, String method, boolean darkBackground) {
-        return thresholdingManager.setAutoThreshold(imp, method, darkBackground);
-    }
-
-    @Override
-    public boolean applyThreshold(ImagePlus imp) {
-        return thresholdingManager.applyThreshold(imp);
-    }
-    
-    @Override
-    public boolean resetThreshold(ImagePlus imp) {
-    	return thresholdingManager.resetThreshold(imp);
-    }
-    
-    public void setThresholdMinValue(int value) {
-    	settings.setThresholdMinValue(value);
-    }
-    public void setThresholdMaxValue(int value) {
-    	settings.setThresholdMaxValue(value);
-    }
-    
-    public void setThresholdMethod(String method) {
-    	settings.setThresholdMethod(method);
-    }
 
     // ====================================
     // Binary mask morphological operations
@@ -193,12 +150,10 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // =========================================================================
     // OPERATIONS
     // =========================================================================
-    
-    /** @see ImageSourceManager#replaceCurrentImage(ImagePlus, Component) */
-	@Override public void replaceCurrentImage(Component parent) { imageSourceManager.replaceCurrentImage(WindowManager.getCurrentImage(), parent); }
-
-	/** @see ImageSourceManager#resetCurrentImage(ImagePlus) */
-	@Override public void resetCurrentImage() { imageSourceManager.resetCurrentImage(WindowManager.getCurrentImage()); }
+	
+	// =================
+    // Preprocessing
+    // =================
 	
 	/** @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, double) */
 	@Override public void applyEnhanceContrast(ImageProcessor ip) { preprocessingManager.applyEnhanceContrast(ip, enhanceContrastEnabled(), getEnhanceSaturatedPercent()); }
@@ -207,28 +162,68 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	@Override public SwingWorker<Void, Void> createPreviewMedianWorker(ImageProcessor ip) {
 		return preprocessingManager.createPreviewMedianWorker(ip, getMedianRadius());
 	}
-
+	
 	/** @see PreprocessingApplyMedianWorker */
 	@Override public SwingWorker<Void, Void> createApplyMedianWorker(ImageStack stack, boolean processAll, int targetSlice) {  
 		return preprocessingManager.createApplyMedianWorker(medianFilterEnabled(), getMedianRadius(), stack, processAll, targetSlice);
 	}
+	
+    // ===========================
+    // Segmentation / thresholding
+    // ===========================
+	
+    @Override public void previewManualThreshold(ImagePlus imp) {
+    	//i tried to add darkBG in manual mode, but it seems unnecessary, 
+    	//user has full control with sliders to change the backround into dark or red
+    	
+    	/*int maxVal;
+    	int minVal;
+    	if(isDark) {	//have to invert
+    		maxVal = AnalysisSettings.DFL_THRESHOLD_MAX_VALUE;
+    		minVal = settings.getThresholdMaxValue();
+    	}else {
+    		maxVal=settings.getThresholdMaxValue();
+    		minVal=settings.getThresholdMinValue();
+    	}*/
+        thresholdingManager.setManualThreshold(imp, settings.getThresholdMinValue(), settings.getThresholdMaxValue());
+    }
+
+    @Override public double[] previewAutoThreshold(ImagePlus imp, String method, boolean darkBackground) {
+        return thresholdingManager.setAutoThreshold(imp, method, darkBackground);
+    }
+
+    @Override public boolean applyThreshold(ImagePlus imp) { return thresholdingManager.applyThreshold(imp); }
+    
+    @Override public boolean resetThreshold(ImagePlus imp) { return thresholdingManager.resetThreshold(imp); }
+	
+    // ============================
+    // Measurements showing options
+    // ============================
 
 	/** @see MeasuresProcessingWorker */
-	@Override public SwingWorker<Void, Void> createMeasuresProcessingWorker() {
+	@Override public SwingWorker<Void, Void> createMeasuresProcessingWorker(ImagePlus img) {
 		return measurementsManager.createMeasuresProcessingWorker(
 				getAnalyseMinSize(), getAnalyseMaxSize(), getAnalyseMinCircularity(), getAnalyseMaxCircularity(), analyseExcludeOnEdgesEnabled(), 
-				showAreaEnabled(), showMedianEnabled(), showMeanEnabled(), showIntegratedDensityEnabled(), showCircularityEnabled());
+				showAreaEnabled(), showMedianEnabled(), showMeanEnabled(), showIntegratedDensityEnabled(), showCircularityEnabled(), img);
 	}
 
 	@Override public void exportResultsTable(ResultsTable rt, String path) {
 		measurementsManager.exportResultsTable(rt, path);
 	}
 	
-	@Override public ResultsTable calculateSummaryTable(ResultsTable rt) {
-		return measurementsManager.calculateSummaryTable(rt);
+	@Override public ResultsTable calculateSummaryTable(ResultsTable rt, Calibration cal, double imgWidth, double imgHeight) {
+		return measurementsManager.calculateSummaryTable(rt, cal, imgWidth, imgHeight);
 	}
 	
 	@Override public List<ImagePlus> generateHistograms(ResultsTable rt) {
 		return measurementsManager.generateHistograms(rt);
+	}
+	
+	// ============
+    // Batch mode
+    // ============
+	
+	@Override public SwingWorker<Void,Void> createBatchWorker(File inputDirectory, File outputFile, BatchWindow bw){
+		return new BatchWorker(settings.clone(), inputDirectory, outputFile, bw);
 	}
 }

@@ -15,7 +15,6 @@ import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.ParticleAnalysisParamsP
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.PreprocessingPanel;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.ThresholdingPanel;
 import ij.ImagePlus;
-import ij.WindowManager;
 
 /**
  * The left side of the plugin main GUI.
@@ -30,13 +29,9 @@ import ij.WindowManager;
  */
 @SuppressWarnings("serial")
 public class LeftPanel extends JPanel {
-
-    // The current image considered
-    private ImagePlus img;
     
     // Parent container
     private MainGUI_LDC mainGUI;
-
   
     // Layout Containers
     private ImageSourcePanel imageSourcePanel;
@@ -49,8 +44,10 @@ public class LeftPanel extends JPanel {
     private volatile boolean isProcessing = false; 	//it's false when no img is selected or a task is running to partially disable the interface
     private boolean preprocessingDone = false;  
   
-    // State tracking
-    private int currentStepIndex = 0; // 0 = Preprocessing, 1 = Thresholding 
+    // Sub-panels display indexes
+    // 0 = Preprocessing, 1 = Thresholding, 2 = Particle analysis parameters
+    private int navigationIndex = 0; // Which sub-panel is currently showed
+    private int workflowIndex = 0; // Which workflow step is currently considered (other sub-panels are locked)
 
     /**
      * Constructs the LeftPanel, by initializing the main layout and initializing + assembling the sub-panels.
@@ -77,23 +74,29 @@ public class LeftPanel extends JPanel {
         preprocessingPanel = new PreprocessingPanel(ctx, this);
         mainContainer.add(preprocessingPanel);
         
-        //Thresholding - Initially Hidden
+        // ThresholdingPanel - Initially Hidden
         thresholdingPanel = new ThresholdingPanel(ctx, this);
-        thresholdingPanel.setVisible(false); // Hidden by default
+        thresholdingPanel.setVisible(false);
         mainContainer.add(thresholdingPanel);
         
-        //Particle analysis params - Initially Hidden
+        // ParticleAnalysisParamsPanel - Initially Hidden
         particleAnalysisParamsPanel = new ParticleAnalysisParamsPanel(ctx);
-        particleAnalysisParamsPanel.setVisible(false); // Hidden by default
+        particleAnalysisParamsPanel.setVisible(false);
         mainContainer.add(particleAnalysisParamsPanel);
         
-        // FooterLeftPanel
+        // FooterLeftPanel (Always visible)
         footerLeftPanel = new FooterLeftPanel(ctx, this);
         mainContainer.add(footerLeftPanel);
 
         add(mainContainer, BorderLayout.NORTH);
         
+        // Disables all sub-panels at the start.
+        enablePanels(false);
+        
     }
+    
+    /** @return The {@link MainGUI_LDC} JFrame */
+    public MainGUI_LDC getMainGUI() { return mainGUI; }
     
     // =========================================================================
     // Sub-panel getters
@@ -115,7 +118,7 @@ public class LeftPanel extends JPanel {
     public FooterLeftPanel getFooterLeftPanel() { return footerLeftPanel; }
     
     // =========================================================================
-    // States getters / setters
+    // State getters / setters
     // =========================================================================
     
     /** @return boolean value indicating if the plugin is currently processing a preprocessing operation. */
@@ -133,40 +136,36 @@ public class LeftPanel extends JPanel {
      */
     public void setPreprocessingDone(boolean preprocessingDone) { this.preprocessingDone = preprocessingDone; }
     
-    // =========================================================================
-    // Enabling / disabling footer navigation buttons
-    // =========================================================================
-    
-    /**
-     * Enables (or disables) the footer's 'Next' button. Delegates the operation to its sub-panel.
-     * @param enabled true : enables, false : disables
-     */
-    public void setNextButtonEnabled(boolean enabled) { 
-    	//goToNextStep();
-    	footerLeftPanel.setNextButtonEnabled(enabled); 
-    }
-    
-    /**
-     * Enables (or disables) the footer's 'Prev' button. Delegates the operation to its sub-panel.
-     * @param enabled true : enables, false : disables
-     */
-    public void setPrevButtonEnabled(boolean enabled) { 
-    	//goToPrevStep();
-    	footerLeftPanel.setPrevButtonEnabled(enabled); 
-    }
-    
+    /** @return index giving the current workflow step considered. 0 = Preprocessing, 1 = Thresholding, 2 = Particle analysis parameters.  */
+    public int getWorkflowIndex() { return workflowIndex; }
     
     // =========================================================================
-    // Updating the current image
+    // Image management getters / setters
+    // =========================================================================
+    
+    /** @param originalImg The original {@link ImagePlus}, before any process on it */
+    public void setOriginalImage(ImagePlus originalImg) { mainGUI.setOriginalImage(originalImg); }
+    
+    /** @return The original image. Can be {@code null} if no image currently opened. */
+    public ImagePlus getOriginalImage() { return mainGUI.getOriginalImage(); }
+    
+    /** @param currentImg The currently considered {@link ImagePlus}. */
+    public void setCurrentImage(ImagePlus currentImg) { mainGUI.setCurrentImage(currentImg); }
+    
+    /** @return The currently considered {@link ImagePlus}. Can be {@code null} if no image currently considered. */
+    public ImagePlus getCurrentImage() { return mainGUI.getCurrentImage(); }
+    
+    // =========================================================================
+    // Enabling / Disabling and reseting panels
     // =========================================================================
     
     /**
-     * Updates the {@code img} attribute, containing the current image considered, and returns it.
-     * @return The current image considered
+     * Updates the current workflow step index and updates UI by enabling only the current workflow sub-panel, disabling others.
+     * @param workflowIndex The new current workflow step index.
      */
-    public ImagePlus updateAndGetImg() { 
-    	img = WindowManager.getCurrentImage();
-    	return img; 
+    public void updateWorkflowIndex(int workflowIndex) {
+    	this.workflowIndex = workflowIndex;
+    	enablePanels(true);
     }
     
     /**
@@ -176,50 +175,100 @@ public class LeftPanel extends JPanel {
     	imageSourcePanel.updateUIInfosNbSlices();
     }
     
+    /**
+     * <ul>
+     * 	Either :
+     * 	<li>Enables UI components of ONLY the current workflow's step sub-panel.</li>
+     * 	<li>Disables UI components of ALL sub panels.</li>
+     * </ul>
+     * @param enable true : enable, false : disable
+     */
+    public void enablePanels(boolean enable) {
+    	
+    	// PreprocessingPanel
+    	if (enable && workflowIndex == 0) {
+    		preprocessingPanel.enableUIComponents(true, false);
+    	} else {
+    		preprocessingPanel.enableUIComponents(false, false);
+    	}
+    	
+    	// ThresholdingPanel
+    	if (enable && workflowIndex == 1) {
+    		thresholdingPanel.enableUIComponents(true);
+    	} else {
+    		thresholdingPanel.enableUIComponents(false);
+    	}
+    	
+    	// ParticleAnalysisParamsPanel
+    	if (enable && workflowIndex == 2) {
+    		particleAnalysisParamsPanel.enableUIComponents(true);
+    	} else {
+    		particleAnalysisParamsPanel.enableUIComponents(false);
+    	}
+    }
+    
+    /**
+     * Reset all sub panels, for when the image is reseted.
+     * */
+    public void resetPanels() {
+    	preprocessingPanel.resetUIComponents();
+    	thresholdingPanel.resetUIComponents();
+    	particleAnalysisParamsPanel.resetUIComponents();
+    	
+    	workflowIndex = 0; // Workflow back to preprocessing
+    }
+    
     // =========================================================================
     // Navigation Logic
     // =========================================================================
     
-	  public void goToNextStep() {
-        if (currentStepIndex == 0) {
+    /**
+     * Updates LeftPanel UI to show the next sub-panel, and manage allowing/disallowing interaction with Prev/Next footer buttons
+     * depending on the new current sub panel.<br>
+     * Does not manage enabling/disabling UI components of sub-panels.
+     */
+    public void goToNextStep() {
+        if (navigationIndex == 0) {
             // Switch: Preprocessing -> Thresholding
             preprocessingPanel.setVisible(false);
             thresholdingPanel.setVisible(true);
-            thresholdingPanel.updateThresholdLogic(); // Trigger preview for default method
-
-            currentStepIndex = 1;
+            navigationIndex = 1;
             
             // Update Footer Buttons
             footerLeftPanel.setPrevButtonEnabled(true);
             footerLeftPanel.setNextButtonEnabled(true);
             
-        } else if (currentStepIndex == 1) {
+        } else if (navigationIndex == 1) {
         	// Switch: Thresholding -> Particle analysis parameters
         	thresholdingPanel.setVisible(false);
             particleAnalysisParamsPanel.setVisible(true);
-            
-            currentStepIndex = 2;
+            navigationIndex = 2;
             
             // Update Footer Buttons
             footerLeftPanel.setNextButtonEnabled(false); // Nothing after
         }
     }
 	
-	  public void goToPrevStep() {
-        if (currentStepIndex == 1) {
+    /**
+     * Updates LeftPanel UI to show the previous sub-panel, and manage allowing/disallowing interaction with Prev/Next footer buttons
+     * depending on the new current sub panel.<br>
+     * Does not manage enabling/disabling UI components of sub-panels.
+     */
+	public void goToPrevStep() {
+        if (navigationIndex == 1) {
             // Switch: Thresholding -> Preprocessing
             thresholdingPanel.setVisible(false);
             preprocessingPanel.setVisible(true);
-            currentStepIndex = 0;
+            navigationIndex = 0;
             
             // Update Footer Buttons
             footerLeftPanel.setPrevButtonEnabled(false);
             
-        } else if (currentStepIndex == 2) {
+        } else if (navigationIndex == 2) {
         	// Switch: Particle analysis parameters -> Thresholding
         	particleAnalysisParamsPanel.setVisible(false);
         	thresholdingPanel.setVisible(true);
-            currentStepIndex = 1;
+        	navigationIndex = 1;
         	
         	// Update Footer Buttons
             footerLeftPanel.setPrevButtonEnabled(true);
@@ -227,50 +276,4 @@ public class LeftPanel extends JPanel {
         }
     }
 	
-    // =========================================================================
-    // Setting the original ImagePlus
-    // =========================================================================
-    
-    /**
-     * Set the original {@link ImagePlus}, before any process on it.
-     * @param originalImg The original {@link ImagePlus}.
-     */
-    public void setOriginalImage(ImagePlus originalImg) {
-    	mainGUI.setOriginalImage(originalImg);
-    }
-    
-    /**
-     * Get the original {@link ImagePlus} attribute. Can be {@code null} if no image currently opened.
-     * @return The original image.
-     */
-    public ImagePlus getOriginalImage() {
-    	return mainGUI.getOriginalImage();
-    }
-    
-    // =========================================================================
-    // Enabling/Disabling and reseting panels
-    // =========================================================================
-    
-    /**
-     * Enable or disable UI components of sub panels.
-     * @param enable true : enable, false : disable
-     */
-    public void enablePanels(boolean enable) {
-        preprocessingPanel.enableUIComponents(enable, false);
-        thresholdingPanel.enableUIComponents(enable);
-        particleAnalysisParamsPanel.enableUIComponents(enable);
-        // add here the enableUIComponents method call for the incoming sub panels
-    }
-    
-    /**
-     * Reset sub panels, for when the image is reseted.
-     * */
-    public void resetPanels() {
-    	preprocessingPanel.resetUIComponents();
-    	thresholdingPanel.resetUIComponents();
-    	particleAnalysisParamsPanel.resetUIComponents();
-    	// add here the resetUIComponents method call for the incoming sub panels
-    }
-    
-    
 }
