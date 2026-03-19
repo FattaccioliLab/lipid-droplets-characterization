@@ -78,6 +78,12 @@ public class RightPanel extends JPanel {
         // show measures button
         JButton resultsButton = new JButton("Show results");
         resultsButton.addActionListener(e -> {
+        	// check if there is an image
+        	if (leftPanel.getCurrentImage() == null) {
+        		IJ.showMessage("Please open an image first (File > Open)");
+        		return ;
+        	}
+        	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
         	ResultsTable rt = ResultsTable.getResultsTable();
@@ -117,6 +123,12 @@ public class RightPanel extends JPanel {
         // generate statistics button
         JButton statisticButton = new JButton("Statistics");
         statisticButton.addActionListener(e -> {
+        	// check if the table is null or empty
+        	if (currentTable == null || currentTable.getCounter() == 0) {
+        		IJ.showMessage("No statistics to show.");
+        		return;
+        	}
+        	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
         	ImagePlus currentImg = leftPanel.getCurrentImage();
         	showTable(selectedSettings.calculateSummaryTable(currentTable, currentImg.getCalibration(), currentImg.getWidth(), currentImg.getHeight()));
@@ -189,10 +201,10 @@ public class RightPanel extends JPanel {
 	    	viewPanel.revalidate();
 	        viewPanel.repaint();
 	            
-	        // if it is because there is no output for the given parameters
-    		if (rt != null && rt.getCounter() == 0) {
-	    		IJ.showMessage("No output for the given parameters");
-    		}
+//	        // if it is because there is no output for the given parameters
+//    		if (rt != null && rt.getCounter() == 0) {
+//	    		IJ.showMessage("No output for the given parameters");
+//    		}
     		
     		return;
     	}

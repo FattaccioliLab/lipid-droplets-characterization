@@ -30,6 +30,9 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     private boolean showCircularityEnabled;
     private ImagePlus img;
     
+    // threshold for the circularity, to define if a particle is isolated or not
+    private double circularityThreshold = 0.5;
+    
     /**
      * Creates a {@code MeasuresProcessingWorker}.
      * @param minSize minimum particle size (px²).
@@ -72,6 +75,9 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	if (showIntegratedDensityEnabled) measurements += Measurements.INTEGRATED_DENSITY;
     	if (showCircularityEnabled) measurements += Measurements.CIRCULARITY;
     	
+    	// add BX, BY, Width and Height to the result table, used to define if the particle is on the edge
+    	measurements += Measurements.RECT;
+    	
     	// set particlesAnalyzer
     	ResultsTable rt = ResultsTable.getResultsTable();
     	
@@ -104,9 +110,37 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	    }
     	}
     	
-    	// if (success) {
-    	//	rt.show("Results");
-    	// }
+    	// detect for each particle if it is isolated
+    	for (int row = 0; row < rt.getCounter(); row++) {
+    		int isIsolated = 0;
+    		
+    		// check if the particle touches the edge of the image
+    		boolean touchesEdge = false;
+    		if (rt.columnExists("BX") && rt.columnExists("BY") && rt.columnExists("Width") && rt.columnExists("Height")) {
+    			double bx = rt.getValue("BX", row);
+    			double by = rt.getValue("BY", row);
+    			double width = rt.getValue("Width", row);
+    			double height = rt.getValue("Height", row);
+    			if (bx <= 0 || by <= 0 || (bx + width) >= img.getWidth() || (by + height) >= img.getHeight()) {
+    	            touchesEdge = true;
+    	        }
+    		
+    		}
+    		
+    		// check if the particle circularity is greater than the threshold, then it is isolated
+    		if (!touchesEdge && rt.columnExists("Circ.")) {
+    			if (rt.getValue("Circ.", row) >= circularityThreshold) isIsolated = 1;
+    		}
+    		
+    		// add the attribute to the particle
+    		rt.setValue("is_isolated", row, isIsolated);
+    	}
+    	
+    	// cleaning the results table : remove unused columns
+    	if (rt.columnExists("BX")) rt.deleteColumn("BX");
+        if (rt.columnExists("BY")) rt.deleteColumn("BY");
+        if (rt.columnExists("Width")) rt.deleteColumn("Width");
+        if (rt.columnExists("Height")) rt.deleteColumn("Height");
     	
 		// close the ROI manager window that appear with the ParticlesAnalyzer WIP
     	RoiManager rm = RoiManager.getInstance();
