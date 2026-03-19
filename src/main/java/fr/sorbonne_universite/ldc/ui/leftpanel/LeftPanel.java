@@ -86,7 +86,7 @@ public class LeftPanel extends JPanel {
         
         // FooterLeftPanel (Always visible)
         footerLeftPanel = new FooterLeftPanel(ctx, this);
-        mainContainer.add(footerLeftPanel);
+        add(footerLeftPanel, BorderLayout.SOUTH);
 
         add(mainContainer, BorderLayout.NORTH);
         

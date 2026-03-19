@@ -43,7 +43,7 @@ public class ImageSourcePanel extends JPanel {
 		
 		// Initialization of the panel layout
 		super();
-		PanelUtils.createVerticalPanel(this, "Image Source", 75);
+		PanelUtils.createVerticalPanel(this, "Image Source", 200);
 		
 		ctx.inject(this);
 		this.leftPanel = leftPanel;
