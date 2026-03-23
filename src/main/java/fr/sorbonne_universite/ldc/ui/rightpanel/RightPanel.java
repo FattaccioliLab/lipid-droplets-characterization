@@ -64,6 +64,10 @@ public class RightPanel extends JPanel {
     private JPanel viewPanel; // container panel for the data table
     
     private ResultsTable currentTable; // reference for the table currently shown 
+    private int nb_particle = 0; // total number of particle in the current table
+    private int nb_isolated = 0;	// save the number of isolated particle showed with the given measures parameters
+    
+    private JLabel nbIsolatedLabel; // label that show the number of isolated particles on the total number of particles
     
     public RightPanel(Context ctx, LeftPanel leftPanel) {
     	super();
@@ -75,6 +79,21 @@ public class RightPanel extends JPanel {
     	JPanel headerPanel = new JPanel();
         JPanel footerPanel = new JPanel();
     	
+        // preview overlay button
+        JButton previewButton = new JButton("Preview");
+        previewButton.addActionListener(e -> {
+        	// check if there is an image
+        	if (leftPanel.getCurrentImage() == null) {
+        		IJ.showMessage("Please open an image first (File > Open)");
+        		return ;
+        	}
+        	
+        	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
+            
+        	// TODO
+        });;
+        headerPanel.add(previewButton);
+
         // show measures button
         JButton resultsButton = new JButton("Show results");
         resultsButton.addActionListener(e -> {
@@ -119,6 +138,11 @@ public class RightPanel extends JPanel {
         	showHistograms(plots);
         });
         headerPanel.add(histogramsButton);
+        
+        // label for the number of isolated particles
+        nbIsolatedLabel = new JLabel("Isolated: 0 | Total: 0");
+        nbIsolatedLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        headerPanel.add(nbIsolatedLabel);
         
         // generate statistics button
         JButton statisticButton = new JButton("Statistics");
@@ -225,17 +249,25 @@ public class RightPanel extends JPanel {
         int rowCount = rt.getCounter();
         Object[][] data = new Object[rowCount][columns.length];
         
+        nb_particle = rt.getCounter();
+        nb_isolated = 0;
+        
     	for (int i = 0; i < rowCount; i++) {
     		data[i][0] = i + 1;
     		for (int j = 0; j < originalHeadings.length; j++) {
     			String colName = originalHeadings[j];
     			if (rt.columnExists(colName)) {
                     data[i][j+1] = rt.getValue(colName, i);
+                    if (colName.equals("is_isolated")) {
+                    	nb_isolated += rt.getValue(colName, i); // is_isolated column is 1 or 0
+                    }
                 } else {
                     data[i][j+1] = "-";
                 }
     		}
     	}
+    	
+    	nbIsolatedLabel.setText("Isolated: " + nb_isolated + " | Total: " + nb_particle);
     	
     	DefaultTableModel model = new DefaultTableModel(data, columns) {
             @Override

@@ -85,7 +85,7 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	int options = 0;
     	// options += ParticleAnalyzer.ELLIPSE;  // show overlay of detected particles
     	// options += ParticleAnalyzer.OVERLAY; // crash the program
-    	// options += ParticleAnalyzer.SHOW_OUTLINES; // show outlines of every particles in each images of the stack
+    	options += ParticleAnalyzer.SHOW_OUTLINES; // show outlines of every particles in each images of the stack
     	// options += ParticleAnalyzer.DISPLAY_SUMMARY; // show statistics
     	if (excludeOnEdgesEnabled) {
     		options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
