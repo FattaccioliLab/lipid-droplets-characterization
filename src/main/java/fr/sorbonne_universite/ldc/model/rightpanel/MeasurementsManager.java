@@ -13,6 +13,7 @@ import java.util.Set;
 import javax.swing.SwingWorker;
 
 import fr.sorbonne_universite.ldc.model.workers.MeasuresProcessingWorker;
+import fr.sorbonne_universite.ldc.model.workers.MeasuresPreviewWorker;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.PreprocessingPanel;
 import ij.IJ;
 import ij.ImagePlus;
@@ -25,6 +26,29 @@ import ij.measure.ResultsTable;
  */
 public class MeasurementsManager {
 
+    /**
+     * Creates a {@link SwingWorker}, that take care of processing and showing the measurements preview, if executed.
+     * @param minSize minimum particle size (px²).
+     * @param maxSize maximum particle size (px²).
+     * @param minCircularity minimum particle circularity.
+     * @param maxCircularity maximum particle circularity.
+     * @param excludeOnEdgesEnabled Particle Analyzer option.
+     * @param showAreaEnabled True if the 'Area' column must be shown in the results.
+     * @param showMedianEnabled True if the 'Median' column must be shown in the results.
+     * @param showMeanEnabled True if the 'Mean' column must be shown in the results.
+     * @param showIntegratedDensityEnabled True if the 'IntegratedDensity' column must be shown in the results.
+     * @param showCircularityEnabled True if the 'Circularity' column is shown must be the results.
+     * @param img the current image to consider.
+	 * @see MeasuresPreviewWorker
+     */
+	public SwingWorker<Void,Void> createMeasuresPreviewWorker(double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
+			boolean showAreaEnabled, boolean showMedianEnabled, boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled,
+			ImagePlus img){
+		return new MeasuresPreviewWorker(minSize, maxSize, minCircularity, maxCircularity, excludeOnEdgesEnabled, 
+				showAreaEnabled, showMedianEnabled, showMeanEnabled, showIntegratedDensityEnabled, showCircularityEnabled, 
+				img); 
+	}
+	
     /**
      * Creates a {@link SwingWorker}, that take care of processing measurements and showing them, if executed.
      * @param minSize minimum particle size (px²).

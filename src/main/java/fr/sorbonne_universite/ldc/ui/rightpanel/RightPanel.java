@@ -1,6 +1,7 @@
 package fr.sorbonne_universite.ldc.ui.rightpanel;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -64,6 +65,10 @@ public class RightPanel extends JPanel {
     private JPanel viewPanel; // container panel for the data table
     
     private ResultsTable currentTable; // reference for the table currently shown 
+    private int nb_particle = 0; // total number of particle in the current table
+    private int nb_isolated = 0;	// save the number of isolated particle showed with the given measures parameters
+    
+    private JLabel nbIsolatedLabel; // label that show the number of isolated particles on the total number of particles
     
     public RightPanel(Context ctx, LeftPanel leftPanel) {
     	super();
@@ -75,9 +80,35 @@ public class RightPanel extends JPanel {
     	JPanel headerPanel = new JPanel();
         JPanel footerPanel = new JPanel();
     	
+        // preview overlay button
+        JButton previewButton = new JButton("Preview");
+        previewButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
+//        previewButton.setPreferredSize(new Dimension(80, 25));
+        previewButton.addActionListener(e -> {
+        	// check if there is an image
+        	if (leftPanel.getCurrentImage() == null) {
+        		IJ.showMessage("Please open an image first (File > Open)");
+        		return ;
+        	}
+        	
+        	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
+            
+        	// launch the preview worker
+        	SwingWorker<Void,Void> previewWorker = selectedSettings.createMeasuresPreviewWorker(leftPanel.getCurrentImage());
+        	previewWorker.execute();
+        });;
+        headerPanel.add(previewButton);
+
         // show measures button
         JButton resultsButton = new JButton("Show results");
+        resultsButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
         resultsButton.addActionListener(e -> {
+        	// check if there is an image
+        	if (leftPanel.getCurrentImage() == null) {
+        		IJ.showMessage("Please open an image first (File > Open)");
+        		return ;
+        	}
+        	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
         	ResultsTable rt = ResultsTable.getResultsTable();
@@ -100,6 +131,7 @@ public class RightPanel extends JPanel {
         
         // generate histograms button
         JButton histogramsButton = new JButton("Histograms");
+        histogramsButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
         histogramsButton.addActionListener(e -> {
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
@@ -114,9 +146,20 @@ public class RightPanel extends JPanel {
         });
         headerPanel.add(histogramsButton);
         
+        // label for the number of isolated particles
+        nbIsolatedLabel = new JLabel("Isolated: 0 | Total: 0");
+        nbIsolatedLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        headerPanel.add(nbIsolatedLabel);
+        
         // generate statistics button
         JButton statisticButton = new JButton("Statistics");
         statisticButton.addActionListener(e -> {
+        	// check if the table is null or empty
+        	if (currentTable == null || currentTable.getCounter() == 0) {
+        		IJ.showMessage("No statistics to show.");
+        		return;
+        	}
+        	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
         	ImagePlus currentImg = leftPanel.getCurrentImage();
         	showTable(selectedSettings.calculateSummaryTable(currentTable, currentImg.getCalibration(), currentImg.getWidth(), currentImg.getHeight()));
@@ -189,7 +232,7 @@ public class RightPanel extends JPanel {
 	    	viewPanel.revalidate();
 	        viewPanel.repaint();
 	            
-	        // if it is because there is no output for the given parameters
+//	        // if it is because there is no output for the given parameters
     		if (rt != null && rt.getCounter() == 0) {
 	    		IJ.showMessage("No output for the given parameters");
     		}
@@ -213,16 +256,28 @@ public class RightPanel extends JPanel {
         int rowCount = rt.getCounter();
         Object[][] data = new Object[rowCount][columns.length];
         
+        nb_particle = rt.getCounter();
+        nb_isolated = 0;
+        
     	for (int i = 0; i < rowCount; i++) {
     		data[i][0] = i + 1;
     		for (int j = 0; j < originalHeadings.length; j++) {
     			String colName = originalHeadings[j];
     			if (rt.columnExists(colName)) {
                     data[i][j+1] = rt.getValue(colName, i);
+                    if (colName.equals("is_isolated")) {
+                    	nb_isolated += rt.getValue(colName, i); // is_isolated column is 1 or 0
+                    }
                 } else {
                     data[i][j+1] = "-";
                 }
     		}
+    	}
+    	
+    	if (rt.columnExists("is_isolated")){
+        	nbIsolatedLabel.setText("Isolated: " + nb_isolated + " | Total: " + nb_particle);
+    	}else {
+    		nbIsolatedLabel.setText("");
     	}
     	
     	DefaultTableModel model = new DefaultTableModel(data, columns) {

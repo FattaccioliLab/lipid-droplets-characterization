@@ -200,6 +200,13 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // Measurements showing options
     // ============================
 
+	/** @see MeasuresPreviewWorker */
+    @Override public SwingWorker<Void, Void> createMeasuresPreviewWorker(ImagePlus img){
+		return measurementsManager.createMeasuresPreviewWorker(
+				getAnalyseMinSize(), getAnalyseMaxSize(), getAnalyseMinCircularity(), getAnalyseMaxCircularity(), analyseExcludeOnEdgesEnabled(), 
+				showAreaEnabled(), showMedianEnabled(), showMeanEnabled(), showIntegratedDensityEnabled(), showCircularityEnabled(), img);
+    }
+    
 	/** @see MeasuresProcessingWorker */
 	@Override public SwingWorker<Void, Void> createMeasuresProcessingWorker(ImagePlus img) {
 		return measurementsManager.createMeasuresProcessingWorker(
