@@ -1,6 +1,7 @@
 package fr.sorbonne_universite.ldc.ui.rightpanel;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -81,6 +82,8 @@ public class RightPanel extends JPanel {
     	
         // preview overlay button
         JButton previewButton = new JButton("Preview");
+        previewButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
+//        previewButton.setPreferredSize(new Dimension(80, 25));
         previewButton.addActionListener(e -> {
         	// check if there is an image
         	if (leftPanel.getCurrentImage() == null) {
@@ -98,6 +101,7 @@ public class RightPanel extends JPanel {
 
         // show measures button
         JButton resultsButton = new JButton("Show results");
+        resultsButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
         resultsButton.addActionListener(e -> {
         	// check if there is an image
         	if (leftPanel.getCurrentImage() == null) {
@@ -127,6 +131,7 @@ public class RightPanel extends JPanel {
         
         // generate histograms button
         JButton histogramsButton = new JButton("Histograms");
+        histogramsButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
         histogramsButton.addActionListener(e -> {
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
@@ -228,9 +233,9 @@ public class RightPanel extends JPanel {
 	        viewPanel.repaint();
 	            
 //	        // if it is because there is no output for the given parameters
-//    		if (rt != null && rt.getCounter() == 0) {
-//	    		IJ.showMessage("No output for the given parameters");
-//    		}
+    		if (rt != null && rt.getCounter() == 0) {
+	    		IJ.showMessage("No output for the given parameters");
+    		}
     		
     		return;
     	}

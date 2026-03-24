@@ -24,7 +24,7 @@ import ij.ImagePlus;
 @SuppressWarnings("serial")
 public class MainGUI_LDC extends JFrame {
     
-	private static final int WINDOW_WIDTH = 1400;
+	private static final int WINDOW_WIDTH = 1200;
 	private static final int WINDOW_HEIGHT = 900;
 	
 	@Parameter

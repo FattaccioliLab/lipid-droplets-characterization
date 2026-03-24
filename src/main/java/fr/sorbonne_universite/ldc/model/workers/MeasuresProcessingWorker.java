@@ -73,7 +73,9 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	if (showMeanEnabled) measurements += Measurements.MEAN;
     	if (showMedianEnabled) measurements += Measurements.MEDIAN;
     	if (showIntegratedDensityEnabled) measurements += Measurements.INTEGRATED_DENSITY;
-    	if (showCircularityEnabled) measurements += Measurements.CIRCULARITY;
+    	
+    	// measure circularity even if the show circularity is disabled, to tell if a particle is isolated
+    	measurements += Measurements.CIRCULARITY;
     	
     	// add BX, BY, Width and Height to the result table, used to define if the particle is on the edge
     	measurements += Measurements.RECT;
@@ -136,13 +138,20 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
 	    		rt.setValue("is_isolated", row, isIsolated);
 	    	}
     	}
-    	
+
     	// cleaning the results table : remove unused columns
     	if (rt.columnExists("BX")) rt.deleteColumn("BX");
         if (rt.columnExists("BY")) rt.deleteColumn("BY");
         if (rt.columnExists("Width")) rt.deleteColumn("Width");
         if (rt.columnExists("Height")) rt.deleteColumn("Height");
+        if (!showCircularityEnabled){
+        	rt.deleteColumn("Circ."); // remove if the circularity parameter isn't activated
+        	rt.deleteColumn("AR");
+        	rt.deleteColumn("Round");
+        	rt.deleteColumn("Solidity");
+        }
     	
+        
 		// close the ROI manager window that appear with the ParticlesAnalyzer WIP
     	RoiManager rm = RoiManager.getInstance();
         if (rm != null) {
