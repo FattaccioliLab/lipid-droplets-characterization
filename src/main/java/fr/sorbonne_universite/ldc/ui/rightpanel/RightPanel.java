@@ -90,7 +90,9 @@ public class RightPanel extends JPanel {
         	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
             
-        	// TODO
+        	// launch the preview worker
+        	SwingWorker<Void,Void> previewWorker = selectedSettings.createMeasuresPreviewWorker(leftPanel.getCurrentImage());
+        	previewWorker.execute();
         });;
         headerPanel.add(previewButton);
 
@@ -267,7 +269,11 @@ public class RightPanel extends JPanel {
     		}
     	}
     	
-    	nbIsolatedLabel.setText("Isolated: " + nb_isolated + " | Total: " + nb_particle);
+    	if (rt.columnExists("is_isolated")){
+        	nbIsolatedLabel.setText("Isolated: " + nb_isolated + " | Total: " + nb_particle);
+    	}else {
+    		nbIsolatedLabel.setText("");
+    	}
     	
     	DefaultTableModel model = new DefaultTableModel(data, columns) {
             @Override
