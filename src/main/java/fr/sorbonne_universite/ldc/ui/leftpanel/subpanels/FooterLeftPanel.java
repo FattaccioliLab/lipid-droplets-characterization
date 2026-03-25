@@ -1,7 +1,5 @@
 package fr.sorbonne_universite.ldc.ui.leftpanel.subpanels;
 
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 
 import javax.swing.JButton;
@@ -24,9 +22,8 @@ public class FooterLeftPanel extends JPanel{
 	public FooterLeftPanel(Context ctx, LeftPanel leftPanel) {
 		
 		// Initialization of the panel layout
-		super(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        setAlignmentX(Component.CENTER_ALIGNMENT);
-        setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
+		super(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        //setAlignmentX(Component.LEFT_ALIGNMENT);
         
         ctx.inject(this);
 

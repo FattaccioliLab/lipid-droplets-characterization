@@ -1,5 +1,6 @@
 package fr.sorbonne_universite.ldc.model.leftpanel;
 
+import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.ThresholdingPanel;
 import ij.IJ;
 import ij.ImagePlus;
@@ -12,16 +13,23 @@ import ij.process.ImageProcessor;
  */
 public class ThresholdingManager {
 
+	private LDCService service;
+	public ThresholdingManager(LDCService ldcService) {
+		this.service = ldcService;
+	}
+	
     /**
      * Applies a manual threshold (preview) to the image.
      */
     public void setManualThreshold(ImagePlus imp, double min, double max) {
         if (imp == null) return;
         ImageProcessor ip = imp.getProcessor();
+        if(service.enhanceContrastEnabled()) service.applyEnhanceContrast(ip);
         ip.setThreshold(min, max, ImageProcessor.RED_LUT);
         imp.updateAndDraw();
     }
 
+    
     /**
      * Calculates and applies an automatic threshold (Otsu, Moments, etc.).
      */
@@ -29,15 +37,35 @@ public class ThresholdingManager {
         if (imp == null) return new double[]{0, 0};
         
         ImageProcessor ip = imp.getProcessor();
-        
+
+        // 1. Let ImageJ calculate the Auto-Threshold values
+        // We use NO_LUT_UPDATE because we don't care about the visuals yet
         if (darkBackground) {
-            ip.setAutoThreshold(method, true, ImageProcessor.RED_LUT);
+            ip.setAutoThreshold(method, true, ImageProcessor.NO_LUT_UPDATE);
         } else {
-            ip.setAutoThreshold(method, false, ImageProcessor.RED_LUT);
+            ip.setAutoThreshold(method, false, ImageProcessor.NO_LUT_UPDATE);
         }
-        
+
+        // 2. CAPTURE the calculated values before they get destroyed!
+        double computedMin = ip.getMinThreshold();
+        double computedMax = ip.getMaxThreshold();
+
+        // 3. Apply your contrast enhancement 
+        // (This step internally resets the threshold, making the values -808080.0)
+        if (service.enhanceContrastEnabled()) {
+            // Use whatever your exact method signature is here
+            service.applyEnhanceContrast(ip); 
+        }
+
+        // 4. RE-APPLY the captured threshold with the RED overlay
+        if (computedMin != ImageProcessor.NO_THRESHOLD) {
+            ip.setThreshold(computedMin, computedMax, ImageProcessor.RED_LUT);
+        }
+
         imp.updateAndDraw();
-        return new double[]{ip.getMinThreshold(), ip.getMaxThreshold()};
+        
+        // Return the captured values, NOT ip.getMinThreshold() (just to be safe)
+        return new double[]{computedMin, computedMax};
     }
 
     public boolean resetThreshold(ImagePlus imp) {

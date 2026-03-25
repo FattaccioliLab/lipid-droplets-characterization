@@ -1,6 +1,7 @@
 package fr.sorbonne_universite.ldc.ui.leftpanel.subpanels;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.io.File;
 
 import javax.swing.Box;
@@ -86,6 +87,13 @@ public class ImageSourcePanel extends JPanel {
 	    add(resetImageButton);
 	    add(Box.createVerticalStrut(10));
 	    
+	    int fixedHeight = 150; 
+	    Dimension fixedSize = new Dimension(Integer.MAX_VALUE, fixedHeight);
+	    
+	    this.setMinimumSize(fixedSize);
+	    this.setPreferredSize(fixedSize);
+	    this.setMaximumSize(fixedSize);
+	    
 		startImageWatcher();
 	}
     
@@ -123,7 +131,7 @@ public class ImageSourcePanel extends JPanel {
                 	leftPanel.setOriginalImage(currentImg.duplicate()); // original image saved
                 	leftPanel.setCurrentImage(currentImg);
                 	updateUIInfosNbSlices();
-                	imageStatusLabel.setText("<html><center>Image opened:<br>" + currentImg.getTitle() + "</center></html>");
+                	imageStatusLabel.setText("<html><center>Current image: " + currentImg.getTitle() + "</center></html>");
                 	leftPanel.enablePanels(true);
                 	
                 // If there is an original LDC image previously saved, and there is no other current image opened, 
@@ -261,6 +269,31 @@ public class ImageSourcePanel extends JPanel {
         currentImg.setTitle(currentTitle);
         currentImg.updateAndDraw();
         currentImg.repaintWindow();
+        
+        closeBinaryWindow(currentImg);
     }
 
+    
+    /**
+     * Finds and closes the generated binary mask window associated with the given original image.
+     * This ensures the workspace is cleaned up when the user resets the workflow.
+     * * @param originalImp The original source image. The method uses its short title 
+     * to locate the corresponding "[Title]_Binary" window.
+     */
+    public void closeBinaryWindow(ImagePlus originalImp) {
+        if (originalImp == null) return;
+
+        // Reconstruct the exact title given to the generated binary image
+        String binaryTitle = originalImp.getShortTitle() + "_Binary";
+        
+        // Ask ImageJ if an image with this title is currently open
+        ImagePlus binaryImp = WindowManager.getImage(binaryTitle);
+        
+        // If it exists, safely close it
+        if (binaryImp != null) {
+            // Tell ImageJ no changes were made to bypass the "Save changes?" dialog
+            binaryImp.changes = false; 
+            binaryImp.close();
+        }
+    }
 }

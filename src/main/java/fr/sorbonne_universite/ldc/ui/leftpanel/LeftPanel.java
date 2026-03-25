@@ -11,6 +11,7 @@ import org.scijava.Context;
 import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.FooterLeftPanel;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.ImageSourcePanel;
+import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.MorphologyPanel;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.ParticleAnalysisParamsPanel;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.PreprocessingPanel;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.ThresholdingPanel;
@@ -37,6 +38,7 @@ public class LeftPanel extends JPanel {
     private ImageSourcePanel imageSourcePanel;
     private PreprocessingPanel preprocessingPanel;
     private ThresholdingPanel thresholdingPanel;
+    private MorphologyPanel morphologyPanel;
     private ParticleAnalysisParamsPanel particleAnalysisParamsPanel;
     private FooterLeftPanel footerLeftPanel;
 
@@ -45,7 +47,7 @@ public class LeftPanel extends JPanel {
     private boolean preprocessingDone = false;  
   
     // Sub-panels display indexes
-    // 0 = Preprocessing, 1 = Thresholding, 2 = Particle analysis parameters
+    // 0 = Preprocessing, 1 = Thresholding, 2 = MorphologyPanel, 3 = Particle analysis parameters
     private int navigationIndex = 0; // Which sub-panel is currently showed
     private int workflowIndex = 0; // Which workflow step is currently considered (other sub-panels are locked)
 
@@ -78,6 +80,11 @@ public class LeftPanel extends JPanel {
         thresholdingPanel = new ThresholdingPanel(ctx, this);
         thresholdingPanel.setVisible(false);
         mainContainer.add(thresholdingPanel);
+        
+        //MorphologyPanel
+        this.morphologyPanel = new MorphologyPanel(ctx, this);
+        morphologyPanel.setVisible(false);
+        mainContainer.add(morphologyPanel);
         
         // ParticleAnalysisParamsPanel - Initially Hidden
         particleAnalysisParamsPanel = new ParticleAnalysisParamsPanel(ctx);
@@ -199,8 +206,15 @@ public class LeftPanel extends JPanel {
     		thresholdingPanel.enableUIComponents(false);
     	}
     	
-    	// ParticleAnalysisParamsPanel
+    	// MorphologyPanel
     	if (enable && workflowIndex == 2) {
+    		morphologyPanel.enableUIComponents(true);
+    	} else {
+    		morphologyPanel.enableUIComponents(false);
+    	}
+    	
+    	// ParticleAnalysisParamsPanel
+    	if (enable && workflowIndex == 3) {
     		particleAnalysisParamsPanel.enableUIComponents(true);
     	} else {
     		particleAnalysisParamsPanel.enableUIComponents(false);
@@ -213,9 +227,23 @@ public class LeftPanel extends JPanel {
     public void resetPanels() {
     	preprocessingPanel.resetUIComponents();
     	thresholdingPanel.resetUIComponents();
+    	morphologyPanel.resetUIComponents();
     	particleAnalysisParamsPanel.resetUIComponents();
     	
     	workflowIndex = 0; // Workflow back to preprocessing
+    	
+    	//IDEA : ui goes back to the preprocessing panel
+    	/*
+    	preprocessingPanel.setVisible(true);
+    	thresholdingPanel.setVisible(false);
+    	morphologyPanel.setVisible(false);
+    	particleAnalysisParamsPanel.setVisible(false);
+    	
+    	
+    	// Update Footer Buttons
+        footerLeftPanel.setPrevButtonEnabled(false);
+    	footerLeftPanel.setNextButtonEnabled(true);
+    	*/
     }
     
     // =========================================================================
@@ -236,13 +264,22 @@ public class LeftPanel extends JPanel {
             
             // Update Footer Buttons
             footerLeftPanel.setPrevButtonEnabled(true);
-            footerLeftPanel.setNextButtonEnabled(true);
+            //footerLeftPanel.setNextButtonEnabled(true);
             
-        } else if (navigationIndex == 1) {
-        	// Switch: Thresholding -> Particle analysis parameters
+        }else if (navigationIndex == 1) {
+        	// Switch: Thresholding -> Morphology
         	thresholdingPanel.setVisible(false);
-            particleAnalysisParamsPanel.setVisible(true);
+        	morphologyPanel.setVisible(true);
             navigationIndex = 2;
+            
+            // Update Footer Buttons
+            //footerLeftPanel.setNextButtonEnabled(t); // Nothing after
+        } 
+        else if (navigationIndex == 2) {
+        	// Switch: Morphology -> Particle analysis parameters
+        	morphologyPanel.setVisible(false);
+            particleAnalysisParamsPanel.setVisible(true);
+            navigationIndex = 3;
             
             // Update Footer Buttons
             footerLeftPanel.setNextButtonEnabled(false); // Nothing after
@@ -266,9 +303,18 @@ public class LeftPanel extends JPanel {
             
         } else if (navigationIndex == 2) {
         	// Switch: Particle analysis parameters -> Thresholding
-        	particleAnalysisParamsPanel.setVisible(false);
+        	morphologyPanel.setVisible(false);
         	thresholdingPanel.setVisible(true);
         	navigationIndex = 1;
+        	
+        	// Update Footer Buttons
+            footerLeftPanel.setPrevButtonEnabled(true);
+        	footerLeftPanel.setNextButtonEnabled(true);
+        } else if (navigationIndex == 3) {
+        	// Switch: Particle analysis parameters -> Thresholding
+        	particleAnalysisParamsPanel.setVisible(false);
+        	morphologyPanel.setVisible(true);
+        	navigationIndex = 2;
         	
         	// Update Footer Buttons
             footerLeftPanel.setPrevButtonEnabled(true);
