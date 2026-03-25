@@ -365,5 +365,9 @@ public class ThresholdingPanel extends JPanel {
     	maxSpinner.setValue(0);
     	service.setThresholdMinValue(0);
     	service.setThresholdMaxValue(0);
+    	
+        ImagePlus img = leftPanel.getCurrentImage();
+        if(img == null) return;
+        isReset = service.resetThreshold(img);
     }
 }

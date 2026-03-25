@@ -230,6 +230,7 @@ public class LeftPanel extends JPanel {
     public void resetPanels() {
     	preprocessingPanel.resetUIComponents();
     	thresholdingPanel.resetUIComponents();
+    	morphologyPanel.resetUIComponents();
     	particleAnalysisParamsPanel.resetUIComponents();
     	
     	workflowIndex = 0; // Workflow back to preprocessing
