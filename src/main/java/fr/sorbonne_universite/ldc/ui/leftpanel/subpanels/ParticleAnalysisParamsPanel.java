@@ -65,7 +65,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         super();
         ctx.inject(this);
         
-        PanelUtils.createVerticalPanel(this, "Particle analysis parameters", 500);
+        PanelUtils.createVerticalPanel(this, "Particle analysis parameters", 700);
         
         // PARTICLE SETTINGS
         
@@ -209,7 +209,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         
         // MEASUREMENTS
         
-        mesurementsInfos = PanelUtils.createVerticalPanel("Measurements", 150);
+        mesurementsInfos = PanelUtils.createVerticalPanel("Measurements", 200);
         
 	    // --- Show area section ---
         areaCheckbox = new JCheckBox("Show area measures");

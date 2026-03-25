@@ -24,6 +24,9 @@ import ij.ImagePlus;
 @SuppressWarnings("serial")
 public class MainGUI_LDC extends JFrame {
     
+	private static final int WINDOW_WIDTH = 1200;
+	private static final int WINDOW_HEIGHT = 900;
+	
 	@Parameter
     private LDCService selectedSettings;
     
@@ -47,10 +50,10 @@ public class MainGUI_LDC extends JFrame {
         // Initialization of the MainGUI itself
         
         //Set the initial size
-        setSize(800, 650);
+        setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         
         //Set the MINIMUM size (User cannot resize smaller than this)
-        setMinimumSize(new Dimension(800, 600));
+        setMinimumSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
         setLocationRelativeTo(null);
         
         setTitle("Lipid Droplets Characterization");

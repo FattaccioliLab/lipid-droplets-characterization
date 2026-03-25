@@ -4,10 +4,9 @@ import javax.swing.SwingWorker;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.measure.Measurements;
-import ij.measure.ResultsTable;
 import ij.plugin.filter.ParticleAnalyzer;
-import ij.plugin.frame.RoiManager;
 
 /**
  * {@link SwingWorker} that take care of processing measurements and showing them.
@@ -16,7 +15,7 @@ import ij.plugin.frame.RoiManager;
  * to those chosen by the user and then starting the particles analyzer. 
  * </p>
  */
-public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
+public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     
 	private double minSize;
 	private double maxSize;
@@ -30,11 +29,8 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     private boolean showCircularityEnabled;
     private ImagePlus img;
     
-    // threshold for the circularity, to define if a particle is isolated or not
-    private double circularityThreshold = 0.5;
-    
     /**
-     * Creates a {@code MeasuresProcessingWorker}.
+     * Creates a {@code MeasuresPreviewWorker}.
      * @param minSize minimum particle size (px²).
      * @param maxSize maximum particle size (px²).
      * @param minCircularity minimum particle circularity.
@@ -47,7 +43,7 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
      * @param showCircularityEnabled True if the 'Circularity' column is shown must be the results.
      * @param img The current image to consider.
      */
-    public MeasuresProcessingWorker(double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
+    public MeasuresPreviewWorker(double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
     		boolean showAreaEnabled, boolean showMedianEnabled, boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled,
     		ImagePlus img) {
     	this.minSize = minSize;
@@ -73,33 +69,29 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	if (showMeanEnabled) measurements += Measurements.MEAN;
     	if (showMedianEnabled) measurements += Measurements.MEDIAN;
     	if (showIntegratedDensityEnabled) measurements += Measurements.INTEGRATED_DENSITY;
-    	
-    	// measure circularity even if the show circularity is disabled, to tell if a particle is isolated
-    	measurements += Measurements.CIRCULARITY;
+    	if (showCircularityEnabled) measurements += Measurements.CIRCULARITY;
     	
     	// add BX, BY, Width and Height to the result table, used to define if the particle is on the edge
     	measurements += Measurements.RECT;
     	
-    	// set particlesAnalyzer
-    	ResultsTable rt = ResultsTable.getResultsTable();
-    	
     	// set options for Particles Analyzer
     	int options = 0;
-    	// options += ParticleAnalyzer.ELLIPSE;  // show overlay of detected particles
-    	// options += ParticleAnalyzer.OVERLAY; // crash the program
-    	// options += ParticleAnalyzer.SHOW_OUTLINES; // show outlines of every particles in each images of the stack
-    	// options += ParticleAnalyzer.DISPLAY_SUMMARY; // show statistics
+    	options += ParticleAnalyzer.SHOW_OUTLINES; // show outlines of every particles in each images of the stack
     	if (excludeOnEdgesEnabled) {
     		options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
     	}
     	
-    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, rt, minSize, maxSize, minCircularity, maxCircularity);
+    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, null, minSize, maxSize, minCircularity, maxCircularity);
+    	pa.setHideOutputImage(true);
 
     	// get current image
     	if (img == null) {
     		IJ.showMessage("Please open an image first (File > Open)");
     		return null;
     	}
+    	
+    	// create an empty stack with the same dimensions as the original one, to keep in it the outlines images
+    	ImageStack outlinesStack = new ImageStack(img.getWidth(), img.getHeight());
     	
     	// analyze each image of the stack
     	boolean success = true;
@@ -110,57 +102,20 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	    if (!success) {
     	    	break;
     	    }
+    	    
+    	    // adding the outlines to the stack
+    	    ImagePlus outImg = pa.getOutputImage();
+            if (outImg != null) {
+                outlinesStack.addSlice(img.getStack().getSliceLabel(i), outImg.getProcessor());
+            }
     	}
     	
-    	if (rt.columnExists("Circ.")) { 
-	    	// detect for each particle if it is isolated
-	    	for (int row = 0; row < rt.getCounter(); row++) {
-	    		int isIsolated = 0;
-	    		
-	    		// check if the particle touches the edge of the image
-	    		boolean touchesEdge = false;
-	    		if (rt.columnExists("BX") && rt.columnExists("BY") && rt.columnExists("Width") && rt.columnExists("Height")) {
-	    			double bx = rt.getValue("BX", row);
-	    			double by = rt.getValue("BY", row);
-	    			double width = rt.getValue("Width", row);
-	    			double height = rt.getValue("Height", row);
-	    			if (bx <= 0 || by <= 0 || (bx + width) >= img.getWidth() || (by + height) >= img.getHeight()) {
-	    	            touchesEdge = true;
-	    	        }
-	    		}
-	    		
-	    		// check if the particle circularity is greater than the threshold, then it is isolated
-	    		if (!touchesEdge && rt.columnExists("Circ.")) {
-	    			if (rt.getValue("Circ.", row) >= circularityThreshold) isIsolated = 1;
-	    		}
-	    		
-	    		// add the attribute to the particle
-	    		rt.setValue("is_isolated", row, isIsolated);
-	    	}
-    	}
-
-    	// cleaning the results table : remove unused columns
-    	if (rt.columnExists("BX")) rt.deleteColumn("BX");
-        if (rt.columnExists("BY")) rt.deleteColumn("BY");
-        if (rt.columnExists("Width")) rt.deleteColumn("Width");
-        if (rt.columnExists("Height")) rt.deleteColumn("Height");
-        if (!showCircularityEnabled){
-        	rt.deleteColumn("Circ."); // remove if the circularity parameter isn't activated
-        	rt.deleteColumn("AR");
-        	rt.deleteColumn("Round");
-        	rt.deleteColumn("Solidity");
-        }
-    	
-        
-		// close the ROI manager window that appear with the ParticlesAnalyzer WIP
-    	RoiManager rm = RoiManager.getInstance();
-        if (rm != null) {
-        	rm.setVisible(false);
-        	rm.reset();
-        	rm.close();
+    	// show the preview
+    	if (outlinesStack.getSize() > 0) {
+            ImagePlus combinedOutlines = new ImagePlus("Outlines of " + img.getTitle(), outlinesStack);
+            combinedOutlines.show();
         }
     	
     	return null;
 	}
-	
 }
