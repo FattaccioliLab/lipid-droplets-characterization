@@ -97,6 +97,15 @@ public interface LDCService extends SciJavaService {
 	public boolean watershedEnabled();
 	public void setWathershed(boolean watershed);
 	
+	// ====================================
+    // Morphology API
+    // ====================================
+    public void captureMorphologySnapshot(ImagePlus imp);
+    public void previewMorphology(ImagePlus imp);
+    public boolean resetMorphologyPreview(ImagePlus imp);
+    public boolean applyMorphology(ImagePlus imp);
+	
+    
     // =================
     // Analyse particles
     // =================

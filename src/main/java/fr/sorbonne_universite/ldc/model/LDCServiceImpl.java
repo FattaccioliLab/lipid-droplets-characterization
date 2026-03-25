@@ -9,6 +9,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
 
+import fr.sorbonne_universite.ldc.model.leftpanel.MorphologyManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.PreprocessingManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.ThresholdingManager;
 import fr.sorbonne_universite.ldc.model.rightpanel.MeasurementsManager;
@@ -33,6 +34,7 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	// For the LeftPanel's sub-panels operations.
 	private PreprocessingManager preprocessingManager;
 	private ThresholdingManager thresholdingManager;
+	private MorphologyManager morphologyManager;
   
 	// For the RightPanel's sub-panels operations.
 	private MeasurementsManager measurementsManager;
@@ -41,8 +43,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	public void initialize() { 
 		settings = new AnalysisSettings(); 
 		preprocessingManager = new PreprocessingManager();
-		thresholdingManager = new ThresholdingManager();
+		thresholdingManager = new ThresholdingManager(this);
 		measurementsManager = new MeasurementsManager();
+		morphologyManager = new MorphologyManager();
 	}
 	
     // =========================================================================
@@ -173,18 +176,6 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // ===========================
 	
     @Override public void previewManualThreshold(ImagePlus imp) {
-    	//i tried to add darkBG in manual mode, but it seems unnecessary, 
-    	//user has full control with sliders to change the backround into dark or red
-    	
-    	/*int maxVal;
-    	int minVal;
-    	if(isDark) {	//have to invert
-    		maxVal = AnalysisSettings.DFL_THRESHOLD_MAX_VALUE;
-    		minVal = settings.getThresholdMaxValue();
-    	}else {
-    		maxVal=settings.getThresholdMaxValue();
-    		minVal=settings.getThresholdMinValue();
-    	}*/
         thresholdingManager.setManualThreshold(imp, settings.getThresholdMinValue(), settings.getThresholdMaxValue());
     }
 
@@ -195,6 +186,36 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public boolean applyThreshold(ImagePlus imp) { return thresholdingManager.applyThreshold(imp); }
     
     @Override public boolean resetThreshold(ImagePlus imp) { return thresholdingManager.resetThreshold(imp); }
+    
+    
+    // ====================================
+    // Morphology
+    // ====================================
+    public void captureMorphologySnapshot(ImagePlus imp) {
+    	morphologyManager.captureSnapshot(imp);
+    }
+    public void previewMorphology(ImagePlus imp) {
+    	morphologyManager.previewMorphology(
+    						imp, 
+    						settings.erosionEnabled(), 
+    						settings.dilationEnabled(), 
+    						settings.openingEnabled(), 
+    						settings.closingEnabled(), 
+    						settings.watershedEnabled());
+    }
+    public boolean resetMorphologyPreview(ImagePlus imp) {
+    	return morphologyManager.resetPreview(imp);
+    }
+    
+    public boolean applyMorphology(ImagePlus imp) {
+    	return morphologyManager.applyMorphology(
+				imp, 
+				settings.erosionEnabled(), 
+				settings.dilationEnabled(), 
+				settings.openingEnabled(), 
+				settings.closingEnabled(), 
+				settings.watershedEnabled());
+    }
 	
     // ============================
     // Measurements showing options

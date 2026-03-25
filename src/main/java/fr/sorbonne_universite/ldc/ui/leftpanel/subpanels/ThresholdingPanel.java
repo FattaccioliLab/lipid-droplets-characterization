@@ -339,7 +339,9 @@ public class ThresholdingPanel extends JPanel {
             	maxSpinner.setValue(0);
         	}
             enableSliders(false);
-            histogramPanel.setHistogram(null);
+            
+            ImagePlus imp = leftPanel.getCurrentImage();
+            if(imp == null)  histogramPanel.setHistogram(null);
         }
     }
     
