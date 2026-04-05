@@ -126,6 +126,10 @@ public interface LDCService extends SciJavaService {
 	public boolean analyseExcludeOnEdgesEnabled();
 	public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges);
 	
+	// Circularity threshold
+	public double getAnalyseCircularityThreshold();
+	public void setAnalyseCircularityThreshold(double analyseCircularityThreshold);
+	
     // ============================
     // Measurements showing options
     // ============================

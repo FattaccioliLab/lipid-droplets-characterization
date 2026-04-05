@@ -31,20 +31,29 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     
     /**
      * Creates a {@code MeasuresPreviewWorker}.
-     * @param minSize minimum particle size (px²).
-     * @param maxSize maximum particle size (px²).
-     * @param minCircularity minimum particle circularity.
-     * @param maxCircularity maximum particle circularity.
-     * @param excludeOnEdgesEnabled Particle Analyzer option.
-     * @param showAreaEnabled True if the 'Area' column must be shown in the results.
-     * @param showMedianEnabled True if the 'Median' column must be shown in the results.
-     * @param showMeanEnabled True if the 'Mean' column must be shown in the results.
-     * @param showIntegratedDensityEnabled True if the 'IntegratedDensity' column must be shown in the results.
-     * @param showCircularityEnabled True if the 'Circularity' column is shown must be the results.
-     * @param img The current image to consider.
+     * @param minSize 							Minimum particle size (px²).
+     * @param maxSize 							Maximum particle size (px²).
+     * @param minCircularity 					Minimum particle circularity.
+     * @param maxCircularity 					Maximum particle circularity.
+     * @param excludeOnEdgesEnabled 			Particle Analyzer option.
+     * @param showAreaEnabled 					True if the 'Area' column must be shown in the results.
+     * @param showMedianEnabled 				True if the 'Median' column must be shown in the results.
+     * @param showMeanEnabled 					True if the 'Mean' column must be shown in the results.
+     * @param showIntegratedDensityEnabled 		True if the 'IntegratedDensity' column must be shown in the results.
+     * @param showCircularityEnabled 			True if the 'Circularity' column is shown must be the results.
+     * @param img 								The current image to consider.
      */
-    public MeasuresPreviewWorker(double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
-    		boolean showAreaEnabled, boolean showMedianEnabled, boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled,
+    public MeasuresPreviewWorker(
+    		double minSize,
+    		double maxSize,
+    		double minCircularity,
+    		double maxCircularity,
+    		boolean excludeOnEdgesEnabled,
+    		boolean showAreaEnabled,
+    		boolean showMedianEnabled,
+    		boolean showMeanEnabled,
+    		boolean showIntegratedDensityEnabled,
+    		boolean showCircularityEnabled,
     		ImagePlus img) {
     	this.minSize = minSize;
     	this.maxSize = maxSize;

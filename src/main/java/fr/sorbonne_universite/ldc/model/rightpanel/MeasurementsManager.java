@@ -51,24 +51,45 @@ public class MeasurementsManager {
 	
     /**
      * Creates a {@link SwingWorker}, that take care of processing measurements and showing them, if executed.
-     * @param minSize minimum particle size (px²).
-     * @param maxSize maximum particle size (px²).
-     * @param minCircularity minimum particle circularity.
-     * @param maxCircularity maximum particle circularity.
-     * @param excludeOnEdgesEnabled Particle Analyzer option.
-     * @param showAreaEnabled True if the 'Area' column must be shown in the results.
-     * @param showMedianEnabled True if the 'Median' column must be shown in the results.
-     * @param showMeanEnabled True if the 'Mean' column must be shown in the results.
-     * @param showIntegratedDensityEnabled True if the 'IntegratedDensity' column must be shown in the results.
-     * @param showCircularityEnabled True if the 'Circularity' column is shown must be the results.
-     * @param img the current image to consider.
+     * @param minSize 						Minimum particle size (px²).
+     * @param maxSize 						Maximum particle size (px²).
+     * @param minCircularity 				Minimum particle circularity.
+     * @param maxCircularity 				Maximum particle circularity.
+     * @param excludeOnEdgesEnabled 		Particle Analyzer option.
+     * @param circularityThreshold 			Threshold on particle's circularity to define if they are isolated.
+     * @param showAreaEnabled 				True if the 'Area' column must be shown in the results.
+     * @param showMedianEnabled 			True if the 'Median' column must be shown in the results.
+     * @param showMeanEnabled 				True if the 'Mean' column must be shown in the results.
+     * @param showIntegratedDensityEnabled 	True if the 'IntegratedDensity' column must be shown in the results.
+     * @param showCircularityEnabled 		True if the 'Circularity' column is shown must be the results.
+     * @param img 							The current image to consider.
 	 * @see MeasuresProcessingWorker
      */
-	public SwingWorker<Void,Void> createMeasuresProcessingWorker(double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
-			boolean showAreaEnabled, boolean showMedianEnabled, boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled,
+	public SwingWorker<Void,Void> createMeasuresProcessingWorker(
+			double minSize,
+			double maxSize,
+			double minCircularity,
+			double maxCircularity,
+			boolean excludeOnEdgesEnabled,
+			double circularityThreshold,
+			boolean showAreaEnabled,
+			boolean showMedianEnabled,
+			boolean showMeanEnabled,
+			boolean showIntegratedDensityEnabled,
+			boolean showCircularityEnabled,
 			ImagePlus img){
-		return new MeasuresProcessingWorker(minSize, maxSize, minCircularity, maxCircularity, excludeOnEdgesEnabled, 
-				showAreaEnabled, showMedianEnabled, showMeanEnabled, showIntegratedDensityEnabled, showCircularityEnabled, 
+		return new MeasuresProcessingWorker(
+				minSize,
+				maxSize,
+				minCircularity,
+				maxCircularity,
+				excludeOnEdgesEnabled,
+				circularityThreshold,
+				showAreaEnabled,
+				showMedianEnabled,
+				showMeanEnabled,
+				showIntegratedDensityEnabled,
+				showCircularityEnabled, 
 				img); 
 	}
 	
@@ -121,7 +142,7 @@ public class MeasurementsManager {
             totalImageArea = imgWidth * imgHeight * totalArea;
         }
         
-        // Slice number -> List of indexes of line that corresond to the slice
+        // Slice number -> List of indexes of line that correspond to the slice
         Map<Integer, List<Integer>> rowsBySlice = new HashMap<>();
         
         boolean hasSliceCol = rt.columnExists("Slice"); // check if there is a slice column in the table
@@ -138,7 +159,7 @@ public class MeasurementsManager {
         
         // columns to ignores
         Set<String> ignoredCols = new HashSet<>(Arrays.asList(
-            "Slice", "X", "Y"
+            "Slice", "X", "Y", "is_isolated"
         ));
         
         // sorting

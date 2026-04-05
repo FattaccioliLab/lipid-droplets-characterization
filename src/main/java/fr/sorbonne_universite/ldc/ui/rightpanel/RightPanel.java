@@ -1,7 +1,6 @@
 package fr.sorbonne_universite.ldc.ui.rightpanel;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -39,6 +38,9 @@ import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.display.ImageDisplayService;
 
+/**
+ * The {@link JPanel} at the right in the {@link MainGUI_LDC}.
+ */
 @SuppressWarnings("serial")
 public class RightPanel extends JPanel {
 	
@@ -70,6 +72,11 @@ public class RightPanel extends JPanel {
     
     private JLabel nbIsolatedLabel; // label that show the number of isolated particles on the total number of particles
     
+    /**
+     * Constructor for the {@link RightPanel}.
+     * @param ctx			The LDC plugin context.
+     * @param leftPanel		The instance of the {@link RightPanel} of the {@link MainGUI_LDC}.
+     */
     public RightPanel(Context ctx, LeftPanel leftPanel) {
     	super();
     	ctx.inject(this);

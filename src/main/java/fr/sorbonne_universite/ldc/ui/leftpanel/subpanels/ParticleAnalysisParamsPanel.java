@@ -10,16 +10,18 @@ import java.awt.Insets;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 
 import org.scijava.Context;
 import org.scijava.plugin.Parameter;
 
 import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.LDCService;
-import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 
 /**
@@ -52,6 +54,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     private JTextField minCircularityField;
     private JTextField maxCircularityField;
     private JCheckBox excludeOnEdgesCheckbox;
+    private JSpinner circularityThresholdSpinner;
     
     // Measurements
     private JPanel mesurementsInfos;
@@ -207,6 +210,38 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         excludePanel.add(excludeOnEdgesCheckbox);
         excludePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
+        
+        // --- Circularity threshold section ---
+        
+        JPanel circularityThresholdPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        
+        // label
+        JLabel circularityThresholdLabel = new JLabel("Circularity threshold for isolation");
+        circularityThresholdPanel.add(circularityThresholdLabel);
+        
+        // spinner
+        circularityThresholdSpinner = new JSpinner(
+        		new SpinnerNumberModel(AnalysisSettings.DFL_ANALYSE_CIRC_THRESHOLD, 0.0, 1.0, 0.1));
+        // showing two decimals
+        circularityThresholdSpinner.setEditor(new JSpinner.NumberEditor(circularityThresholdSpinner, "0.00"));
+        
+        // update the threshold
+        circularityThresholdSpinner.addChangeListener(e -> enterCircularityThresholdSpinner());
+        
+        // keep the user from entering non numeric values
+        JFormattedTextField txt = ((JSpinner.DefaultEditor) circularityThresholdSpinner.getEditor()).getTextField();
+        txt.addKeyListener(new java.awt.event.KeyAdapter() {
+        	public void keyTyped(java.awt.event.KeyEvent e) {
+        		char c = e.getKeyChar();
+        		if (!(Character.isDigit(c) || c == '.' || c == ',' || c == java.awt.event.KeyEvent.VK_BACK_SPACE)) {
+        			e.consume();
+        		}
+        	}
+        });
+        
+        circularityThresholdPanel.add(circularityThresholdSpinner);
+        circularityThresholdPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
         // MEASUREMENTS
         
         mesurementsInfos = PanelUtils.createVerticalPanel("Measurements", 200);
@@ -255,6 +290,8 @@ public class ParticleAnalysisParamsPanel extends JPanel {
 	    particlesSettings.add(circularityPanel);
 	    particlesSettings.add(Box.createVerticalStrut(10));
 	    particlesSettings.add(excludePanel);
+	    particlesSettings.add(Box.createVerticalStrut(10));
+	    particlesSettings.add(circularityThresholdPanel);
 	    add(particlesSettings);
 	    
 	    mesurementsInfos.add(areaCheckbox);
@@ -445,6 +482,13 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	selectedSettings.setAnalyseExcludeOnEdges(excludeOnEdgesCheckbox.isSelected());
     }
     
+    /**
+     * Update the circularity threshold with the value of the circularity threshold spinner.
+     */
+    private void enterCircularityThresholdSpinner() {
+    	selectedSettings.setAnalyseCircularityThreshold((double)circularityThresholdSpinner.getValue());
+    }
+    
     // MEASUREMENTS
     
     /**
@@ -498,6 +542,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         minCircularityField.setEnabled(enable);
         maxCircularityField.setEnabled(enable);
         excludeOnEdgesCheckbox.setEnabled(enable);
+        circularityThresholdSpinner.setEnabled(enable);
     	
     	// MEASUREMENTS
         areaCheckbox.setEnabled(enable);
@@ -517,6 +562,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	selectedSettings.setAnalyseMinCircularity(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY);
     	selectedSettings.setAnalyseMaxCircularity(AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY);
     	selectedSettings.setAnalyseExcludeOnEdges(AnalysisSettings.DFL_ANALYSE_EXCL_EDGES);
+    	selectedSettings.setAnalyseCircularityThreshold(AnalysisSettings.DFL_ANALYSE_CIRC_THRESHOLD);
     	
         noMaxCheckbox.setSelected(true);
         minSizeField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MIN_SIZE));
@@ -524,6 +570,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         minCircularityField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY));
         maxCircularityField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY));
         excludeOnEdgesCheckbox.setSelected(AnalysisSettings.DFL_ANALYSE_EXCL_EDGES);
+        circularityThresholdSpinner.setValue(AnalysisSettings.DFL_ANALYSE_CIRC_THRESHOLD);
     	
     	// MEASUREMENTS
     	selectedSettings.setShowArea(AnalysisSettings.DFL_SHOWING_OPT);
@@ -552,5 +599,6 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	enterMaxSizeField();
     	enterMinCircularityField();
     	enterMaxCircularityField();
+    	enterCircularityThresholdSpinner();
     }
 }

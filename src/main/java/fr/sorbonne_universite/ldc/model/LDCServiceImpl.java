@@ -131,6 +131,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public boolean analyseExcludeOnEdgesEnabled() { return settings.analyseExcludeOnEdgesEnabled(); }
     @Override public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges) { settings.setAnalyseExcludeOnEdges(analyseExcludeOnEdges); }
 
+    @Override public double getAnalyseCircularityThreshold() { return settings.getAnalyseCircularityThreshold(); }
+    @Override public void setAnalyseCircularityThreshold(double analyseCircularityThreshold) { settings.setAnalyseCircularityThreshold(analyseCircularityThreshold); }
+    
     // ============================
     // Measurements showing options
     // ============================
@@ -224,15 +227,34 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	/** @see MeasuresPreviewWorker */
     @Override public SwingWorker<Void, Void> createMeasuresPreviewWorker(ImagePlus img){
 		return measurementsManager.createMeasuresPreviewWorker(
-				getAnalyseMinSize(), getAnalyseMaxSize(), getAnalyseMinCircularity(), getAnalyseMaxCircularity(), analyseExcludeOnEdgesEnabled(), 
-				showAreaEnabled(), showMedianEnabled(), showMeanEnabled(), showIntegratedDensityEnabled(), showCircularityEnabled(), img);
+				getAnalyseMinSize(),
+				getAnalyseMaxSize(),
+				getAnalyseMinCircularity(),
+				getAnalyseMaxCircularity(),
+				analyseExcludeOnEdgesEnabled(),
+				showAreaEnabled(),
+				showMedianEnabled(),
+				showMeanEnabled(),
+				showIntegratedDensityEnabled(),
+				showCircularityEnabled(),
+				img);
     }
     
 	/** @see MeasuresProcessingWorker */
 	@Override public SwingWorker<Void, Void> createMeasuresProcessingWorker(ImagePlus img) {
 		return measurementsManager.createMeasuresProcessingWorker(
-				getAnalyseMinSize(), getAnalyseMaxSize(), getAnalyseMinCircularity(), getAnalyseMaxCircularity(), analyseExcludeOnEdgesEnabled(), 
-				showAreaEnabled(), showMedianEnabled(), showMeanEnabled(), showIntegratedDensityEnabled(), showCircularityEnabled(), img);
+				getAnalyseMinSize(),
+				getAnalyseMaxSize(),
+				getAnalyseMinCircularity(),
+				getAnalyseMaxCircularity(),
+				analyseExcludeOnEdgesEnabled(),
+				getAnalyseCircularityThreshold(),
+				showAreaEnabled(),
+				showMedianEnabled(),
+				showMeanEnabled(),
+				showIntegratedDensityEnabled(),
+				showCircularityEnabled(),
+				img);
 	}
 
 	@Override public void exportResultsTable(ResultsTable rt, String path) {

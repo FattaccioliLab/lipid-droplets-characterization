@@ -100,6 +100,10 @@ public class AnalysisSettings implements Cloneable {
 	public final static boolean DFL_ANALYSE_EXCL_EDGES = false;
 	private boolean analyseExcludeOnEdges = DFL_ANALYSE_EXCL_EDGES;
 	
+	// Circularity threshold for isolation definition
+	public final static double DFL_ANALYSE_CIRC_THRESHOLD = 0.5;
+	private double analyseCircularityThreshold = DFL_ANALYSE_CIRC_THRESHOLD;
+	
     // ============================
     // Measurements showing options
     // ============================
@@ -238,6 +242,14 @@ public class AnalysisSettings implements Cloneable {
 	public boolean analyseExcludeOnEdgesEnabled() { return analyseExcludeOnEdges; }
 	public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges) { this.analyseExcludeOnEdges = analyseExcludeOnEdges; }
 	
+	// Circularity threshold
+	public double getAnalyseCircularityThreshold() { return analyseCircularityThreshold; }
+	public void setAnalyseCircularityThreshold(double analyseCircularityThreshold) {
+		if (analyseCircularityThreshold < 0) throw new IllegalArgumentException(Double.toString(analyseCircularityThreshold) + "must be greater (or equal) than 0");
+		if (analyseCircularityThreshold > 1) throw new IllegalArgumentException(Double.toString(analyseCircularityThreshold) + "must be less (or equal) than 1");
+		this.analyseCircularityThreshold = analyseCircularityThreshold;
+	}
+	
     // ============================
     // Measurements showing options
     // ============================
@@ -257,4 +269,5 @@ public class AnalysisSettings implements Cloneable {
 	public boolean showCircularityEnabled() { return showCircularity; }
 	public void setShowCircularity(boolean showCircularity) { this.showCircularity = showCircularity; }
 	
+
 }
