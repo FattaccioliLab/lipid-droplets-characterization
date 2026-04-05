@@ -50,19 +50,19 @@ Through ImageJ :
 ### test4
 
 Through ImageJ :
-- Process > Filters > Median... : Radius 0 pixels + process all 10 slices  
+- Process > Filters > Median... : Radius 0 pixels + process all 3 slices  
 -> resulting image : `.../expected/test_preprocessing/test4.tif`  
 
 ### test5
 
 Through ImageJ :
-- Process > Filters > Median... : Radius 2 pixels + process all 10 slices  
+- Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
 -> resulting image : `.../expected/test_preprocessing/test5.tif`  
 
 ### test6
 
 Through ImageJ :
-- Process > Filters > Median... : Radius 20 pixels + process all 10 slices  
+- Process > Filters > Median... : Radius 20 pixels + process all 3 slices  
 -> resulting image : `.../expected/test_preprocessing/test6.tif`  
 
 ### test7
@@ -74,7 +74,7 @@ Through ImageJ :
 ### test8
 
 Through ImageJ :
-- Process > Filters > Median... : Radius 4 pixels + only slice 5  
+- Process > Filters > Median... : Radius 4 pixels + only slice 2  
 -> resulting image : `.../expected/test_preprocessing/test8.tif`  
 
 ### test9
@@ -88,5 +88,5 @@ Through ImageJ :
 
 Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 10%  
-- Process > Filters > Median... : Radius 5 pixels + process all 10 slices  
+- Process > Filters > Median... : Radius 5 pixels + process all 3 slices  
 -> resulting image : `.../expected/test_preprocessing/test10.tif`  

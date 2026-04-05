@@ -231,7 +231,7 @@ public class TestPreprocessing {
 		
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(4);
-        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), false, 5);
+        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), false, 2);
         worker.execute();
         try {
 			worker.get();
