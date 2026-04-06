@@ -71,7 +71,7 @@ public class RightPanel extends JPanel {
     private int nb_isolated = 0;	// save the number of isolated particle showed with the given measures parameters
     
     private JLabel nbIsolatedLabel; // label that show the number of isolated particles on the total number of particles
-    
+        
     /**
      * Constructor for the {@link RightPanel}.
      * @param ctx			The LDC plugin context.
@@ -161,15 +161,36 @@ public class RightPanel extends JPanel {
         // generate statistics button
         JButton statisticButton = new JButton("Statistics");
         statisticButton.addActionListener(e -> {
-        	// check if the table is null or empty
-        	if (currentTable == null || currentTable.getCounter() == 0) {
-        		IJ.showMessage("No statistics to show.");
-        		return;
+        	// check if there is an image
+        	if (leftPanel.getCurrentImage() == null) {
+        		IJ.showMessage("Please open an image first (File > Open)");
+        		return ;
         	}
         	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
+          
+        	ResultsTable rt = ResultsTable.getResultsTable();
+        	rt.reset();
+        	SwingWorker<Void,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(leftPanel.getCurrentImage());
         	ImagePlus currentImg = leftPanel.getCurrentImage();
-        	showTable(selectedSettings.calculateSummaryTable(currentTable, currentImg.getCalibration(), currentImg.getWidth(), currentImg.getHeight()));
+        	
+        	// adding property change listener to the worker to show the table when the asynchronous task is completed
+        	measuresWorker.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("state".equals(evt.getPropertyName()) && SwingWorker.StateValue.DONE == evt.getNewValue()) {
+                        showTable(
+                        		selectedSettings.calculateSummaryTable(
+                        				ResultsTable.getResultsTable(),
+                        				currentImg.getCalibration(),
+                        				currentImg.getWidth(),
+                        				currentImg.getHeight()));
+                    }
+                }
+            });
+        	
+        	measuresWorker.execute();
+
         });
     	footerPanel.add(statisticButton);
     	
