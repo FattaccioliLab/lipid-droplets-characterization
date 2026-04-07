@@ -68,28 +68,16 @@ Through ImageJ :
 ### test7
 
 Through ImageJ :
-- Process > Filters > Median... : Radius 2 pixels + only slice 1  
--> resulting image : `.../expected/test_preprocessing/test7.tif`
+- Process > Enhance Contrast : Saturated pixels 10%  
+- Process > Filters > Median... : Radius 5 pixels + process all 3 slices  
+-> resulting image : `.../expected/test_preprocessing/test7.tif`  
 
 ### test8
 
 Through ImageJ :
-- Process > Filters > Median... : Radius 4 pixels + only slice 2  
--> resulting image : `.../expected/test_preprocessing/test8.tif`  
-
-### test9
-
-Through ImageJ :
-- Process > Enhance Contrast : Saturated pixels 0,35%  
-- Process > Filters > Median... : Radius 10 pixels + only slice 3  
--> resulting image : `.../expected/test_preprocessing/test9.tif`  
-
-### test10
-
-Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 10%  
-- Process > Filters > Median... : Radius 5 pixels + process all 3 slices  
--> resulting image : `.../expected/test_preprocessing/test10.tif`  
+- Process > Filters > Median... : Radius 2.45 pixels + process all 3 slices  
+-> resulting image : `.../expected/test_preprocessing/test8.tif`  
 
 ## TestSegmentation.java
 
@@ -216,25 +204,31 @@ Through ImageJ :
 
 ## TestPipeline.java
 
-We successively apply the different previous steps, and verify that the same resulting image and mask are got with our plugin.  
+We successively apply the different previous steps, and verify that the same resulting image, mask and csv results are got with our plugin.  
 Original image used before applying the pipeline: `src/test/resources/TestSample.tif`.  
 
 ### test1
 
 Through ImageJ :
 - Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
-- Process > Binary > Make Binary : method Moments, Background Dark, Black background + Create new stack  
+- Process > Binary > Make Binary : method Moments, Background Dark, Black background selected + Create new stack  
+- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median selected. Redirect to : None, decimal places : 4  
+- Analyze > Analyze particles ... : Size : 0 - Infinity (pixel units selected). Circularity : 0 - 1. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test1_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test1_mask.tif`  
+-> resulting csv : `.../expected/test_pipeline/test1_table.csv`  
 
 ### test2
 
 Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 0,35%  
-- Process > Filters > Median... : Radius 4 pixels + only slice 2  
+- Process > Filters > Median... : Radius 4 pixels + process all 3 slices  
 - Process > Binary > Make Binary : method Triangle, Background Dark, Black background selected + Create new stack  
+- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median selected. Redirect to : None, decimal places : 4  
+- Analyze > Analyze particles ... : Size : 0 - Infinity (pixel units selected). Circularity : 0 - 0.8. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test2_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test2_mask.tif`  
+-> resulting csv : `.../expected/test_pipeline/test2_table.csv`  
 
 ### test3
 
@@ -243,5 +237,8 @@ Through ImageJ :
 - Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
 - Process > Binary > Make Binary : method Otsu, Background Dark, Black background selected + Create new stack  
 - Process > Binary > Erode (on all slices)  
+- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median selected. Redirect to : None, decimal places : 4  
+- Analyze > Analyze particles ... : Size : 1 - Infinity (pixel units selected). Circularity : 0 - 1. Show : Nothing. Only Display results selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test3_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test3_mask.tif`  
+-> resulting csv : `.../expected/test_pipeline/test3_table.csv`  

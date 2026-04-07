@@ -1,22 +1,26 @@
 package fr.sorbonne_universite.ldc.tests.unit;
 
+import java.io.IOException;
+
 import javax.swing.SwingWorker;
 
 import org.junit.jupiter.api.Test;
 
+import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.model.LDCServiceImpl;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.measure.ResultsTable;
 
 /**
- * Pipeline tests.
+ * Test the entire pipeline workflow for different scenarios, as well as the .csv results.
  */
 public class TestPipeline {
 
 	/**
 	 * Imports an image from the src/test/resources folder.
-	 * @param imageName 					The path of the image within the folder.
+	 * @param imagePath 					The path of the image within the folder.
 	 * @return								The corresponding image.
 	 * @throws IllegalArgumentException		If the image has not been found.
 	 */
@@ -29,6 +33,23 @@ public class TestPipeline {
         return image;
 	}
 	
+	/**
+	 * Imports a ResultsTable from the src/test/resources folder.
+	 * @param tablePath						The path of the .csv table within the folder.
+	 * @return								The corresponding ResultsTable.
+	 * @throws IllegalArgumentException		If the table has not been found.
+	 */
+	private ResultsTable importTable(String tablePath) {
+		String path = getClass().getResource(tablePath).getPath();
+		try {
+			ResultsTable results = ResultsTable.open(path);
+	        if (results == null) throw new IllegalArgumentException(tablePath+" not found");
+	        return results;
+		} catch (IOException e) {
+			throw new IllegalArgumentException(e);
+		}
+	}
+	
 	@Test
 	public void test1() {
 		LDCService ldcPlugin = new LDCServiceImpl();
@@ -36,12 +57,13 @@ public class TestPipeline {
 		
 		ImagePlus expectedImage = importImage("/expected/test_pipeline/test1_res.tif");
 		ImagePlus expectedMask = importImage("/expected/test_pipeline/test1_mask.tif");
-		
+		ResultsTable expectedResults = importTable("/expected/test_pipeline/test1_table.csv");
 		ImagePlus image = importImage("/TestSample.tif");
 		
+		// Preprocessing
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(2);
-        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), true, 0);
+        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack());
         worker.execute();
         try {
 			worker.get();
@@ -49,10 +71,31 @@ public class TestPipeline {
 			e.printStackTrace();
 		}
         
+        // Segmentation / Thresholding
 		ldcPlugin.setThresholdMethod("Moments");
 		ldcPlugin.setThresholdDarkBackground(true);
 		ldcPlugin.previewAutoThreshold(image);
 		ImagePlus mask = ldcPlugin.applyThreshold(image);
+		
+		// Particle Analysis
+		ldcPlugin.setShowArea(true);
+		ldcPlugin.setShowCircularity(true);
+		ldcPlugin.setShowIntegratedDensity(true);
+		ldcPlugin.setShowMean(true);
+		ldcPlugin.setShowMedian(true);
+		ldcPlugin.setAnalyseMinSize(0);
+		ldcPlugin.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
+		ldcPlugin.setAnalyseMinCircularity(0);
+		ldcPlugin.setAnalyseMaxCircularity(1);
+		ldcPlugin.setAnalyseExcludeOnEdges(true);
+        SwingWorker<Void, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
+        worker2.execute();
+        try {
+        	worker2.get();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		ResultsTable results = ResultsTable.getResultsTable();
 		
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
@@ -61,6 +104,10 @@ public class TestPipeline {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.checkSameResultsTable(expectedResults, results, 0.0001);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, expectedMask, image, mask}, ldcPlugin);
 	}
 	
 	@Test
@@ -70,29 +117,51 @@ public class TestPipeline {
 		
 		ImagePlus expectedImage = importImage("/expected/test_pipeline/test2_res.tif");
 		ImagePlus expectedMask = importImage("/expected/test_pipeline/test2_mask.tif");
-		
+		ResultsTable expectedResults = importTable("/expected/test_pipeline/test2_table.csv");
 		ImagePlus image = importImage("/TestSample.tif");
 		
+		// Preprocessing
         ldcPlugin.setEnhanceContrast(true);
         ldcPlugin.setEnhanceSaturatedPercent(0.35);
         ldcPlugin.applyEnhanceContrast(image.getProcessor());
 		
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(4);
-        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), false, 2);
+
+        // Segmentation / Thresholding
+        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack());
         worker.execute();
         try {
 			worker.get();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-        
-        // Need to investigate here
+
 		ldcPlugin.setThresholdMethod("Triangle");
 		ldcPlugin.setThresholdDarkBackground(true);
 		ldcPlugin.previewAutoThreshold(image);
 		ImagePlus mask = ldcPlugin.applyThreshold(image);
 		
+		// Particle Analysis
+		ldcPlugin.setShowArea(true);
+		ldcPlugin.setShowCircularity(true);
+		ldcPlugin.setShowIntegratedDensity(true);
+		ldcPlugin.setShowMean(true);
+		ldcPlugin.setShowMedian(true);
+		ldcPlugin.setAnalyseMinSize(0);
+		ldcPlugin.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
+		ldcPlugin.setAnalyseMinCircularity(0);
+		ldcPlugin.setAnalyseMaxCircularity(0.8);
+		ldcPlugin.setAnalyseExcludeOnEdges(true);
+        SwingWorker<Void, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
+        worker2.execute();
+        try {
+        	worker2.get();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		ResultsTable results = ResultsTable.getResultsTable();
+
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
         Utils.checkSamePixels(expectedImage, image);
@@ -100,6 +169,10 @@ public class TestPipeline {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.checkSameResultsTable(expectedResults, results, 0.0001);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, expectedMask, image, mask}, ldcPlugin);
 	}
 	
 	@Test
@@ -109,16 +182,18 @@ public class TestPipeline {
 		
 		ImagePlus expectedImage = importImage("/expected/test_pipeline/test3_res.tif");
 		ImagePlus expectedMask = importImage("/expected/test_pipeline/test3_mask.tif");
+		ResultsTable expectedResults = importTable("/expected/test_pipeline/test3_table.csv");
 		
 		ImagePlus image = importImage("/TestSample.tif");
 		
+		// Preprocessing
         ldcPlugin.setEnhanceContrast(true);
         ldcPlugin.setEnhanceSaturatedPercent(4);
         ldcPlugin.applyEnhanceContrast(image.getProcessor());
 		
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(2);
-        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), true, 0);
+        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack());
         worker.execute();
         try {
 			worker.get();
@@ -126,13 +201,35 @@ public class TestPipeline {
 			e.printStackTrace();
 		}
         
+        // Segmentation / Thresholding
 		ldcPlugin.setThresholdMethod("Otsu");
 		ldcPlugin.setThresholdDarkBackground(true);
 		ldcPlugin.previewAutoThreshold(image);
 		ImagePlus mask = ldcPlugin.applyThreshold(image);
 		
+		// Binary morphological operation
 		ldcPlugin.setErosion(true);
 		ldcPlugin.applyMorphology(mask);
+		
+		// Particle Analysis
+		ldcPlugin.setShowArea(true);
+		ldcPlugin.setShowCircularity(true);
+		ldcPlugin.setShowIntegratedDensity(true);
+		ldcPlugin.setShowMean(true);
+		ldcPlugin.setShowMedian(true);
+		ldcPlugin.setAnalyseMinSize(1);
+		ldcPlugin.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
+		ldcPlugin.setAnalyseMinCircularity(0);
+		ldcPlugin.setAnalyseMaxCircularity(1);
+		ldcPlugin.setAnalyseExcludeOnEdges(false);
+        SwingWorker<Void, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
+        worker2.execute();
+        try {
+        	worker2.get();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		ResultsTable results = ResultsTable.getResultsTable();
 		
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
@@ -141,6 +238,10 @@ public class TestPipeline {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.checkSameResultsTable(expectedResults, results, 0.0001);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, expectedMask, image, mask}, ldcPlugin);
 	}
 	
 }

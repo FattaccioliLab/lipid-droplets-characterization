@@ -71,11 +71,7 @@ public class BatchFileWorker extends SwingWorker<ResultsTable,Void>{
         if (thrsMethod.equals("Manual")) {
         	ip.setThreshold(settings.getThresholdMinValue(), settings.getThresholdMaxValue(), ImageProcessor.RED_LUT);
         } else {
-        	if (settings.thresholdDarkBackgroundEnabled()) {
-                ip.setAutoThreshold(thrsMethod, true, ImageProcessor.RED_LUT);
-            } else {
-                ip.setAutoThreshold(thrsMethod, false, ImageProcessor.RED_LUT);
-            }
+            ip.setAutoThreshold(thrsMethod, settings.thresholdDarkBackgroundEnabled(), ImageProcessor.RED_LUT);
         }
         
         // 1. Get threshold from the image

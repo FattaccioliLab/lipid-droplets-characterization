@@ -22,7 +22,7 @@ public class TestSegmentation {
 
 	/**
 	 * Imports an image from the src/test/resources folder.
-	 * @param imageName 					The path of the image within the folder.
+	 * @param imagePath 					The path of the image within the folder.
 	 * @return								The corresponding image.
 	 * @throws IllegalArgumentException		If the image has not been found.
 	 */
@@ -56,6 +56,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
 	@Test
@@ -75,6 +77,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
     // =========================================================================
@@ -86,12 +90,6 @@ public class TestSegmentation {
 		LDCService ldcPlugin = new LDCServiceImpl();
 		ldcPlugin.initialize();
 		
-		// pas dark_black
-		// pas dark
-		// pas default_black
-		
-		// light black ok
-		// light ok
 		ImagePlus expectedMask = importImage("/expected/test_segmentation/test3.tif");
 		ImagePlus image = importImage("/TestSample.tif");
 		
@@ -102,6 +100,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
 	@Test
@@ -120,6 +120,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
     // =========================================================================
@@ -141,6 +143,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
 	@Test
@@ -159,6 +163,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
     // =========================================================================
@@ -180,6 +186,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
 	@Test
@@ -198,6 +206,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
     // =========================================================================
@@ -219,6 +229,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
 	@Test
@@ -237,6 +249,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
     // =========================================================================
@@ -258,6 +272,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
 	@Test
@@ -276,6 +292,8 @@ public class TestSegmentation {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, image, mask}, ldcPlugin);
 	}
 	
 }

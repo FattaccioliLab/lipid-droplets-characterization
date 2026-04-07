@@ -24,7 +24,6 @@ public class ThresholdingManager {
     public void setManualThreshold(ImagePlus imp, double min, double max) {
         if (imp == null) return;
         ImageProcessor ip = imp.getProcessor();
-        if(service.enhanceContrastEnabled()) service.applyEnhanceContrast(ip);
         ip.setThreshold(min, max, ImageProcessor.RED_LUT);
         imp.updateAndDraw();
     }
@@ -40,24 +39,13 @@ public class ThresholdingManager {
 
         // 1. Let ImageJ calculate the Auto-Threshold values
         // We use NO_LUT_UPDATE because we don't care about the visuals yet
-        if (darkBackground) {
-            ip.setAutoThreshold(method, true, ImageProcessor.NO_LUT_UPDATE);
-        } else {
-            ip.setAutoThreshold(method, false, ImageProcessor.NO_LUT_UPDATE);
-        }
+        ip.setAutoThreshold(method, darkBackground, ImageProcessor.NO_LUT_UPDATE);
 
         // 2. CAPTURE the calculated values before they get destroyed!
         double computedMin = ip.getMinThreshold();
         double computedMax = ip.getMaxThreshold();
 
-        // 3. Apply your contrast enhancement 
-        // (This step internally resets the threshold, making the values -808080.0)
-        if (service.enhanceContrastEnabled()) {
-            // Use whatever your exact method signature is here
-            service.applyEnhanceContrast(ip); 
-        }
-
-        // 4. RE-APPLY the captured threshold with the RED overlay
+        // 3. RE-APPLY the captured threshold with the RED overlay
         if (computedMin != ImageProcessor.NO_THRESHOLD) {
             ip.setThreshold(computedMin, computedMax, ImageProcessor.RED_LUT);
         }

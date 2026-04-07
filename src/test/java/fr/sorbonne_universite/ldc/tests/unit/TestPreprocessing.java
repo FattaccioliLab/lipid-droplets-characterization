@@ -20,7 +20,7 @@ public class TestPreprocessing {
 
 	/**
 	 * Imports an image from the src/test/resources folder.
-	 * @param imageName 					The path of the image within the folder.
+	 * @param imagePath 					The path of the image within the folder.
 	 * @return								The corresponding image.
 	 * @throws IllegalArgumentException		If the image has not been found.
 	 */
@@ -51,6 +51,8 @@ public class TestPreprocessing {
         
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, image}, ldcPlugin);
 	}
 	
 	@Test
@@ -67,6 +69,9 @@ public class TestPreprocessing {
         
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
+        Utils.checkSamePixels(expectedImage, image);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, image}, ldcPlugin);
 	}
 	
 	@Test
@@ -83,6 +88,9 @@ public class TestPreprocessing {
         
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
+        Utils.checkSamePixels(expectedImage, image);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, image}, ldcPlugin);
 	}
 	
     // =========================================================================
@@ -99,7 +107,7 @@ public class TestPreprocessing {
 		
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(0);
-        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), true, 0);
+        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack());
         worker.execute();
         try {
 			worker.get();
@@ -108,7 +116,10 @@ public class TestPreprocessing {
 		}
         
         Utils.checkSameDimensions(expectedImage, image);
+        Utils.checkSameDisplayRange(expectedImage, image);
         Utils.checkSamePixels(expectedImage, image);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, image}, ldcPlugin);
 	}
 	
 	@Test
@@ -121,7 +132,7 @@ public class TestPreprocessing {
 		
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(2);
-        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), true, 0);
+        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack());
         worker.execute();
         try {
 			worker.get();
@@ -130,7 +141,10 @@ public class TestPreprocessing {
 		}
         
         Utils.checkSameDimensions(expectedImage, image);
+        Utils.checkSameDisplayRange(expectedImage, image);
         Utils.checkSamePixels(expectedImage, image);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, image}, ldcPlugin);
 	}
 	
 	@Test
@@ -143,7 +157,7 @@ public class TestPreprocessing {
 		
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(20);
-        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), true, 0);
+        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack());
         worker.execute();
         try {
 			worker.get();
@@ -152,8 +166,15 @@ public class TestPreprocessing {
 		}
         
         Utils.checkSameDimensions(expectedImage, image);
+        Utils.checkSameDisplayRange(expectedImage, image);
         Utils.checkSamePixels(expectedImage, image);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, image}, ldcPlugin);
 	}
+	
+    // =========================================================================
+    // BOTH CONTRAST ENHANCEMENT AND MEDIAN FILTER TESTS
+    // =========================================================================
 	
 	@Test
 	public void test7() {
@@ -163,9 +184,13 @@ public class TestPreprocessing {
 		ImagePlus expectedImage = importImage("/expected/test_preprocessing/test7.tif");
 		ImagePlus image = importImage("/TestSample.tif");
 		
+        ldcPlugin.setEnhanceContrast(true);
+        ldcPlugin.setEnhanceSaturatedPercent(10);
+        ldcPlugin.applyEnhanceContrast(image.getProcessor());
+		
         ldcPlugin.setMedianFilter(true);
-        ldcPlugin.setMedianRadius(2);
-        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), false, 1);
+        ldcPlugin.setMedianRadius(5);
+        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack());
         worker.execute();
         try {
 			worker.get();
@@ -174,7 +199,10 @@ public class TestPreprocessing {
 		}
         
         Utils.checkSameDimensions(expectedImage, image);
+        Utils.checkSameDisplayRange(expectedImage, image);
         Utils.checkSamePixels(expectedImage, image);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, image}, ldcPlugin);
 	}
 	
 	@Test
@@ -185,66 +213,13 @@ public class TestPreprocessing {
 		ImagePlus expectedImage = importImage("/expected/test_preprocessing/test8.tif");
 		ImagePlus image = importImage("/TestSample.tif");
 		
-        ldcPlugin.setMedianFilter(true);
-        ldcPlugin.setMedianRadius(4);
-        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), false, 2);
-        worker.execute();
-        try {
-			worker.get();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-        
-        Utils.checkSameDimensions(expectedImage, image);
-        Utils.checkSamePixels(expectedImage, image);
-	}
-	
-    // =========================================================================
-    // BOTH CONTRAST ENHANCEMENT AND MEDIAN FILTER TESTS
-    // =========================================================================
-	
-	@Test
-	public void test9() {
-		LDCService ldcPlugin = new LDCServiceImpl();
-		ldcPlugin.initialize();
-		
-		ImagePlus expectedImage = importImage("/expected/test_preprocessing/test9.tif");
-		ImagePlus image = importImage("/TestSample.tif");
-		
-        ldcPlugin.setEnhanceContrast(true);
-        ldcPlugin.setEnhanceSaturatedPercent(0.35);
-        ldcPlugin.applyEnhanceContrast(image.getProcessor());
-		
-        ldcPlugin.setMedianFilter(true);
-        ldcPlugin.setMedianRadius(10);
-        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), false, 3);
-        worker.execute();
-        try {
-			worker.get();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-        
-        Utils.checkSameDimensions(expectedImage, image);
-        Utils.checkSameDisplayRange(expectedImage, image);
-        Utils.checkSamePixels(expectedImage, image);
-	}
-	
-	@Test
-	public void test10() {
-		LDCService ldcPlugin = new LDCServiceImpl();
-		ldcPlugin.initialize();
-		
-		ImagePlus expectedImage = importImage("/expected/test_preprocessing/test10.tif");
-		ImagePlus image = importImage("/TestSample.tif");
-		
         ldcPlugin.setEnhanceContrast(true);
         ldcPlugin.setEnhanceSaturatedPercent(10);
         ldcPlugin.applyEnhanceContrast(image.getProcessor());
 		
         ldcPlugin.setMedianFilter(true);
-        ldcPlugin.setMedianRadius(5);
-        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack(), true, 0);
+        ldcPlugin.setMedianRadius(2.45);
+        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack());
         worker.execute();
         try {
 			worker.get();
@@ -255,6 +230,8 @@ public class TestPreprocessing {
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
         Utils.checkSamePixels(expectedImage, image);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, image}, ldcPlugin);
 	}
 	
 }

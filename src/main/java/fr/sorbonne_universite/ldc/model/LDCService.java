@@ -169,13 +169,11 @@ public interface LDCService extends SciJavaService {
 	public SwingWorker<Void,Void> createPreviewMedianWorker(ImageProcessor ip);
 	
     /**
-     * Creates a {@link SwingWorker}, that can apply a median filter on a given {@link ImageStack}, or on an individual {@link ImageProcessor} among the given stack if executed.
+     * Creates a {@link SwingWorker} that applies a median filter on a given {@link ImageStack} if executed.
 	 * @param stack The array of images to process (slices).
-	 * @param processAll True to process all slices.
-	 * @param targetSlice The specific slice to process if not all.
 	 * @see PreprocessingApplyMedianWorker
      */
-	public SwingWorker<Void,Void> createApplyMedianWorker(ImageStack stack, boolean processAll, int targetSlice);
+	public SwingWorker<Void,Void> createApplyMedianWorker(ImageStack stack);
 	
     // ===========================
     // Segmentation / thresholding

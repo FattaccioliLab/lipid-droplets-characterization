@@ -80,7 +80,15 @@ public class ThresholdingPanel extends JPanel {
         String[] methods = service.getThresholdMethodsList().toArray(new String[0]);
         methodComboBox = new JComboBox<>(methods);
         methodComboBox.setSelectedItem(service.getThresholdMethod());
-        methodComboBox.addActionListener(e -> updateThresholdLogic());
+        methodComboBox.addActionListener(e -> {
+        	// if manual mode, disables dark BG check box, otherwise enables it
+        	if ("Manual".equals((String)methodComboBox.getSelectedItem())) {
+        		darkBackgroundCheckbox.setEnabled(false);
+        	} else {
+        		darkBackgroundCheckbox.setEnabled(true);
+        	}
+        	updateThresholdLogic();
+        });
         methodRow.add(methodComboBox, BorderLayout.CENTER);
         add(methodRow);
         
@@ -95,6 +103,7 @@ public class ThresholdingPanel extends JPanel {
             service.setThresholdDarkBackground(darkBackgroundCheckbox.isSelected());
             updateThresholdLogic();
         });
+        if ("Manual".equals((String)methodComboBox.getSelectedItem())) darkBackgroundCheckbox.setEnabled(false);
         add(darkBackgroundCheckbox);
         
         add(Box.createVerticalStrut(10));
@@ -221,17 +230,11 @@ public class ThresholdingPanel extends JPanel {
 
         String method = (String) methodComboBox.getSelectedItem();
         boolean isManual = "Manual".equals(method);
-        boolean isDark = darkBackgroundCheckbox.isSelected();
-
-        
         service.setThresholdMethod(method);
-        
-        darkBackgroundCheckbox.setEnabled(!isManual);	//if manual mode, disables dark BG check box, otherwise enables it
 
         if (isManual) {
             enableSliders(methodComboBox.isEnabled()); // Sliders enabled if the method combo box with "Manual" is also enabled
             service.previewManualThreshold(img);
-            darkBackgroundCheckbox.setSelected(false);
         } else {
             enableSliders(false);
             double[] computed = service.previewAutoThreshold(img);
@@ -324,7 +327,7 @@ public class ThresholdingPanel extends JPanel {
         boolean isManual = "Manual".equals(methodComboBox.getSelectedItem());
 
         methodComboBox.setEnabled(enabled);
-        darkBackgroundCheckbox.setEnabled(enabled && !isManual);	//dark bg check box visibility
+        darkBackgroundCheckbox.setEnabled(enabled && !isManual);
         applyButton.setEnabled(enabled);
         
         if(enabled) {

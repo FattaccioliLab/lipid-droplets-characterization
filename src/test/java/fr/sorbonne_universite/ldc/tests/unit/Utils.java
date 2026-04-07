@@ -2,7 +2,12 @@ package fr.sorbonne_universite.ldc.tests.unit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Arrays;
+import java.util.List;
+
+import fr.sorbonne_universite.ldc.model.LDCService;
 import ij.ImagePlus;
+import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 
 /**
@@ -51,11 +56,56 @@ public class Utils {
 	 * @param actual 		The image that needs to have the same display range as {@code expected}.
 	 */
 	public static void checkSameDisplayRange(ImagePlus expected, ImagePlus actual) {
-	    ImageProcessor ip1 = expected.getProcessor();
-	    ImageProcessor ip2 = actual.getProcessor();
+	    for (int i = 1; i <= expected.getStackSize(); i++) {
+	        expected.setSlice(i);
+	        actual.setSlice(i);
+
+	        ImageProcessor ip1 = expected.getProcessor();
+	        ImageProcessor ip2 = actual.getProcessor();
+
+	        assertEquals(ip1.getMin(), ip2.getMin(), "Different display min at slice " + i);
+	        assertEquals(ip1.getMax(), ip2.getMax(), "Different display max at slice " + i);
+	    }
+	}
+	
+	/**
+	 * Checks that {@code actual} contains at least {@code expected} numerical datas.
+	 * @param expected     The reference table.
+	 * @param actual       The table to check.
+	 * @param tolerance    Tolerance for double values comparison.
+	 */
+	public static void checkSameResultsTable(ResultsTable expected, ResultsTable actual, double tolerance) {
+	    assertEquals(expected.size(), actual.size(), "Different number of rows");
 	    
-	    assertEquals(ip1.getMin(), ip2.getMin(), "Different display min");
-	    assertEquals(ip1.getMax(), ip2.getMax(), "Different display max");
+	    String[] expectedColumns = expected.getHeadings();
+	    String[] actualColumns = actual.getHeadings();
+	    List<String> actualColumnsList = Arrays.asList(actualColumns);
+	    for (String expectedCol : expectedColumns) {
+	        assertTrue(actualColumnsList.contains(expectedCol), "Missing column: " + expectedCol);
+	    }
+	    
+	    for (int row = 0; row < expected.size(); row++) {
+	        for (String column : expectedColumns) {
+	            double expectedValue = expected.getValue(column, row);
+	            double actualValue = actual.getValue(column, row);
+	            
+	            assertEquals(expectedValue, actualValue, tolerance, 
+	            		String.format("Row %d, column '%s': expected %.3f but was %.3f", row, column, expectedValue, actualValue));
+	        }
+	    }
+	}
+	
+	/**
+	 * Cleans resources after a test.
+	 * @param images 	List of images to close.
+	 * @param ldc 		The Lipid Droplets Characterization service.
+	 */
+	public static void cleanup(ImagePlus[] images, LDCService ldc) {
+		for (ImagePlus image : images) {
+			image.close();
+		}
+		ldc.dispose();
+		ResultsTable.getResultsTable().reset();
 	}
 	
 }

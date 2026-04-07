@@ -167,8 +167,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	}
 	
 	/** @see PreprocessingApplyMedianWorker */
-	@Override public SwingWorker<Void, Void> createApplyMedianWorker(ImageStack stack, boolean processAll, int targetSlice) {  
-		return preprocessingManager.createApplyMedianWorker(medianFilterEnabled(), getMedianRadius(), stack, processAll, targetSlice);
+	@Override public SwingWorker<Void, Void> createApplyMedianWorker(ImageStack stack) {  
+		return preprocessingManager.createApplyMedianWorker(medianFilterEnabled(), getMedianRadius(), stack);
 	}
 	
     // ===========================

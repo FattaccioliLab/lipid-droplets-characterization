@@ -20,7 +20,7 @@ public class TestBinaryMaskOperations {
 
 	/**
 	 * Imports an image from the src/test/resources folder.
-	 * @param imageName 					The path of the image within the folder.
+	 * @param imagePath 					The path of the image within the folder.
 	 * @return								The corresponding image.
 	 * @throws IllegalArgumentException		If the image has not been found.
 	 */
@@ -51,6 +51,8 @@ public class TestBinaryMaskOperations {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, mask}, ldcPlugin);
 	}
 	
     // =========================================================================
@@ -71,6 +73,8 @@ public class TestBinaryMaskOperations {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, mask}, ldcPlugin);
 	}
 	
     // =========================================================================
@@ -91,6 +95,8 @@ public class TestBinaryMaskOperations {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, mask}, ldcPlugin);
 	}
 	
     // =========================================================================
@@ -111,6 +117,8 @@ public class TestBinaryMaskOperations {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, mask}, ldcPlugin);
 	}
 	
     // =========================================================================
@@ -132,6 +140,8 @@ public class TestBinaryMaskOperations {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, mask}, ldcPlugin);
 	}
 	
 	@Test
@@ -150,5 +160,7 @@ public class TestBinaryMaskOperations {
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
         Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, mask}, ldcPlugin);
 	}
 }
