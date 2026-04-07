@@ -19,8 +19,8 @@ import org.scijava.plugin.Parameter;
 
 import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.LDCService;
-import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
+import ij.IJ;
 
 /**
  * Provides particle analysis setup.
@@ -282,7 +282,8 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      * 
      * <p>
      * If the 'No Max' checkbox is selected, it disables and resets the input, 
-     * otherwise it enables the input with a default value of '10' px².
+     * otherwise it enables the input with a default value of '10' px².<br>
+     * If the minimum size is greater than 10, then the new maximum size is equal to that minimal value.
      * </p>
      */
     private void toggleNoMax() {
@@ -290,13 +291,21 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         maxSizeField.setEnabled(!noMax);
         if (noMax) {
             maxSizeField.setText("∞");
+            selectedSettings.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
         } else {
-            maxSizeField.setText("10.0");
+        	double minValue = Double.valueOf(minSizeField.getText());
+        	double maxValue = 10;
+        	if (minValue > maxValue) {
+        		maxValue = minValue;
+        	}
+            maxSizeField.setText(Double.toString(maxValue));
+            selectedSettings.setAnalyseMaxSize(maxValue);
         }
     }
     
     /**
-     * Validates the input of the minimum size text field and updates the corresponding setting, when ENTER is pressed on the input.
+     * Validates the input of the minimum size text field and updates the corresponding setting, when ENTER is pressed on the input.<br>
+     * If the maximum field is invalid, resets it to its last valid value.
      * 
      * <p>
      * Behavior:
@@ -308,9 +317,19 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      * </p>
      */
     private void enterMinSizeField() {
-    	double maxValue = maxSizeField.getText().equals("∞") 
-                        ? Double.MAX_VALUE 
-                        : Double.valueOf(maxSizeField.getText());
+    	double maxValue;
+    	if (maxSizeField.getText().equals("∞")) {
+    		maxValue = Double.MAX_VALUE;
+    	} else {
+        	try {
+            	maxValue = Double.valueOf(maxSizeField.getText());
+        	} catch (NumberFormatException ex) {
+        		IJ.showMessage("Invalid maximum size input format.");
+        		maxValue = selectedSettings.getAnalyseMaxSize();
+        		maxSizeField.setText(Double.toString(maxValue));
+        	}
+    	}
+
     	try {
     		double val = Double.parseDouble(minSizeField.getText());
             if (val < AnalysisSettings.DFL_ANALYSE_MIN_SIZE) {
@@ -324,6 +343,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
                 selectedSettings.setAnalyseMinSize(val);
             }
     	} catch (NumberFormatException ex) {
+    		IJ.showMessage("Invalid minimum size input format.");
             if (AnalysisSettings.DFL_ANALYSE_MIN_SIZE <= maxValue) {
                 minSizeField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MIN_SIZE));
     			selectedSettings.setAnalyseMinSize(AnalysisSettings.DFL_ANALYSE_MIN_SIZE);
@@ -335,7 +355,8 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     }
     
     /**
-     * Validates the input of the maximum size text field and updates the corresponding setting, when ENTER is pressed on the input.
+     * Validates the input of the maximum size text field and updates the corresponding setting, when ENTER is pressed on the input.<br>
+     * If the minimum field is invalid, resets it to its last valid value.
      * 
      * <p>
      * Behavior:
@@ -346,7 +367,15 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      * </p>
      */
     private void enterMaxSizeField() {
-    	double minValue = Double.valueOf(minSizeField.getText());
+    	double minValue;
+    	try {
+    		minValue = Double.valueOf(minSizeField.getText());
+    	} catch (NumberFormatException ex) {
+    		IJ.showMessage("Invalid minimum size input format.");
+    		minValue = selectedSettings.getAnalyseMinSize();
+    		minSizeField.setText(Double.toString(minValue));
+    	}
+    	
     	try {
     		double val = Double.parseDouble(maxSizeField.getText());
             if (val < minValue) {
@@ -357,18 +386,22 @@ public class ParticleAnalysisParamsPanel extends JPanel {
                 selectedSettings.setAnalyseMaxSize(val);
             }
     	} catch (NumberFormatException ex) {
-            if (AnalysisSettings.DFL_ANALYSE_MAX_SIZE >= minValue) {
-            	maxSizeField.setText("∞");
-    			selectedSettings.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
-            } else {
-            	maxSizeField.setText(Double.toString(minValue));
-                selectedSettings.setAnalyseMaxSize(minValue);
-            }
+    		if (!maxSizeField.getText().equals("∞")) {
+        		IJ.showMessage("Invalid maximum size input format.");
+                if (AnalysisSettings.DFL_ANALYSE_MAX_SIZE >= minValue) {
+                	maxSizeField.setText("∞");
+        			selectedSettings.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
+                } else {
+                	maxSizeField.setText(Double.toString(minValue));
+                    selectedSettings.setAnalyseMaxSize(minValue);
+                }
+    		}
     	}
     }
     
     /**
-     * Validates the input of the minimum circularity text field and updates the corresponding setting, when ENTER is pressed on the input.
+     * Validates the input of the minimum circularity text field and updates the corresponding setting, when ENTER is pressed on the input.<br>
+     * If the maximum field is invalid, resets it to its last valid value.
      * 
      * <p>
      * Behavior:
@@ -380,7 +413,15 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      * </p>
      */
     private void enterMinCircularityField() {
-    	double maxValue = Double.valueOf(maxCircularityField.getText());
+    	double maxValue;
+    	try {
+    		maxValue = Double.valueOf(maxCircularityField.getText());
+    	} catch (NumberFormatException ex) {
+    		IJ.showMessage("Invalid maximum circularity input format.");
+    		maxValue = selectedSettings.getAnalyseMaxCircularity();
+    		maxCircularityField.setText(Double.toString(maxValue));
+    	}
+    	
     	try {
     		double val = Double.parseDouble(minCircularityField.getText());
             if (val < AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY) {
@@ -394,6 +435,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
                 selectedSettings.setAnalyseMinCircularity(val);
             }
     	} catch (NumberFormatException ex) {
+    		IJ.showMessage("Invalid minimum circularity input format.");
             if (AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY <= maxValue) {
             	minCircularityField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY));
     			selectedSettings.setAnalyseMinCircularity(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY);
@@ -405,7 +447,8 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     }
     
     /**
-     * Validates the input of the maximum circularity text field and updates the corresponding setting, when ENTER is pressed on the input.
+     * Validates the input of the maximum circularity text field and updates the corresponding setting, when ENTER is pressed on the input.<br>
+     * If the minimum field is invalid, resets it to its last valid value.
      * 
      * <p>
      * Behavior:
@@ -416,7 +459,15 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      * </p>
      */
     private void enterMaxCircularityField() {
-    	double minValue = Double.valueOf(minCircularityField.getText());
+    	double minValue;
+    	try {
+    		minValue = Double.valueOf(minCircularityField.getText());
+    	} catch (NumberFormatException ex) {
+    		IJ.showMessage("Invalid minimum circularity input format.");
+    		minValue = selectedSettings.getAnalyseMinCircularity();
+    		minCircularityField.setText(Double.toString(minValue));
+    	}
+    	
     	try {
     		double val = Double.parseDouble(maxCircularityField.getText());
             if (val < minValue) {
@@ -427,6 +478,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
                 selectedSettings.setAnalyseMaxCircularity(val);
             }
     	} catch (NumberFormatException ex) {
+    		IJ.showMessage("Invalid maximum circularity input format.");
             if (AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY >= minValue) {
             	maxCircularityField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY));
     			selectedSettings.setAnalyseMaxCircularity(AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY);
