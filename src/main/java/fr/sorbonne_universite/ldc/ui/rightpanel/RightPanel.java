@@ -260,7 +260,7 @@ public class RightPanel extends JPanel {
 	    	viewPanel.revalidate();
 	        viewPanel.repaint();
 	            
-//	        // if it is because there is no output for the given parameters
+	        // if it is because there is no output for the given parameters
     		if (rt != null && rt.getCounter() == 0) {
 	    		IJ.showMessage("No output for the given parameters");
     		}
@@ -292,7 +292,11 @@ public class RightPanel extends JPanel {
     		for (int j = 0; j < originalHeadings.length; j++) {
     			String colName = originalHeadings[j];
     			if (rt.columnExists(colName)) {
-                    data[i][j+1] = rt.getValue(colName, i);
+    				if ((colName.equals("Label") || colName.equals("Slice"))) {
+    					data[i][j+1] = rt.getStringValue(colName, i);
+    				}else {
+    					data[i][j+1] = rt.getValue(colName, i);    					
+    				}
                     if (colName.equals("is_isolated")) {
                     	nb_isolated += rt.getValue(colName, i); // is_isolated column is 1 or 0
                     }
