@@ -104,6 +104,11 @@ public class BatchFileWorker extends SwingWorker<ResultsTable,Void>{
             
             // 4. Create a new ImagePlus with the 8-bit stack
             ImagePlus binaryImg = new ImagePlus(image.getShortTitle() + "_Binary", binaryStack);
+            image.setDimensions(
+            		image.getNChannels(),
+            		image.getNSlices(),
+            		image.getNFrames()
+                );
             
             // Copy calibration (pixel size, mm/px, etc.)
             binaryImg.setCalibration(image.getCalibration());

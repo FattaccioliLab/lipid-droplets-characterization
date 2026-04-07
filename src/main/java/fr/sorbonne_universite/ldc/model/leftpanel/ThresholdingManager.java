@@ -79,10 +79,10 @@ public class ThresholdingManager {
      * Creates a NEW binary mask image based on the current threshold settings.
      * The original image is left unchanged.
      * @param originalImp The source image (will not be modified).
-     * @return true if successful, false otherwise.
+     * @return the NEW binary mask image based on the current threshold settings, or {@code null} if an error occurred.
      */
-    public boolean applyThreshold(ImagePlus originalImp) {
-        if (originalImp == null) return false;
+    public ImagePlus applyThreshold(ImagePlus originalImp) {
+        if (originalImp == null) return null;
         
         try {
             // 1. Get threshold from the original image
@@ -91,7 +91,7 @@ public class ThresholdingManager {
             
             if (min == ImageProcessor.NO_THRESHOLD) {
                 IJ.log("No threshold set.");
-                return false; 
+                return null; 
             }
 
             ImageStack originalStack = originalImp.getStack();
@@ -121,23 +121,25 @@ public class ThresholdingManager {
             
             // 4. Create a new ImagePlus with the 8-bit stack
             ImagePlus binaryImp = new ImagePlus(originalImp.getShortTitle() + "_Binary", binaryStack);
+            binaryImp.setDimensions(
+                    originalImp.getNChannels(),
+                    originalImp.getNSlices(),
+                    originalImp.getNFrames()
+                );
             
             // Copy calibration (pixel size, mm/px, etc.)
             binaryImp.setCalibration(originalImp.getCalibration());
-            
-            // 5. Show the new binary image
-            binaryImp.show();
             
             // Restore the red preview overlay on the original image's current slice
             originalImp.getProcessor().setThreshold(min, max, ImageProcessor.RED_LUT);
             originalImp.updateAndDraw();
             
-            return true;
+            return binaryImp;
             
         } catch (Exception e) {
             IJ.log("Error generating binary mask: " + e.getMessage());
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 }

@@ -234,7 +234,7 @@ public class ThresholdingPanel extends JPanel {
             darkBackgroundCheckbox.setSelected(false);
         } else {
             enableSliders(false);
-            double[] computed = service.previewAutoThreshold(img, method, isDark);
+            double[] computed = service.previewAutoThreshold(img);
             
             // Update sliders to match what the algo found
             int cMin = (int)computed[0];
@@ -254,8 +254,9 @@ public class ThresholdingPanel extends JPanel {
     private void applyThreshold() {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
-        isApplied = service.applyThreshold(img);
-        if(isApplied) {
+        ImagePlus newMask = service.applyThreshold(img);
+        if(newMask != null) {
+        	newMask.show();
             IJ.showStatus("Threshold applied.");
             //refreshHistogramData();
             leftPanel.updateWorkflowIndex(2);

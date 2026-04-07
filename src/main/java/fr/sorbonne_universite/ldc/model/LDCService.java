@@ -184,13 +184,13 @@ public interface LDCService extends SciJavaService {
 	/** Preview manual threshold on the image */
     public void previewManualThreshold(ImagePlus imp);
     
-    /** * Preview auto threshold. 
+    /** Preview auto threshold. 
      * @return double[] {min, max} calculated.
      */
-    public double[] previewAutoThreshold(ImagePlus imp, String method, boolean darkBackground);
+    public double[] previewAutoThreshold(ImagePlus imp);
     
     /** Apply final conversion to mask */
-    public boolean applyThreshold(ImagePlus imp);
+    public ImagePlus applyThreshold(ImagePlus imp);
     public boolean resetThreshold(ImagePlus imp);
 	
     // ============

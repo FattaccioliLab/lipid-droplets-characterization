@@ -1,6 +1,6 @@
-# Unit test explanations
+# Test explanations
 
-To ensure that our plugin pipeline produces the same results as using ImageJ tools through their interface, we created unit tests to verify the correctness of our plugin results by comparing them to ImageJ's ones.
+To ensure that our plugin pipeline produces the same results as using ImageJ tools through their interface, we created tests to verify the correctness of our plugin results by comparing them to ImageJ's ones.
 
 The idea is simple. For a given test:
 - We applied some treatments related to the testing field through the ImageJ interface on an original image.
@@ -14,20 +14,20 @@ Then, by executing the corresponding JUnit test:
 
 All tests have been done in April 2026.  
 The following versions are automatically resolved by Maven via the `pom-scijava 42.0.0` parent POM, and have been used for the plugin and its test development:
-- SciJava 42.0.0
-- ImageJ 2.17.0
+- pom-scijava 42.0.0
+- imagej 2.17.0
 - imglib2-ij 2.0.3
 - imagej-legacy 2.0.2
 - slf4j-simple 1.7.36
-- JUnit 5.10.2
+- junit-jupiter 5.10.2
 
-We have also used either Java JDK 11.0.2 or Java JRE 8. Both are compatible with our plugin development.  
+We have also used either Java 11 or Java 8. Both are compatible with our plugin development.  
 (Once in a production environment (Fiji), there are no compatibility problems with more recent Java versions)
 
 ## TestPreprocessing.java
 
 Only the preprocessing part of our plugin is individually tested.  
-Original image used before treatments : `src/test/resources/TestSample.tif`.  
+Original image used before pretreatments : `src/test/resources/TestSample.tif`.  
 
 ### test1
 
@@ -90,3 +90,158 @@ Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 10%  
 - Process > Filters > Median... : Radius 5 pixels + process all 3 slices  
 -> resulting image : `.../expected/test_preprocessing/test10.tif`  
+
+## TestSegmentation.java
+
+Only the segmentation/thresholding part of our plugin is individually tested.  
+Original image used before segmentation/thresholding : `src/test/resources/TestSample.tif`.  
+Here we test binary masks got by the segmentation / thresholding.  
+
+### test1
+
+Through ImageJ :  
+- Image > Adjust > Threshold ... : Default, min = 1048, max = 2576, no option selected  
+-> resulting image : `.../expected/test_segmentation/test1.tif`  
+
+### test2
+
+Through ImageJ :  
+- Image > Adjust > Threshold ... : Default, min = 430, max = 3731, no option selected  
+-> resulting image : `.../expected/test_segmentation/test2.tif`  
+
+### test3
+
+Through ImageJ :  
+- Process > Binary > Make Binary : method Otsu, Background Light, Black background selected  
+-> resulting image : `.../expected/test_segmentation/test3.tif`  
+
+### test4
+
+Through ImageJ :  
+- Process > Binary > Make Binary : method Otsu, Background Dark, Black background selected  
+-> resulting image : `.../expected/test_segmentation/test4.tif`  
+
+### test5
+
+Through ImageJ :  
+- Process > Binary > Make Binary : method Moments, Background Light, Black background selected  
+-> resulting image : `.../expected/test_segmentation/test5.tif`  
+
+### test6
+
+Through ImageJ :  
+- Process > Binary > Make Binary : method Moments, Background Dark, Black background selected  
+-> resulting image : `.../expected/test_segmentation/test6.tif`  
+
+### test7
+
+Through ImageJ :  
+- Process > Binary > Make Binary : method Triangle, Background Light, Black background selected  
+-> resulting image : `.../expected/test_segmentation/test7.tif`  
+
+### test8
+
+Through ImageJ :  
+- Process > Binary > Make Binary : method Triangle, Background Dark, Black background selected  
+-> resulting image : `.../expected/test_segmentation/test8.tif`  
+
+### test9
+
+Through ImageJ :  
+- Process > Binary > Make Binary : method Yen, Background Light, Black background selected  
+-> resulting image : `.../expected/test_segmentation/test9.tif`  
+
+### test10
+
+Through ImageJ :  
+- Process > Binary > Make Binary : method Yen, Background Dark, Black background selected  
+-> resulting image : `.../expected/test_segmentation/test10.tif`  
+
+### test11
+
+Through ImageJ :  
+- Process > Binary > Make Binary : method Li, Background Light, Black background selected  
+-> resulting image : `.../expected/test_segmentation/test11.tif`  
+
+### test12
+
+Through ImageJ :  
+- Process > Binary > Make Binary : method Li, Background Dark, Black background selected  
+-> resulting image : `.../expected/test_segmentation/test12.tif`  
+
+## TestBinaryMaskOperations.java
+
+Only the binary mask operations of our plugin are individually tested.  
+Original mask used before those operations : `src/test/resources/TestMask.tif`.  
+(Which is in reality `.../expected/test_segmentation/test12.tif`)  
+
+### test1
+
+Through ImageJ :  
+- Process > Binary > Erode (on all slices)  
+-> resulting image : `.../expected/test_binary_operations/test1.tif`  
+
+### test2
+
+Through ImageJ :  
+- Process > Binary > Dilate (on all slices)  
+-> resulting image : `.../expected/test_binary_operations/test2.tif`  
+
+### test3
+
+Through ImageJ :  
+- Process > Binary > Open (on all slices)  
+-> resulting image : `.../expected/test_binary_operations/test3.tif`  
+
+### test4
+
+Through ImageJ :  
+- Process > Binary > Close (on all slices)  
+-> resulting image : `.../expected/test_binary_operations/test4.tif`  
+
+### test5
+
+Through ImageJ :  
+- Process > Binary > Erode (on all slices)  
+- Process > Binary > Open (on all slices)  
+-> resulting image : `.../expected/test_binary_operations/test5.tif`  
+
+### test6
+
+Through ImageJ :  
+- Process > Binary > Dilate (on all slices)  
+- Process > Binary > Open (on all slices)  
+- Process > Binary > Close (on all slices)  
+-> resulting image : `.../expected/test_binary_operations/test6.tif`  
+
+## TestPipeline.java
+
+We successively apply the different previous steps, and verify that the same resulting image and mask are got with our plugin.  
+Original image used before applying the pipeline: `src/test/resources/TestSample.tif`.  
+
+### test1
+
+Through ImageJ :
+- Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
+- Process > Binary > Make Binary : method Moments, Background Dark, Black background + Create new stack  
+-> resulting image : `.../expected/test_pipeline/test1_res.tif`  
+-> resulting mask : `.../expected/test_pipeline/test1_mask.tif`  
+
+### test2
+
+Through ImageJ :
+- Process > Enhance Contrast : Saturated pixels 0,35%  
+- Process > Filters > Median... : Radius 4 pixels + only slice 2  
+- Process > Binary > Make Binary : method Triangle, Background Dark, Black background selected + Create new stack  
+-> resulting image : `.../expected/test_pipeline/test2_res.tif`  
+-> resulting mask : `.../expected/test_pipeline/test2_mask.tif`  
+
+### test3
+
+Through ImageJ :
+- Process > Enhance Contrast : Saturated pixels 4%  
+- Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
+- Process > Binary > Make Binary : method Otsu, Background Dark, Black background selected + Create new stack  
+- Process > Binary > Erode (on all slices)  
+-> resulting image : `.../expected/test_pipeline/test3_res.tif`  
+-> resulting mask : `.../expected/test_pipeline/test3_mask.tif`  

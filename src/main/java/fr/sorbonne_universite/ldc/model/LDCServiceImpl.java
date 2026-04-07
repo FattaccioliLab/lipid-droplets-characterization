@@ -179,11 +179,11 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
         thresholdingManager.setManualThreshold(imp, settings.getThresholdMinValue(), settings.getThresholdMaxValue());
     }
 
-    @Override public double[] previewAutoThreshold(ImagePlus imp, String method, boolean darkBackground) {
-        return thresholdingManager.setAutoThreshold(imp, method, darkBackground);
+    @Override public double[] previewAutoThreshold(ImagePlus imp) {
+        return thresholdingManager.setAutoThreshold(imp, settings.getThresholdMethod(), settings.thresholdDarkBackgroundEnabled());
     }
 
-    @Override public boolean applyThreshold(ImagePlus imp) { return thresholdingManager.applyThreshold(imp); }
+    @Override public ImagePlus applyThreshold(ImagePlus imp) { return thresholdingManager.applyThreshold(imp); }
     
     @Override public boolean resetThreshold(ImagePlus imp) { return thresholdingManager.resetThreshold(imp); }
     
