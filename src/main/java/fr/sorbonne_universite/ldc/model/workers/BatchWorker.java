@@ -2,6 +2,7 @@ package fr.sorbonne_universite.ldc.model.workers;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
@@ -71,15 +72,17 @@ public class BatchWorker extends SwingWorker<Void, Void> {
 			futures.add(future);
 		}
 
-		// Global results table (with 4 first lines empty at start)
+		// Global results table (with 6 first lines empty at start)
 		ResultsTable globalResults = new ResultsTable();
-	    for (int i = 0; i < 4; i++) {
+	    for (int i = 0; i < 6; i++) {
 	        globalResults.incrementCounter();
 	    }
 	    globalResults.setLabel("Mean", 0);
-	    globalResults.setLabel("SD", 1);
-	    globalResults.setLabel("Min", 2);
-	    globalResults.setLabel("Max", 3);
+	    globalResults.setLabel("Median", 1);
+	    globalResults.setLabel("SD", 2);
+	    globalResults.setLabel("CV", 3);
+	    globalResults.setLabel("Min", 4);
+	    globalResults.setLabel("Max", 5);
 	    
 	    // Gets all results
 	    int completed = 0;
@@ -185,71 +188,79 @@ public class BatchWorker extends SwingWorker<Void, Void> {
 	}
 	
 	/**
-	 * Calculates and fills summary statistics in the first 4 rows of the ResultsTable.
+	 * Calculates and fills summary statistics in the first 6 rows of the ResultsTable.
 	 * 
-	 * @param rt The ResultsTable with placeholder rows 0-3 for statistics
+	 * @param rt The ResultsTable with placeholder rows 0-5 for statistics
 	 */
 	private void calculateSummaryStatistics(ResultsTable rt) {
-	    if (rt == null || rt.size() <= 4) return;
-	    
-	    // Filename empty for stats
-	    rt.setValue("Filename", 0, ""); 
-	    rt.setValue("Filename", 1, "");
-	    rt.setValue("Filename", 2, "");
-	    rt.setValue("Filename", 3, "");
-	    
-	    int dataStartRow = 4; // Datas start from the 4th line
-	    
+	    if (rt == null || rt.size() <= 5) return;
+
+	    // Clear filename for stats rows
+	    for (int i = 0; i < 6; i++) {
+	        rt.setValue("Filename", i, "");
+	    }
+
+	    int dataStartRow = 8;
+
 	    for (int col = 0; col <= rt.getLastColumn(); col++) {
 	        String heading = rt.getColumnHeading(col);
-	        
-	        // Ignore empty columns or column "Filename"
-	        if (heading == null || heading.trim().isEmpty() || 
-	            !rt.columnExists(col) || heading.equals("Filename")) {
+
+	        // Ignore invalid columns
+	        if (heading == null || heading.trim().isEmpty()
+	                || !rt.columnExists(col)
+	                || heading.equals("Filename")) {
 	            continue;
 	        }
-	        
-	        // Verifies that it is a numerical line
-	        boolean isNumeric = true;
-	        try {
-	            rt.getValueAsDouble(col, dataStartRow);
-	        } catch (IllegalArgumentException e) {
-	            isNumeric = false;
-	        }
-	        if (!isNumeric) continue;
-	        
-	        // Collect all data from lines
+
+	        List<Double> values = new ArrayList<>();
+
 	        double min = Double.MAX_VALUE;
 	        double max = -Double.MAX_VALUE;
 	        double sum = 0;
 	        double sumSquares = 0;
 	        int count = 0;
-	        
+
 	        for (int row = dataStartRow; row < rt.size(); row++) {
 	            try {
 	                double value = rt.getValueAsDouble(col, row);
-	                
+
 	                if (!Double.isNaN(value)) {
 	                    min = Math.min(min, value);
 	                    max = Math.max(max, value);
 	                    sum += value;
 	                    sumSquares += value * value;
+	                    values.add(value);
 	                    count++;
 	                }
+
 	            } catch (Exception e) {
-	                // Ignore errors
+	                // ignore
 	            }
 	        }
-	        
+
 	        if (count > 0) {
-	            double mean = sum / count;
-	            double variance = (sumSquares / count) - (mean * mean);
-	            double stdDev = Math.sqrt(Math.max(0, variance));
-	            
-	            rt.setValue(heading, 0, mean);      // MEAN
-	            rt.setValue(heading, 1, stdDev);    // STD_DEV
-	            rt.setValue(heading, 2, min);       // MIN
-	            rt.setValue(heading, 3, max);       // MAX
+	        	double mean = sum / count;
+	        	double variance = (count > 1) ? (sumSquares - (sum * sum) / count) / (count - 1) : 0;
+	        	double stdDev = Math.sqrt(Math.max(0, variance));
+
+	            // MEDIAN
+	            Collections.sort(values);
+	            double median;
+	            if (count % 2 == 0) {
+	                median = (values.get(count / 2 - 1) + values.get(count / 2)) / 2.0;
+	            } else {
+	                median = values.get(count / 2);
+	            }
+
+	            // CV
+	            double cv = (mean != 0) ? stdDev / mean : 0;
+
+	            rt.setValue(heading, 0, mean);
+	            rt.setValue(heading, 1, median);
+	            rt.setValue(heading, 2, stdDev);
+	            rt.setValue(heading, 3, cv);
+	            rt.setValue(heading, 4, min);
+	            rt.setValue(heading, 5, max);
 	        }
 	    }
 	}
