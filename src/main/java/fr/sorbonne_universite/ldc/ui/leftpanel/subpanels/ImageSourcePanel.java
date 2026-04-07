@@ -247,6 +247,8 @@ public class ImageSourcePanel extends JPanel {
         currentImg.setDimensions(newImage.getNChannels(), newImage.getNSlices(), newImage.getNFrames());
         currentImg.updateAndDraw();
         currentImg.repaintWindow();
+        
+        closeBinaryWindow(currentImg);
     }
     
     /**
