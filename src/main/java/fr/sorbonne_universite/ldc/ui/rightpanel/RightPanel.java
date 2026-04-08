@@ -8,6 +8,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -110,20 +111,21 @@ public class RightPanel extends JPanel {
         	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
-        	ResultsTable rt = ResultsTable.getResultsTable();
-        	rt.reset();
-        	SwingWorker<Void,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(leftPanel.getCurrentImage());
+        	SwingWorker<ResultsTable,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(leftPanel.getCurrentImage());
         	
         	// adding property change listener to the worker to show the table when the asynchronous task is completed
         	measuresWorker.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if ("state".equals(evt.getPropertyName()) && SwingWorker.StateValue.DONE == evt.getNewValue()) {
-                        showTable(ResultsTable.getResultsTable());
+                    	try {
+                    		showTable(measuresWorker.get());
+                    	} catch (InterruptedException | ExecutionException e) {
+							e.printStackTrace();
+						}
                     }
                 }
             });
-        	
         	measuresWorker.execute();
         });
         headerPanel.add(resultsButton);

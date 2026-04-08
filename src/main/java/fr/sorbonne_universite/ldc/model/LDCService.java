@@ -204,11 +204,11 @@ public interface LDCService extends SciJavaService {
     public SwingWorker<Void,Void> createMeasuresPreviewWorker(ImagePlus img);
     
     /**
-     * Creates a {@link SwingWorker}, that take care of processing measurements and showing them, if executed.
+     * Creates a {@link SwingWorker}, that take care of processing measurements and returning them, if executed.
      * @param img The current image to consider.
 	 * @see MeasuresProcessingWorker
      */
-	public SwingWorker<Void,Void> createMeasuresProcessingWorker(ImagePlus img);
+	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(ImagePlus img);
 	
     /**
      * Export as a CSV file the table passed in parameter. 

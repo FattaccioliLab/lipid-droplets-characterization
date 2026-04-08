@@ -102,10 +102,12 @@ public class Utils {
 	 */
 	public static void cleanup(ImagePlus[] images, LDCService ldc) {
 		for (ImagePlus image : images) {
-			image.close();
+			if (image != null) image.close();
 		}
-		ldc.dispose();
-		ResultsTable.getResultsTable().reset();
+		if (ldc != null) {
+			ldc.dispose();
+			ldc = null;
+		}
 	}
 	
 }

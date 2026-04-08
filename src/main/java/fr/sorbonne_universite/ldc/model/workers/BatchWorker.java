@@ -72,9 +72,9 @@ public class BatchWorker extends SwingWorker<Void, Void> {
 			futures.add(future);
 		}
 
-		// Global results table (with 6 first lines empty at start)
+		// Global results table (with 7 first lines empty at start)
 		ResultsTable globalResults = new ResultsTable();
-	    for (int i = 0; i < 6; i++) {
+	    for (int i = 0; i < 7; i++) {
 	        globalResults.incrementCounter();
 	    }
 	    globalResults.setLabel("Mean", 0);
@@ -83,6 +83,7 @@ public class BatchWorker extends SwingWorker<Void, Void> {
 	    globalResults.setLabel("CV", 3);
 	    globalResults.setLabel("Min", 4);
 	    globalResults.setLabel("Max", 5);
+	    globalResults.setLabel("Nb of isolated|total droplets", 6);
 	    
 	    // Gets all results
 	    int completed = 0;
@@ -188,22 +189,25 @@ public class BatchWorker extends SwingWorker<Void, Void> {
 	}
 	
 	/**
-	 * Calculates and fills summary statistics in the first 6 rows of the ResultsTable.
+	 * Calculates and fills summary statistics in the first 7 rows of the ResultsTable.
 	 * 
-	 * @param rt The ResultsTable with placeholder rows 0-5 for statistics
+	 * @param rt The ResultsTable with placeholder rows 0-6 for statistics
 	 */
 	private void calculateSummaryStatistics(ResultsTable rt) {
-	    if (rt == null || rt.size() <= 5) return;
+	    if (rt == null || rt.size() <= 6) return;
 
 	    // Clear filename for stats rows
-	    for (int i = 0; i < 6; i++) {
+	    for (int i = 0; i < 7; i++) {
 	        rt.setValue("Filename", i, "");
 	    }
 
 	    int dataStartRow = 8;
+	    int dropletsCount = 0;
+	    int isolatedDropletsCount = 0;
 
 	    for (int col = 0; col <= rt.getLastColumn(); col++) {
 	        String heading = rt.getColumnHeading(col);
+	        rt.setValue(heading, 6, ""); // number of isolated|total droplets case empty for the column
 
 	        // Ignore invalid columns
 	        if (heading == null || heading.trim().isEmpty()
@@ -231,6 +235,10 @@ public class BatchWorker extends SwingWorker<Void, Void> {
 	                    sumSquares += value * value;
 	                    values.add(value);
 	                    count++;
+	                    if (heading.equals("is_isolated")) {
+	                    	if (value == 1.0) isolatedDropletsCount++;
+	                    	dropletsCount++;
+	                    }
 	                }
 
 	            } catch (Exception e) {
@@ -263,6 +271,13 @@ public class BatchWorker extends SwingWorker<Void, Void> {
 	            rt.setValue(heading, 5, max);
 	        }
 	    }
+	    
+	    // Adds the number of "isolated|total" droplets in the is_isolated column, at line 6
+	    if (rt.getColumnIndex("is_isolated") >= 0) {
+	        String stat = isolatedDropletsCount+"|"+dropletsCount;
+	        rt.setValue("is_isolated", 6, stat);
+	    }
+	    
 	}
 
 }

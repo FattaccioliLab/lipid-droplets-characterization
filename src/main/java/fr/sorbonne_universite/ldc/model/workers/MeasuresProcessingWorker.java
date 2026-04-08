@@ -7,16 +7,15 @@ import ij.ImagePlus;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.ParticleAnalyzer;
-import ij.plugin.frame.RoiManager;
 
 /**
- * {@link SwingWorker} that take care of processing measurements and showing them.
+ * {@link SwingWorker} that take care of processing measurements and returning them.
  * <p>
  * Its {@code doInBackground} method generates the results table by setting the measurements of the Analyzer according 
  * to those chosen by the user and then starting the particles analyzer. 
  * </p>
  */
-public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
+public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     
 	private double minSize;
 	private double maxSize;
@@ -64,7 +63,7 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     }
 
 	@Override
-	protected Void doInBackground() throws Exception {
+	protected ResultsTable doInBackground() throws Exception {
        	// set measurements
     	int measurements = 0;
     	measurements += Measurements.CENTROID; // center of the particle (x,y)
@@ -80,8 +79,7 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	// add BX, BY, Width and Height to the result table, used to define if the particle is on the edge
     	measurements += Measurements.RECT;
     	
-    	// set particlesAnalyzer
-    	ResultsTable rt = ResultsTable.getResultsTable();
+    	ResultsTable rt = new ResultsTable();
     	
     	// set options for Particles Analyzer
     	int options = 0;
@@ -112,8 +110,8 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	    }
     	}
     	
+    	// detect for each particle if it is isolated
     	if (rt.columnExists("Circ.")) { 
-	    	// detect for each particle if it is isolated
 	    	for (int row = 0; row < rt.getCounter(); row++) {
 	    		int isIsolated = 0;
 	    		
@@ -151,16 +149,7 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
         	rt.deleteColumn("Solidity");
         }
     	
-        
-		// close the ROI manager window that appear with the ParticlesAnalyzer WIP
-    	RoiManager rm = RoiManager.getInstance();
-        if (rm != null) {
-        	rm.setVisible(false);
-        	rm.reset();
-        	rm.close();
-        }
-    	
-    	return null;
+    	return rt;
 	}
 	
 }

@@ -83,19 +83,19 @@ public class TestPipeline {
 		ldcPlugin.setShowIntegratedDensity(true);
 		ldcPlugin.setShowMean(true);
 		ldcPlugin.setShowMedian(true);
-		ldcPlugin.setAnalyseMinSize(0);
-		ldcPlugin.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
-		ldcPlugin.setAnalyseMinCircularity(0);
-		ldcPlugin.setAnalyseMaxCircularity(1);
+		ldcPlugin.setAnalyseMinSize(0); // Not mandatory
+		ldcPlugin.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE); // Not mandatory
+		ldcPlugin.setAnalyseMinCircularity(0); // Not mandatory
+		ldcPlugin.setAnalyseMaxCircularity(1); // Not mandatory
 		ldcPlugin.setAnalyseExcludeOnEdges(true);
-        SwingWorker<Void, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
+        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
         worker2.execute();
+        ResultsTable results = null;
         try {
-        	worker2.get();
+        	results = worker2.get();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		ResultsTable results = ResultsTable.getResultsTable();
 		
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
@@ -148,19 +148,19 @@ public class TestPipeline {
 		ldcPlugin.setShowIntegratedDensity(true);
 		ldcPlugin.setShowMean(true);
 		ldcPlugin.setShowMedian(true);
-		ldcPlugin.setAnalyseMinSize(0);
-		ldcPlugin.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
-		ldcPlugin.setAnalyseMinCircularity(0);
+		ldcPlugin.setAnalyseMinSize(0); // Not mandatory
+		ldcPlugin.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE); // Not mandatory
+		ldcPlugin.setAnalyseMinCircularity(0); // Not mandatory
 		ldcPlugin.setAnalyseMaxCircularity(0.8);
 		ldcPlugin.setAnalyseExcludeOnEdges(true);
-        SwingWorker<Void, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
+        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
         worker2.execute();
+        ResultsTable results = null;
         try {
-        	worker2.get();
+        	results = worker2.get();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		ResultsTable results = ResultsTable.getResultsTable();
 
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
@@ -218,18 +218,18 @@ public class TestPipeline {
 		ldcPlugin.setShowMean(true);
 		ldcPlugin.setShowMedian(true);
 		ldcPlugin.setAnalyseMinSize(1);
-		ldcPlugin.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
-		ldcPlugin.setAnalyseMinCircularity(0);
-		ldcPlugin.setAnalyseMaxCircularity(1);
-		ldcPlugin.setAnalyseExcludeOnEdges(false);
-        SwingWorker<Void, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
+		ldcPlugin.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE); // Not mandatory
+		ldcPlugin.setAnalyseMinCircularity(0); // Not mandatory
+		ldcPlugin.setAnalyseMaxCircularity(1); // Not mandatory
+		ldcPlugin.setAnalyseExcludeOnEdges(false); // Not mandatory
+        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
         worker2.execute();
+        ResultsTable results = null;
         try {
-        	worker2.get();
+        	results = worker2.get();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		ResultsTable results = ResultsTable.getResultsTable();
 		
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);

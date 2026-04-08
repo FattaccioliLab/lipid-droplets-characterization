@@ -50,7 +50,7 @@ public class MeasurementsManager {
 	}
 	
     /**
-     * Creates a {@link SwingWorker}, that take care of processing measurements and showing them, if executed.
+     * Creates a {@link SwingWorker}, that take care of processing measurements and returning them, if executed.
      * @param minSize minimum particle size (px²).
      * @param maxSize maximum particle size (px²).
      * @param minCircularity minimum particle circularity.
@@ -64,7 +64,7 @@ public class MeasurementsManager {
      * @param img the current image to consider.
 	 * @see MeasuresProcessingWorker
      */
-	public SwingWorker<Void,Void> createMeasuresProcessingWorker(double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
+	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
 			boolean showAreaEnabled, boolean showMedianEnabled, boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled,
 			ImagePlus img){
 		return new MeasuresProcessingWorker(minSize, maxSize, minCircularity, maxCircularity, excludeOnEdgesEnabled, 
