@@ -130,6 +130,14 @@ public interface LDCService extends SciJavaService {
 	public double getAnalyseCircularityThreshold();
 	public void setAnalyseCircularityThreshold(double analyseCircularityThreshold);
 	
+	// isCalibrated
+	public boolean isCalibrated();
+	public void setIsCalibrated(boolean isCalibrated);
+	
+	// Calibration
+	public Calibration getCalibration();
+	public void setCalibration(Calibration calibration);
+	
     // ============================
     // Measurements showing options
     // ============================

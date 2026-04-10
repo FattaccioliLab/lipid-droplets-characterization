@@ -134,6 +134,12 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public double getAnalyseCircularityThreshold() { return settings.getAnalyseCircularityThreshold(); }
     @Override public void setAnalyseCircularityThreshold(double analyseCircularityThreshold) { settings.setAnalyseCircularityThreshold(analyseCircularityThreshold); }
     
+	@Override public boolean isCalibrated() {	return settings.isCalibrated(); }
+	@Override public void setIsCalibrated(boolean isCalibrated) { settings.setIsCalibrated(isCalibrated); }
+
+	@Override public Calibration getCalibration() { return settings.getCalibration(); }
+	@Override public void setCalibration(Calibration calibration) { settings.setCalibration(calibration); }
+    
     // ============================
     // Measurements showing options
     // ============================
@@ -276,4 +282,5 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	@Override public SwingWorker<Void,Void> createBatchWorker(File inputDirectory, File outputFile, BatchWindow bw){
 		return new BatchWorker(settings.clone(), inputDirectory, outputFile, bw);
 	}
+
 }

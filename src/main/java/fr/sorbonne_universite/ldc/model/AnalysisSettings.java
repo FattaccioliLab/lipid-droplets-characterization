@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ij.measure.Calibration;
+
 /**
  * A class containing the user's current image processing settings for the plugin.
  */
@@ -103,6 +105,12 @@ public class AnalysisSettings implements Cloneable {
 	// Circularity threshold for isolation definition
 	public final static double DFL_ANALYSE_CIRC_THRESHOLD = 0.5;
 	private double analyseCircularityThreshold = DFL_ANALYSE_CIRC_THRESHOLD;
+	
+	// Calibration (µm and px)
+	public final static boolean DFL_IS_CALIBRATED = false;
+	private boolean isCalibrated = DFL_IS_CALIBRATED;
+	public final static Calibration DFL_CALIBRATION = new Calibration();
+	private Calibration calibration = DFL_CALIBRATION;
 	
     // ============================
     // Measurements showing options
@@ -249,6 +257,14 @@ public class AnalysisSettings implements Cloneable {
 		if (analyseCircularityThreshold > 1) throw new IllegalArgumentException(Double.toString(analyseCircularityThreshold) + "must be less (or equal) than 1");
 		this.analyseCircularityThreshold = analyseCircularityThreshold;
 	}
+	
+	// isCalibrated boolean
+	public boolean isCalibrated() { return isCalibrated; }
+	public void setIsCalibrated(boolean isCalibrated) { this.isCalibrated = isCalibrated; }
+	
+	// Calibration
+	public Calibration getCalibration() { return calibration; }
+	public void setCalibration(Calibration calibration) { this.calibration = calibration; }
 	
     // ============================
     // Measurements showing options
