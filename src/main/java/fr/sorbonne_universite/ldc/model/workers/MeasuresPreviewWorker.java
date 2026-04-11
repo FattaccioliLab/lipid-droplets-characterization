@@ -5,6 +5,7 @@ import javax.swing.SwingWorker;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.measure.Calibration;
 import ij.measure.Measurements;
 import ij.plugin.filter.ParticleAnalyzer;
 
@@ -17,6 +18,8 @@ import ij.plugin.filter.ParticleAnalyzer;
  */
 public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     
+	private boolean isCalibrated;
+	private Calibration calibration;
 	private double minSize;
 	private double maxSize;
 	private double minCircularity;
@@ -31,8 +34,10 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     
     /**
      * Creates a {@code MeasuresPreviewWorker}.
-     * @param minSize 							Minimum particle size (px²).
-     * @param maxSize 							Maximum particle size (px²).
+     * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
+     * @param Calibration					Given calibration.
+     * @param minSize 						Minimum particle size (μm² IsCalibrated is true, otherwise px²).
+     * @param maxSize 						Maximum particle size (μm² IsCalibrated is true, otherwise px²).
      * @param minCircularity 					Minimum particle circularity.
      * @param maxCircularity 					Maximum particle circularity.
      * @param excludeOnEdgesEnabled 			Particle Analyzer option.
@@ -44,6 +49,8 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
      * @param img 								The current image to consider.
      */
     public MeasuresPreviewWorker(
+    		boolean isCalibrated,
+    		Calibration calibration,
     		double minSize,
     		double maxSize,
     		double minCircularity,
@@ -55,6 +62,8 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     		boolean showIntegratedDensityEnabled,
     		boolean showCircularityEnabled,
     		ImagePlus img) {
+    	this.isCalibrated = isCalibrated;
+    	this.calibration = calibration;
     	this.minSize = minSize;
     	this.maxSize = maxSize;
     	this.minCircularity = minCircularity;
@@ -90,40 +99,79 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     		options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
     	}
     	
-    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, null, minSize, maxSize, minCircularity, maxCircularity);
-    	pa.setHideOutputImage(true);
-
     	// get current image
     	if (img == null) {
     		IJ.showMessage("Please open an image first (File > Open)");
     		return null;
     	}
     	
-    	// create an empty stack with the same dimensions as the original one, to keep in it the outlines images
-    	ImageStack outlinesStack = new ImageStack(img.getWidth(), img.getHeight());
+    	double pxMinSize = minSize;
+    	double pxMaxSize = maxSize;
     	
-    	// analyze each image of the stack
-    	boolean success = true;
-    	int stackSize = img.getStackSize();
-    	for (int i = 1; i <= stackSize; i++) {
-    	    img.setSlice(i);
-    	    success = pa.analyze(img);
-    	    if (!success) {
-    	    	break;
-    	    }
-    	    
-    	    // adding the outlines to the stack
-    	    ImagePlus outImg = pa.getOutputImage();
-            if (outImg != null) {
-                outlinesStack.addSlice(img.getStack().getSliceLabel(i), outImg.getProcessor());
-            }
+    	if (isCalibrated && calibration != null && calibration.scaled()) {
+    		// convert the µm² in px²
+    		double pixelArea = calibration.pixelWidth * calibration.pixelHeight;
+    		pxMinSize = minSize / pixelArea;
+    		if (maxSize != Double.MAX_VALUE) {
+    			pxMaxSize = maxSize / pixelArea;
+    		}
     	}
     	
-    	// show the preview
-    	if (outlinesStack.getSize() > 0) {
-            ImagePlus combinedOutlines = new ImagePlus("Outlines of " + img.getTitle(), outlinesStack);
-            combinedOutlines.show();
-        }
+    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, null, pxMinSize, pxMaxSize, minCircularity, maxCircularity);
+    	pa.setHideOutputImage(true);
+    	
+    	// save the original calibration
+    	Calibration backupCal = img.getCalibration();
+    	if (backupCal != null) {
+    		backupCal = backupCal.copy();	// deep copy of the original calibration
+    	}
+    	
+    	try {
+    		
+    		// apply the given calibration
+    		if (isCalibrated && calibration != null) {		
+                img.setCalibration(calibration);
+            } else {
+            	//  force a neutral calibration 1 pixel / 1 pixel
+                Calibration pixelCal = new ij.measure.Calibration();
+                pixelCal.pixelWidth = 1.0;
+                pixelCal.pixelHeight = 1.0;
+                pixelCal.setUnit("pixel");
+                img.setCalibration(pixelCal);
+            }
+    		
+    		// create an empty stack with the same dimensions as the original one, to keep in it the outlines images
+        	ImageStack outlinesStack = new ImageStack(img.getWidth(), img.getHeight());
+        	
+        	// analyze each image of the stack
+        	boolean success = true;
+        	int stackSize = img.getStackSize();
+        	for (int i = 1; i <= stackSize; i++) {
+        	    img.setSlice(i);
+        	    success = pa.analyze(img);
+        	    if (!success) {
+        	    	break;
+        	    }
+        	    
+        	    // adding the outlines to the stack
+        	    ImagePlus outImg = pa.getOutputImage();
+                if (outImg != null) {
+                    outlinesStack.addSlice(img.getStack().getSliceLabel(i), outImg.getProcessor());
+                }
+        	}
+        	
+        	// show the preview
+        	if (outlinesStack.getSize() > 0) {
+                ImagePlus combinedOutlines = new ImagePlus("Outlines of " + img.getTitle(), outlinesStack);
+                combinedOutlines.show();
+            }
+    		
+    	} finally {
+    		// ensure that the original calibration is restored in the end. 
+    		if (backupCal != null) {
+    			img.setCalibration(backupCal);
+    		}
+    	}
     	
     	return null;
 	}

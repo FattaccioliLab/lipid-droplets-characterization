@@ -9,6 +9,7 @@ import java.awt.Insets;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -23,6 +24,7 @@ import org.scijava.plugin.Parameter;
 import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
+import ij.measure.Calibration;
 
 /**
  * Provides particle analysis setup.
@@ -47,8 +49,15 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     
     // Components
     
+    // Calibration settings
+    private JCheckBox isCalibratedCheckbox;
+    private JSpinner manualCalibrationSpinner;
+    private JButton resetCalibrationButton;
+    private double defaultPixelSize = 1.0;
+    
     // Particle settings
     private JCheckBox noMaxCheckbox;
+    private JLabel sizeLabel;
     private JTextField minSizeField;
     private JTextField maxSizeField;
     private JTextField minCircularityField;
@@ -70,11 +79,86 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         
         PanelUtils.createVerticalPanel(this, "Particle analysis parameters", 700);
         
+        // CALIBRATION SETTINGS
+        
+        JPanel calibrationPanel = new JPanel(new GridBagLayout());
+        calibrationPanel.setBorder(
+        		BorderFactory.createCompoundBorder(
+        				BorderFactory.createEmptyBorder(0, 8, 0, 8),
+        				BorderFactory.createTitledBorder("Calibration settings")
+        				)
+        		);
+        calibrationPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        calibrationPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
+        
+        isCalibratedCheckbox = new JCheckBox("Calibrate the image");
+        isCalibratedCheckbox.setSelected(selectedSettings.isCalibrated());
+        isCalibratedCheckbox.setFocusPainted(false);
+        isCalibratedCheckbox.addActionListener(e -> toggleIsCalibrated());
+        
+        updateDefaultPixelSize();
+        
+        manualCalibrationSpinner = new JSpinner(new SpinnerNumberModel(defaultPixelSize, 0.0001, 10000.0, 0.0000001));
+        manualCalibrationSpinner.setEditor(new JSpinner.NumberEditor(manualCalibrationSpinner, "0.0000000"));
+        manualCalibrationSpinner.setEnabled(isCalibratedCheckbox.isSelected());
+        
+        manualCalibrationSpinner.addChangeListener(e -> enterManualCalibrationSpinner());
+        
+        // keep the user from entering non numeric values
+        JFormattedTextField calTxt = ((JSpinner.DefaultEditor) manualCalibrationSpinner.getEditor()).getTextField();
+        calTxt.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!(Character.isDigit(c) || c == '.' || c == ',' || c == java.awt.event.KeyEvent.VK_BACK_SPACE)) {
+                    e.consume();
+                }
+            }
+        });
+        
+        // reset calibration button
+        resetCalibrationButton = new JButton("Reset");
+        resetCalibrationButton.setMargin(new Insets(2, 5, 2, 5));
+        resetCalibrationButton.setEnabled(isCalibratedCheckbox.isSelected());
+        resetCalibrationButton.addActionListener(e -> resetManualCalibrationSpinner());
+        
+        // GridBagLayout setup
+        GridBagConstraints cCalib = new GridBagConstraints();
+        cCalib.insets = new Insets(2, 5, 2, 5);
+        cCalib.fill = GridBagConstraints.HORIZONTAL;
+        cCalib.anchor = GridBagConstraints.WEST;
+        
+        // first line : isCalibratedCheckbox
+        cCalib.gridy = 0; 
+        cCalib.gridx = 0;
+        cCalib.gridwidth = 3;
+        cCalib.weightx = 1.0; 
+        calibrationPanel.add(isCalibratedCheckbox, cCalib);
+        
+        // second line : label + Spinner + unit + reset button
+        cCalib.gridy = 1; 
+        cCalib.gridwidth = 1;
+        
+        cCalib.gridx = 0;
+        cCalib.weightx = 0.0;
+        calibrationPanel.add(new JLabel("Pixel size:"), cCalib);
+        
+        cCalib.gridx = 1;
+        cCalib.weightx = 1.0;
+        calibrationPanel.add(manualCalibrationSpinner, cCalib);
+        
+        cCalib.gridx = 2;
+        cCalib.weightx = 0.0;
+        calibrationPanel.add(new JLabel("μm/px"), cCalib);
+        
+        cCalib.gridx = 3;
+        cCalib.weightx = 0.0;
+        calibrationPanel.add(resetCalibrationButton, cCalib);
+
         // PARTICLE SETTINGS
         
         JPanel particlesSettings = PanelUtils.createVerticalPanel("Particle settings", 400);
         
-        // --- Size (px²) section ---
+        // --- Size section ---
         
         JPanel sizePanel = new JPanel(new GridBagLayout());
         sizePanel.setBorder(
@@ -95,7 +179,8 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         // 1st line, 'Particles size' label
         cSize.gridy = 0; cSize.gridx = 0;
         cSize.gridwidth = 3;
-        JLabel sizeLabel = new JLabel("Particle size (px²)", JLabel.CENTER);
+        String unit = selectedSettings.isCalibrated() ? "μm" : "px";
+        sizeLabel = new JLabel("Particle size (" + unit + "²)", JLabel.CENTER);
         sizePanel.add(sizeLabel, cSize);
         cSize.gridwidth = 1;
         
@@ -221,7 +306,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         
         // spinner
         circularityThresholdSpinner = new JSpinner(
-        		new SpinnerNumberModel(AnalysisSettings.DFL_ANALYSE_CIRC_THRESHOLD, 0.0, 1.0, 0.1));
+        		new SpinnerNumberModel(AnalysisSettings.DFL_ANALYSE_CIRC_THRESHOLD, 0.0, 1.0, 0.01));
         // showing two decimals
         circularityThresholdSpinner.setEditor(new JSpinner.NumberEditor(circularityThresholdSpinner, "0.00"));
         
@@ -285,6 +370,9 @@ public class ParticleAnalysisParamsPanel extends JPanel {
 	    
 	    add(Box.createVerticalStrut(5));
 	    
+	    add(calibrationPanel);
+	    
+	    particlesSettings.add(Box.createVerticalStrut(10));
 	    particlesSettings.add(sizePanel);
 	    particlesSettings.add(Box.createVerticalStrut(10));
 	    particlesSettings.add(circularityPanel);
@@ -311,6 +399,70 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     // =========================================================================
     // UI ACTIONS
     // =========================================================================
+    
+    // CALIBRATION SETTINGS
+    
+    /**
+     * Toggles the manual calibration field and updates the LDCService state.
+     */
+    private void toggleIsCalibrated() {
+    	boolean isSelected = isCalibratedCheckbox.isSelected();
+    	manualCalibrationSpinner.setEnabled(isSelected);
+    	resetCalibrationButton.setEnabled(isSelected);
+    	selectedSettings.setIsCalibrated(isSelected);
+        
+    	String unit = "px";
+    	if (isSelected) {
+    		manualCalibrationSpinner.setEnabled(true);
+    		enterManualCalibrationSpinner();
+    		unit = "μm";
+    	}
+    	
+        sizeLabel.setText("Particle size (" + unit + "²)");
+    }
+
+    /**
+     * Updates the Calibration in the AnalysisSettings when the user changes the pixel size.
+     */
+    private void enterManualCalibrationSpinner() {
+        if (!isCalibratedCheckbox.isSelected()) return;
+
+        double pixelSize = (double) manualCalibrationSpinner.getValue();
+        
+        Calibration cal = selectedSettings.getCalibration();
+        if (cal == null) {
+            cal = new Calibration();
+        }
+        cal.pixelWidth = pixelSize;
+        cal.pixelHeight = pixelSize;
+        
+        if (cal.getUnit() == null || cal.getUnit().equals("pixel") || cal.getUnit().isEmpty()) {
+            cal.setUnit("µm");
+        }
+        selectedSettings.setCalibration(cal);
+    }
+    
+    /**
+     * Update the default pixel size for the calibration, try to take it from the image if it is already
+     * calibrated, otherwise take 1.0.
+     */
+    private void updateDefaultPixelSize() {
+    	// get the default pixel size if the image is already calibrated
+        Calibration cal = selectedSettings.getCalibration();
+        if (cal != null && cal.scaled()) {
+            defaultPixelSize = cal.pixelWidth;
+        } else {
+        	defaultPixelSize = 1.0;
+        }
+    }
+    
+    /**
+     * Reset the value of the calibration spinner.
+     */
+    private void resetManualCalibrationSpinner() {
+        manualCalibrationSpinner.setValue(defaultPixelSize);
+        enterManualCalibrationSpinner();
+    }
     
     // PARTICLE SETTINGS
     
@@ -535,6 +687,11 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      * @param enable true : enables inputs, false : disables inputs.
      */
     public void enableUIComponents(boolean enable) {
+    	// CALIBRATION SETTINGS
+    	isCalibratedCheckbox.setEnabled(enable);
+    	manualCalibrationSpinner.setEnabled(enable && isCalibratedCheckbox.isSelected());
+    	resetCalibrationButton.setEnabled(enable && isCalibratedCheckbox.isSelected());
+    	
     	// PARTICLE SETTINGS
         noMaxCheckbox.setEnabled(enable);
         minSizeField.setEnabled(enable);
@@ -556,6 +713,12 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      * Reset the particle analysis parameters panel UI components, for when the image is reseted.
      */
     public void resetUIComponents() {
+    	// CALIBRATION SETTINGS
+    	isCalibratedCheckbox.setSelected(selectedSettings.isCalibrated());
+    	updateDefaultPixelSize();
+		manualCalibrationSpinner.setValue(defaultPixelSize);
+    	manualCalibrationSpinner.setEnabled(isCalibratedCheckbox.isSelected());
+    	
     	// PARTICLE SETTINGS
     	selectedSettings.setAnalyseMinSize(AnalysisSettings.DFL_ANALYSE_MIN_SIZE);
     	selectedSettings.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);

@@ -59,7 +59,7 @@ public class BatchWindow extends JFrame {
 		layoutComponents();
 
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setSize(600, 300);
+		setSize(600, 400);
 		setResizable(false);
 		setLocationRelativeTo(null);
 		setVisible(true);

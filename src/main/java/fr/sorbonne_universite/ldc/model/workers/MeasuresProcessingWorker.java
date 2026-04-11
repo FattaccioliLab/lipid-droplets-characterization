@@ -4,6 +4,7 @@ import javax.swing.SwingWorker;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.measure.Calibration;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.ParticleAnalyzer;
@@ -18,6 +19,8 @@ import ij.plugin.frame.RoiManager;
  */
 public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     
+	private boolean isCalibrated;
+	private Calibration calibration;
 	private double minSize;
 	private double maxSize;
 	private double minCircularity;
@@ -33,8 +36,10 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     
     /**
      * Creates a {@code MeasuresProcessingWorker}.
-     * @param minSize 						Minimum particle size (px²).
-     * @param maxSize 						Maximum particle size (px²).
+     * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
+     * @param Calibration					Given calibration.
+     * @param minSize 						Minimum particle size (μm² IsCalibrated is true, otherwise px²).
+     * @param maxSize 						Maximum particle size (μm² IsCalibrated is true, otherwise px²).
      * @param minCircularity 				Minimum particle circularity.
      * @param maxCircularity 				Maximum particle circularity.
      * @param excludeOnEdgesEnabled 		Particle Analyzer option.
@@ -47,6 +52,8 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
      * @param img The current image to consider.
      */
     public MeasuresProcessingWorker(
+    		boolean isCalibrated,
+    		Calibration calibration,
     		double minSize, 
     		double maxSize,
     		double minCircularity,
@@ -59,6 +66,8 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     		boolean showIntegratedDensityEnabled,
     		boolean showCircularityEnabled,
     		ImagePlus img) {
+    	this.isCalibrated = isCalibrated;
+    	this.calibration = calibration;
     	this.minSize = minSize;
     	this.maxSize = maxSize;
     	this.minCircularity = minCircularity;
@@ -102,8 +111,6 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     	if (excludeOnEdgesEnabled) {
     		options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
     	}
-    	
-    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, rt, minSize, maxSize, minCircularity, maxCircularity);
 
     	// get current image
     	if (img == null) {
@@ -111,64 +118,105 @@ public class MeasuresProcessingWorker extends SwingWorker<Void, Void>{
     		return null;
     	}
     	
-    	// analyze each image of the stack
-    	boolean success = true;
-    	int stackSize = img.getStackSize();
-    	for (int i = 1; i <= stackSize; i++) {
-    	    img.setSlice(i);
-    	    success = pa.analyze(img);
-    	    if (!success) {
-    	    	break;
-    	    }
+    	double pxMinSize = minSize;
+    	double pxMaxSize = maxSize;
+    	
+    	if (isCalibrated && calibration != null && calibration.scaled()) {
+    		// convert the µm² in px²
+    		double pixelArea = calibration.pixelWidth * calibration.pixelHeight;
+    		pxMinSize = minSize / pixelArea;
+    		if (maxSize != Double.MAX_VALUE) {
+    			pxMaxSize = maxSize / pixelArea;
+    		}
+        }
+    	
+    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, rt, pxMinSize, pxMaxSize, minCircularity, maxCircularity);
+    	
+    	// save the original calibration
+    	Calibration backupCal = img.getCalibration();
+    	if (backupCal != null) {
+    		backupCal = backupCal.copy();	// deep copy of the original calibration
     	}
     	
-    	if (rt.columnExists("Circ.")) { 
-	    	// detect for each particle if it is isolated
-	    	for (int row = 0; row < rt.getCounter(); row++) {
-	    		int isIsolated = 0;
-	    		
-	    		// check if the particle touches the edge of the image
-	    		boolean touchesEdge = false;
-	    		if (rt.columnExists("BX") && rt.columnExists("BY") && rt.columnExists("Width") && rt.columnExists("Height")) {
-	    			double bx = rt.getValue("BX", row);
-	    			double by = rt.getValue("BY", row);
-	    			double width = rt.getValue("Width", row);
-	    			double height = rt.getValue("Height", row);
-	    			if (bx <= 0 || by <= 0 || (bx + width) >= img.getWidth() || (by + height) >= img.getHeight()) {
-	    	            touchesEdge = true;
-	    	        }
-	    		}
-	    		
-	    		// check if the particle circularity is greater than the threshold, then it is isolated
-	    		if (!touchesEdge && rt.columnExists("Circ.")) {
-	    			if (rt.getValue("Circ.", row) >= circularityThreshold) isIsolated = 1;
-	    		}
-	    		
-	    		// add the attribute to the particle
-	    		rt.setValue("is_isolated", row, isIsolated);
-	    	}
-    	}
+    	try {
 
-    	// cleaning the results table : remove unused columns
-    	if (rt.columnExists("BX")) rt.deleteColumn("BX");
-        if (rt.columnExists("BY")) rt.deleteColumn("BY");
-        if (rt.columnExists("Width")) rt.deleteColumn("Width");
-        if (rt.columnExists("Height")) rt.deleteColumn("Height");
-        if (!showCircularityEnabled){
-        	rt.deleteColumn("Circ."); // remove if the circularity parameter isn't activated
-        	rt.deleteColumn("AR");
-        	rt.deleteColumn("Round");
-        	rt.deleteColumn("Solidity");
-        }
-    	
-        
-		// close the ROI manager window that appear with the ParticlesAnalyzer WIP
-    	RoiManager rm = RoiManager.getInstance();
-        if (rm != null) {
-        	rm.setVisible(false);
-        	rm.reset();
-        	rm.close();
-        }
+    		// apply the given calibration
+    		if (isCalibrated && calibration != null) {		
+                img.setCalibration(calibration);
+            } else {
+            	//  force a neutral calibration 1 pixel / 1 pixel
+                Calibration pixelCal = new ij.measure.Calibration();
+                pixelCal.pixelWidth = 1.0;
+                pixelCal.pixelHeight = 1.0;
+                pixelCal.setUnit("pixel");
+                img.setCalibration(pixelCal);
+            }
+    		
+        	// analyze each image of the stack
+        	boolean success = true;
+        	int stackSize = img.getStackSize();
+        	for (int i = 1; i <= stackSize; i++) {
+        	    img.setSlice(i);
+        	    success = pa.analyze(img);
+        	    if (!success) {
+        	    	break;
+        	    }
+        	}
+        	
+        	if (rt.columnExists("Circ.")) { 
+    	    	// detect for each particle if it is isolated
+    	    	for (int row = 0; row < rt.getCounter(); row++) {
+    	    		int isIsolated = 0;
+    	    		
+    	    		// check if the particle touches the edge of the image
+    	    		boolean touchesEdge = false;
+    	    		if (rt.columnExists("BX") && rt.columnExists("BY") && rt.columnExists("Width") && rt.columnExists("Height")) {
+    	    			double bx = rt.getValue("BX", row);
+    	    			double by = rt.getValue("BY", row);
+    	    			double width = rt.getValue("Width", row);
+    	    			double height = rt.getValue("Height", row);
+    	    			if (bx <= 0 || by <= 0 || (bx + width) >= img.getWidth() || (by + height) >= img.getHeight()) {
+    	    	            touchesEdge = true;
+    	    	        }
+    	    		}
+    	    		
+    	    		// check if the particle circularity is greater than the threshold, then it is isolated
+    	    		if (!touchesEdge && rt.columnExists("Circ.")) {
+    	    			if (rt.getValue("Circ.", row) >= circularityThreshold) isIsolated = 1;
+    	    		}
+    	    		
+    	    		// add the attribute to the particle
+    	    		rt.setValue("is_isolated", row, isIsolated);
+    	    	}
+        	}
+
+        	// cleaning the results table : remove unused columns
+        	if (rt.columnExists("BX")) rt.deleteColumn("BX");
+            if (rt.columnExists("BY")) rt.deleteColumn("BY");
+            if (rt.columnExists("Width")) rt.deleteColumn("Width");
+            if (rt.columnExists("Height")) rt.deleteColumn("Height");
+            if (!showCircularityEnabled){
+            	rt.deleteColumn("Circ."); // remove if the circularity parameter isn't activated
+            	rt.deleteColumn("AR");
+            	rt.deleteColumn("Round");
+            	rt.deleteColumn("Solidity");
+            }
+        	
+            
+    		// close the ROI manager window that appear with the ParticlesAnalyzer WIP
+        	RoiManager rm = RoiManager.getInstance();
+            if (rm != null) {
+            	rm.setVisible(false);
+            	rm.reset();
+            	rm.close();
+            }
+    		
+    	} finally {
+    		// ensure that the original calibration is restored in the end. 
+    		if (backupCal != null) {
+    			img.setCalibration(backupCal);
+    		}
+    	}
     	
     	return null;
 	}

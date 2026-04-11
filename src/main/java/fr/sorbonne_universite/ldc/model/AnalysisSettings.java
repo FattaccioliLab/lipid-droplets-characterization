@@ -86,7 +86,7 @@ public class AnalysisSettings implements Cloneable {
     // Analyse particles
     // =================
 
-	// Particle size (px)
+	// Particle size (px² or µm²)
 	public final static double DFL_ANALYSE_MIN_SIZE = 0;
 	public final static double DFL_ANALYSE_MAX_SIZE = Double.MAX_VALUE; // infinity
 	private double analyseMinSize = DFL_ANALYSE_MIN_SIZE;
@@ -106,7 +106,7 @@ public class AnalysisSettings implements Cloneable {
 	public final static double DFL_ANALYSE_CIRC_THRESHOLD = 0.5;
 	private double analyseCircularityThreshold = DFL_ANALYSE_CIRC_THRESHOLD;
 	
-	// Calibration (µm and px)
+	// Calibration (µm per px)
 	public final static boolean DFL_IS_CALIBRATED = false;
 	private boolean isCalibrated = DFL_IS_CALIBRATED;
 	public final static Calibration DFL_CALIBRATION = new Calibration();

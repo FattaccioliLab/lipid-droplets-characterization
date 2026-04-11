@@ -28,8 +28,10 @@ public class MeasurementsManager {
 
     /**
      * Creates a {@link SwingWorker}, that take care of processing and showing the measurements preview, if executed.
-     * @param minSize 						Minimum particle size (px²).
-     * @param maxSize 						Maximum particle size (px²).
+     * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
+     * @param Calibration					Given calibration.
+     * @param minSize 						Minimum particle size (μm² IsCalibrated is true, otherwise px²).
+     * @param maxSize 						Maximum particle size (μm² IsCalibrated is true, otherwise px²).
      * @param minCircularity 				Minimum particle circularity.
      * @param maxCircularity 				Maximum particle circularity.
      * @param excludeOnEdgesEnabled 		Particle Analyzer option.
@@ -42,6 +44,8 @@ public class MeasurementsManager {
 	 * @see MeasuresPreviewWorker
      */
 	public SwingWorker<Void,Void> createMeasuresPreviewWorker(
+    		boolean isCalibrated,
+    		Calibration calibration,
 			double minSize,
 			double maxSize,
 			double minCircularity,
@@ -54,6 +58,8 @@ public class MeasurementsManager {
 			boolean showCircularityEnabled,
 			ImagePlus img){
 		return new MeasuresPreviewWorker(
+				isCalibrated,
+				calibration,
 				minSize,
 				maxSize,
 				minCircularity,
@@ -69,8 +75,10 @@ public class MeasurementsManager {
 	
     /**
      * Creates a {@link SwingWorker}, that take care of processing measurements and showing them, if executed.
-     * @param minSize 						Minimum particle size (px²).
-     * @param maxSize 						Maximum particle size (px²).
+     * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
+     * @param Calibration					Given calibration.
+     * @param minSize 						Minimum particle size (μm² IsCalibrated is true, otherwise px²).
+     * @param maxSize 						Maximum particle size (μm² IsCalibrated is true, otherwise px²).
      * @param minCircularity 				Minimum particle circularity.
      * @param maxCircularity 				Maximum particle circularity.
      * @param excludeOnEdgesEnabled 		Particle Analyzer option.
@@ -84,6 +92,8 @@ public class MeasurementsManager {
 	 * @see MeasuresProcessingWorker
      */
 	public SwingWorker<Void,Void> createMeasuresProcessingWorker(
+    		boolean isCalibrated,
+    		Calibration calibration,
 			double minSize,
 			double maxSize,
 			double minCircularity,
@@ -97,6 +107,8 @@ public class MeasurementsManager {
 			boolean showCircularityEnabled,
 			ImagePlus img){
 		return new MeasuresProcessingWorker(
+	    		isCalibrated,
+	    		calibration,
 				minSize,
 				maxSize,
 				minCircularity,

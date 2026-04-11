@@ -233,6 +233,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	/** @see MeasuresPreviewWorker */
     @Override public SwingWorker<Void, Void> createMeasuresPreviewWorker(ImagePlus img){
 		return measurementsManager.createMeasuresPreviewWorker(
+				isCalibrated(),
+				getCalibration(),
 				getAnalyseMinSize(),
 				getAnalyseMaxSize(),
 				getAnalyseMinCircularity(),
@@ -249,6 +251,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	/** @see MeasuresProcessingWorker */
 	@Override public SwingWorker<Void, Void> createMeasuresProcessingWorker(ImagePlus img) {
 		return measurementsManager.createMeasuresProcessingWorker(
+				isCalibrated(),
+				getCalibration(),
 				getAnalyseMinSize(),
 				getAnalyseMaxSize(),
 				getAnalyseMinCircularity(),

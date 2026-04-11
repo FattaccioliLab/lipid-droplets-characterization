@@ -137,6 +137,7 @@ public class ImageSourcePanel extends JPanel {
                 	updateCalibrationState(currentImg);
                 	
                 	imageStatusLabel.setText("<html><center>Current image: " + currentImg.getTitle() + "</center></html>");
+                	leftPanel.resetPanels();
                 	leftPanel.enablePanels(true);
                 	
                 // If there is an original LDC image previously saved, and there is no other current image opened, 
