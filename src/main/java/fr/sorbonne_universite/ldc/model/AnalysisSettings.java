@@ -82,11 +82,21 @@ public class AnalysisSettings implements Cloneable {
 	private boolean closing = DFL_BINARY_MASK_OP;
 	private boolean watershed = DFL_BINARY_MASK_OP; // bonus
 	
+    // ====================================
+    // Image calibration (unit per pixel)
+    // ====================================
+	
+	public final static boolean DFL_IS_CALIBRATED = false;
+	private boolean isCalibrated = DFL_IS_CALIBRATED;
+	
+	public final static Calibration DFL_CALIBRATION = new Calibration();
+	private Calibration calibration = DFL_CALIBRATION;
+	
     // =================
     // Analyse particles
     // =================
 
-	// Particle size (px² or µm²)
+	// Particle size (unit² or pixel²)
 	public final static double DFL_ANALYSE_MIN_SIZE = 0;
 	public final static double DFL_ANALYSE_MAX_SIZE = Double.MAX_VALUE; // infinity
 	private double analyseMinSize = DFL_ANALYSE_MIN_SIZE;
@@ -106,18 +116,13 @@ public class AnalysisSettings implements Cloneable {
 	public final static double DFL_ANALYSE_CIRC_THRESHOLD = 0.5;
 	private double analyseCircularityThreshold = DFL_ANALYSE_CIRC_THRESHOLD;
 	
-	// Calibration (µm per px)
-	public final static boolean DFL_IS_CALIBRATED = false;
-	private boolean isCalibrated = DFL_IS_CALIBRATED;
-	public final static Calibration DFL_CALIBRATION = new Calibration();
-	private Calibration calibration = DFL_CALIBRATION;
-	
     // ============================
     // Measurements showing options
     // ============================
 	
 	public final static boolean DFL_SHOWING_OPT = false;
 	private boolean showArea = DFL_SHOWING_OPT;
+	private boolean showDiameter = DFL_SHOWING_OPT;
 	private boolean showMedian = DFL_SHOWING_OPT;
 	private boolean showMean = DFL_SHOWING_OPT;
 	private boolean showIntegratedDensity = DFL_SHOWING_OPT;
@@ -273,6 +278,9 @@ public class AnalysisSettings implements Cloneable {
 	public boolean showAreaEnabled() { return showArea; }
 	public void setShowArea(boolean showArea) { this.showArea = showArea; }
 	
+	public boolean showDiameterEnabled() { return showDiameter; }
+	public void setShowDiameter(boolean showDiameter) { this.showDiameter = showDiameter; }
+	
 	public boolean showMedianEnabled() { return showMedian; }
 	public void setShowMedian(boolean showMedian) { this.showMedian = showMedian; }
 
@@ -284,6 +292,5 @@ public class AnalysisSettings implements Cloneable {
 	
 	public boolean showCircularityEnabled() { return showCircularity; }
 	public void setShowCircularity(boolean showCircularity) { this.showCircularity = showCircularity; }
-	
 
 }

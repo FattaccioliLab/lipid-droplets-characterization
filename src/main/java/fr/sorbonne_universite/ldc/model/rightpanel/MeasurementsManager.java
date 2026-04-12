@@ -30,16 +30,11 @@ public class MeasurementsManager {
      * Creates a {@link SwingWorker}, that take care of processing and showing the measurements preview, if executed.
      * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
      * @param Calibration					Given calibration.
-     * @param minSize 						Minimum particle size (μm² IsCalibrated is true, otherwise px²).
-     * @param maxSize 						Maximum particle size (μm² IsCalibrated is true, otherwise px²).
+     * @param minSize 						Minimum particle size (unit² if IsCalibrated is true, otherwise px²).
+     * @param maxSize 						Maximum particle size (unit² if IsCalibrated is true, otherwise px²).
      * @param minCircularity 				Minimum particle circularity.
      * @param maxCircularity 				Maximum particle circularity.
      * @param excludeOnEdgesEnabled 		Particle Analyzer option.
-     * @param showAreaEnabled 				True if the 'Area' column must be shown in the results.
-     * @param showMedianEnabled 			True if the 'Median' column must be shown in the results.
-     * @param showMeanEnabled 				True if the 'Mean' column must be shown in the results.
-     * @param showIntegratedDensityEnabled 	True if the 'IntegratedDensity' column must be shown in the results.
-     * @param showCircularityEnabled 		True if the 'Circularity' column is shown must be the results.
      * @param img 							The current image to consider.
 	 * @see MeasuresPreviewWorker
      */
@@ -51,11 +46,6 @@ public class MeasurementsManager {
 			double minCircularity,
 			double maxCircularity,
 			boolean excludeOnEdgesEnabled, 
-			boolean showAreaEnabled,
-			boolean showMedianEnabled,
-			boolean showMeanEnabled,
-			boolean showIntegratedDensityEnabled,
-			boolean showCircularityEnabled,
 			ImagePlus img){
 		return new MeasuresPreviewWorker(
 				isCalibrated,
@@ -65,11 +55,6 @@ public class MeasurementsManager {
 				minCircularity,
 				maxCircularity,
 				excludeOnEdgesEnabled, 
-				showAreaEnabled,
-				showMedianEnabled,
-				showMeanEnabled,
-				showIntegratedDensityEnabled,
-				showCircularityEnabled, 
 				img); 
 	}
 	
@@ -77,17 +62,18 @@ public class MeasurementsManager {
      * Creates a {@link SwingWorker}, that take care of processing measurements and showing them, if executed.
      * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
      * @param Calibration					Given calibration.
-     * @param minSize 						Minimum particle size (μm² IsCalibrated is true, otherwise px²).
-     * @param maxSize 						Maximum particle size (μm² IsCalibrated is true, otherwise px²).
+     * @param minSize 						Minimum particle size (unit² if IsCalibrated is true, otherwise px²).
+     * @param maxSize 						Maximum particle size (unit² if IsCalibrated is true, otherwise px²).
      * @param minCircularity 				Minimum particle circularity.
      * @param maxCircularity 				Maximum particle circularity.
      * @param excludeOnEdgesEnabled 		Particle Analyzer option.
      * @param circularityThreshold 			Threshold on particle's circularity to define if they are isolated.
-     * @param showAreaEnabled 				True if the 'Area' column must be shown in the results.
-     * @param showMedianEnabled 			True if the 'Median' column must be shown in the results.
-     * @param showMeanEnabled 				True if the 'Mean' column must be shown in the results.
-     * @param showIntegratedDensityEnabled 	True if the 'IntegratedDensity' column must be shown in the results.
-     * @param showCircularityEnabled 		True if the 'Circularity' column is shown must be the results.
+     * @param showAreaEnabled 				If True then the 'Area' column must be shown in the results.
+     * @param showDiameterEnabled			If True then the 'Diameter' column must be shown in the results.
+     * @param showMedianEnabled 			If True then the 'Median' column must be shown in the results.
+     * @param showMeanEnabled 				If True then the 'Mean' column must be shown in the results.
+     * @param showIntegratedDensityEnabled 	If True then the 'IntegratedDensity' column must be shown in the results.
+     * @param showCircularityEnabled 		If True then the 'Circularity' column is shown must be the results.
      * @param img 							The current image to consider.
 	 * @see MeasuresProcessingWorker
      */
@@ -101,6 +87,7 @@ public class MeasurementsManager {
 			boolean excludeOnEdgesEnabled,
 			double circularityThreshold,
 			boolean showAreaEnabled,
+			boolean showDiameterEnabled,
 			boolean showMedianEnabled,
 			boolean showMeanEnabled,
 			boolean showIntegratedDensityEnabled,
@@ -116,6 +103,7 @@ public class MeasurementsManager {
 				excludeOnEdgesEnabled,
 				circularityThreshold,
 				showAreaEnabled,
+				showDiameterEnabled,
 				showMedianEnabled,
 				showMeanEnabled,
 				showIntegratedDensityEnabled,

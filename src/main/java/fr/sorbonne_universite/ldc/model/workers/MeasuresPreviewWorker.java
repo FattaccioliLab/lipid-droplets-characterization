@@ -6,7 +6,6 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
-import ij.measure.Measurements;
 import ij.plugin.filter.ParticleAnalyzer;
 
 /**
@@ -25,27 +24,17 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
 	private double minCircularity;
 	private double maxCircularity;
     private boolean excludeOnEdgesEnabled;
-    private boolean showAreaEnabled;
-    private boolean showMeanEnabled;
-    private boolean showMedianEnabled;
-    private boolean showIntegratedDensityEnabled;
-    private boolean showCircularityEnabled;
     private ImagePlus img;
     
     /**
      * Creates a {@code MeasuresPreviewWorker}.
-     * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
-     * @param Calibration					Given calibration.
-     * @param minSize 						Minimum particle size (μm² IsCalibrated is true, otherwise px²).
-     * @param maxSize 						Maximum particle size (μm² IsCalibrated is true, otherwise px²).
+     * @param isCalibrated						Boolean that tell if the image there is a calibration given for the image
+     * @param Calibration						Given calibration.
+     * @param minSize 							Minimum particle size (unit² if IsCalibrated is true, otherwise px²).
+     * @param maxSize 							Maximum particle size (unit² if IsCalibrated is true, otherwise px²).
      * @param minCircularity 					Minimum particle circularity.
      * @param maxCircularity 					Maximum particle circularity.
      * @param excludeOnEdgesEnabled 			Particle Analyzer option.
-     * @param showAreaEnabled 					True if the 'Area' column must be shown in the results.
-     * @param showMedianEnabled 				True if the 'Median' column must be shown in the results.
-     * @param showMeanEnabled 					True if the 'Mean' column must be shown in the results.
-     * @param showIntegratedDensityEnabled 		True if the 'IntegratedDensity' column must be shown in the results.
-     * @param showCircularityEnabled 			True if the 'Circularity' column is shown must be the results.
      * @param img 								The current image to consider.
      */
     public MeasuresPreviewWorker(
@@ -56,11 +45,6 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     		double minCircularity,
     		double maxCircularity,
     		boolean excludeOnEdgesEnabled,
-    		boolean showAreaEnabled,
-    		boolean showMedianEnabled,
-    		boolean showMeanEnabled,
-    		boolean showIntegratedDensityEnabled,
-    		boolean showCircularityEnabled,
     		ImagePlus img) {
     	this.isCalibrated = isCalibrated;
     	this.calibration = calibration;
@@ -69,35 +53,16 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     	this.minCircularity = minCircularity;
     	this.maxCircularity = maxCircularity;
     	this.excludeOnEdgesEnabled = excludeOnEdgesEnabled;
-    	this.showAreaEnabled = showAreaEnabled;
-    	this.showMedianEnabled = showMedianEnabled;
-    	this.showMeanEnabled = showMeanEnabled;
-    	this.showIntegratedDensityEnabled = showIntegratedDensityEnabled;
-    	this.showCircularityEnabled = showCircularityEnabled;
     	this.img = img;
     }
 
 	@Override
 	protected Void doInBackground() throws Exception {
-       	// set measurements
-    	int measurements = 0;
-    	measurements += Measurements.CENTROID; // center of the particle (x,y)
-    	measurements += Measurements.STACK_POSITION; // image position in stack (z)  	
-    	if (showAreaEnabled) measurements += Measurements.AREA;
-    	if (showMeanEnabled) measurements += Measurements.MEAN;
-    	if (showMedianEnabled) measurements += Measurements.MEDIAN;
-    	if (showIntegratedDensityEnabled) measurements += Measurements.INTEGRATED_DENSITY;
-    	if (showCircularityEnabled) measurements += Measurements.CIRCULARITY;
-    	
-    	// add BX, BY, Width and Height to the result table, used to define if the particle is on the edge
-    	measurements += Measurements.RECT;
     	
     	// set options for Particles Analyzer
     	int options = 0;
     	options += ParticleAnalyzer.SHOW_OUTLINES; // show outlines of every particles in each images of the stack
-    	if (excludeOnEdgesEnabled) {
-    		options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
-    	}
+    	if (excludeOnEdgesEnabled) options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
     	
     	// get current image
     	if (img == null) {
@@ -109,7 +74,7 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     	double pxMaxSize = maxSize;
     	
     	if (isCalibrated && calibration != null && calibration.scaled()) {
-    		// convert the µm² in px²
+    		// convert the unit² in px²
     		double pixelArea = calibration.pixelWidth * calibration.pixelHeight;
     		pxMinSize = minSize / pixelArea;
     		if (maxSize != Double.MAX_VALUE) {
@@ -117,7 +82,7 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     		}
     	}
     	
-    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, null, pxMinSize, pxMaxSize, minCircularity, maxCircularity);
+    	ParticleAnalyzer pa = new ParticleAnalyzer(options, 0, null, pxMinSize, pxMaxSize, minCircularity, maxCircularity);
     	pa.setHideOutputImage(true);
     	
     	// save the original calibration

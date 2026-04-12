@@ -100,11 +100,11 @@ public interface LDCService extends SciJavaService {
 	// ====================================
     // Morphology API
     // ====================================
+	
     public void captureMorphologySnapshot(ImagePlus imp);
     public void previewMorphology(ImagePlus imp);
     public boolean resetMorphologyPreview(ImagePlus imp);
     public boolean applyMorphology(ImagePlus imp);
-	
     
     // =================
     // Analyse particles
@@ -144,6 +144,9 @@ public interface LDCService extends SciJavaService {
 	
 	public boolean showAreaEnabled();
 	public void setShowArea(boolean showArea);
+	
+	public boolean showDiameterEnabled();
+	public void setShowDiameter(boolean showDiameter);
 	
 	public boolean showMedianEnabled();
 	public void setShowMedian(boolean showMedian);

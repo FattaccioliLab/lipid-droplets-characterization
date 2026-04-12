@@ -146,6 +146,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     
 	@Override public boolean showAreaEnabled() { return settings.showAreaEnabled(); }
 	@Override public void setShowArea(boolean showArea) { settings.setShowArea(showArea); }
+	
+	@Override public boolean showDiameterEnabled() { return settings.showDiameterEnabled(); }
+	@Override public void setShowDiameter(boolean showDiameter) { settings.setShowDiameter(showDiameter); }
 
 	@Override public boolean showMedianEnabled() { return settings.showMedianEnabled(); }
 	@Override public void setShowMedian(boolean showMedian) { settings.setShowMedian(showMedian); }
@@ -240,11 +243,6 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 				getAnalyseMinCircularity(),
 				getAnalyseMaxCircularity(),
 				analyseExcludeOnEdgesEnabled(),
-				showAreaEnabled(),
-				showMedianEnabled(),
-				showMeanEnabled(),
-				showIntegratedDensityEnabled(),
-				showCircularityEnabled(),
 				img);
     }
     
@@ -260,6 +258,7 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 				analyseExcludeOnEdgesEnabled(),
 				getAnalyseCircularityThreshold(),
 				showAreaEnabled(),
+				showDiameterEnabled(),
 				showMedianEnabled(),
 				showMeanEnabled(),
 				showIntegratedDensityEnabled(),

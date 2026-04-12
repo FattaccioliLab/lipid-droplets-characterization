@@ -51,9 +51,11 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     
     // Calibration settings
     private JCheckBox isCalibratedCheckbox;
+    private JTextField unitField;
     private JSpinner manualCalibrationSpinner;
     private JButton resetCalibrationButton;
     private double defaultPixelSize = 1.0;
+    private String defaultUnit;
     
     // Particle settings
     private JCheckBox noMaxCheckbox;
@@ -66,8 +68,9 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     private JSpinner circularityThresholdSpinner;
     
     // Measurements
-    private JPanel mesurementsInfos;
+    private JPanel measurementsInfos;
     private JCheckBox areaCheckbox;
+    private JCheckBox diameterCheckbox;
     private JCheckBox medianCheckbox;
     private JCheckBox meanCheckbox;
     private JCheckBox integratedDensityCheckbox;
@@ -77,10 +80,10 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         super();
         ctx.inject(this);
         
-        PanelUtils.createVerticalPanel(this, "Particle analysis parameters", 700);
+        PanelUtils.createVerticalPanel(this, "Particle analysis parameters", 800);
         
         // CALIBRATION SETTINGS
-        
+                
         JPanel calibrationPanel = new JPanel(new GridBagLayout());
         calibrationPanel.setBorder(
         		BorderFactory.createCompoundBorder(
@@ -91,17 +94,26 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         calibrationPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         calibrationPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
         
+        // initialize the isCalibrated check box
         isCalibratedCheckbox = new JCheckBox("Calibrate the image");
         isCalibratedCheckbox.setSelected(selectedSettings.isCalibrated());
         isCalibratedCheckbox.setFocusPainted(false);
         isCalibratedCheckbox.addActionListener(e -> toggleIsCalibrated());
         
-        updateDefaultPixelSize();
+        // update the defaults values
+        updateDefaultCalibration();
         
+        // initialize the unit field
+        unitField = new JTextField(defaultUnit, 4);
+        unitField.setHorizontalAlignment(JTextField.CENTER);
+        unitField.setEnabled(isCalibratedCheckbox.isSelected());
+        
+        unitField.addActionListener(e -> enterManualCalibrationSpinner());
+        
+        // initialize the manual calibration spinner
         manualCalibrationSpinner = new JSpinner(new SpinnerNumberModel(defaultPixelSize, 0.0001, 10000.0, 0.0000001));
         manualCalibrationSpinner.setEditor(new JSpinner.NumberEditor(manualCalibrationSpinner, "0.0000000"));
         manualCalibrationSpinner.setEnabled(isCalibratedCheckbox.isSelected());
-        
         manualCalibrationSpinner.addChangeListener(e -> enterManualCalibrationSpinner());
         
         // keep the user from entering non numeric values
@@ -134,23 +146,35 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         cCalib.weightx = 1.0; 
         calibrationPanel.add(isCalibratedCheckbox, cCalib);
         
-        // second line : label + Spinner + unit + reset button
-        cCalib.gridy = 1; 
+        // second line : label + unit field + per pixel label
+        cCalib.gridy = 1;
         cCalib.gridwidth = 1;
         
         cCalib.gridx = 0;
         cCalib.weightx = 0.0;
-        calibrationPanel.add(new JLabel("Pixel size:"), cCalib);
+        calibrationPanel.add(new JLabel("Unit:"), cCalib);
+        
+        cCalib.gridx = 1;
+        cCalib.weightx = 1.0;
+        calibrationPanel.add(unitField, cCalib);
+        
+        cCalib.gridx = 2;
+        cCalib.weightx = 0.0;
+        calibrationPanel.add(new JLabel("/px"), cCalib);
+        
+        // third line : label + Spinner + reset button
+        cCalib.gridy = 2; 
+        cCalib.gridwidth = 1;
+        
+        cCalib.gridx = 0;
+        cCalib.weightx = 0.0;
+        calibrationPanel.add(new JLabel("Pixel size (unit/px):"), cCalib);
         
         cCalib.gridx = 1;
         cCalib.weightx = 1.0;
         calibrationPanel.add(manualCalibrationSpinner, cCalib);
-        
+                
         cCalib.gridx = 2;
-        cCalib.weightx = 0.0;
-        calibrationPanel.add(new JLabel("μm/px"), cCalib);
-        
-        cCalib.gridx = 3;
         cCalib.weightx = 0.0;
         calibrationPanel.add(resetCalibrationButton, cCalib);
 
@@ -329,7 +353,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         
         // MEASUREMENTS
         
-        mesurementsInfos = PanelUtils.createVerticalPanel("Measurements", 200);
+        measurementsInfos = PanelUtils.createVerticalPanel("Measurements", 200);
         
 	    // --- Show area section ---
         areaCheckbox = new JCheckBox("Show area measures");
@@ -337,6 +361,13 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         areaCheckbox.setSelected(selectedSettings.showAreaEnabled());
         areaCheckbox.setFocusPainted(false);
         areaCheckbox.addActionListener(e -> toggleArea());
+        
+	    // --- Show diameter section ---
+        diameterCheckbox = new JCheckBox("Show diameter measures");
+        diameterCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        diameterCheckbox.setSelected(selectedSettings.showAreaEnabled());
+        diameterCheckbox.setFocusPainted(false);
+        diameterCheckbox.addActionListener(e -> toggleDiameter());
 
 	    // --- Show equivalent diameter section ---
         medianCheckbox = new JCheckBox("Show median measures");
@@ -382,16 +413,18 @@ public class ParticleAnalysisParamsPanel extends JPanel {
 	    particlesSettings.add(circularityThresholdPanel);
 	    add(particlesSettings);
 	    
-	    mesurementsInfos.add(areaCheckbox);
-	    mesurementsInfos.add(Box.createVerticalStrut(5));
-	    mesurementsInfos.add(medianCheckbox);
-	    mesurementsInfos.add(Box.createVerticalStrut(5));
-	    mesurementsInfos.add(meanCheckbox);
-	    mesurementsInfos.add(Box.createVerticalStrut(5));
-	    mesurementsInfos.add(integratedDensityCheckbox);
-	    mesurementsInfos.add(Box.createVerticalStrut(5));
-	    mesurementsInfos.add(circularityCheckbox);
-	    add(mesurementsInfos);
+	    measurementsInfos.add(areaCheckbox);
+	    measurementsInfos.add(Box.createVerticalStrut(5));
+	    measurementsInfos.add(diameterCheckbox);
+	    measurementsInfos.add(Box.createVerticalStrut(5));
+	    measurementsInfos.add(medianCheckbox);
+	    measurementsInfos.add(Box.createVerticalStrut(5));
+	    measurementsInfos.add(meanCheckbox);
+	    measurementsInfos.add(Box.createVerticalStrut(5));
+	    measurementsInfos.add(integratedDensityCheckbox);
+	    measurementsInfos.add(Box.createVerticalStrut(5));
+	    measurementsInfos.add(circularityCheckbox);
+	    add(measurementsInfos);
 	    
 	    add(Box.createVerticalStrut(10));
     }
@@ -407,6 +440,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      */
     private void toggleIsCalibrated() {
     	boolean isSelected = isCalibratedCheckbox.isSelected();
+    	unitField.setEnabled(isSelected);
     	manualCalibrationSpinner.setEnabled(isSelected);
     	resetCalibrationButton.setEnabled(isSelected);
     	selectedSettings.setIsCalibrated(isSelected);
@@ -415,7 +449,9 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	if (isSelected) {
     		manualCalibrationSpinner.setEnabled(true);
     		enterManualCalibrationSpinner();
-    		unit = "μm";
+    		
+    		unit = unitField.getText().trim();
+            if(unit.isEmpty() || unit.equals("pixel")) unit = "µm";
     	}
     	
         sizeLabel.setText("Particle size (" + unit + "²)");
@@ -428,6 +464,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         if (!isCalibratedCheckbox.isSelected()) return;
 
         double pixelSize = (double) manualCalibrationSpinner.getValue();
+        String currentUnit = unitField.getText().trim();
         
         Calibration cal = selectedSettings.getCalibration();
         if (cal == null) {
@@ -436,22 +473,30 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         cal.pixelWidth = pixelSize;
         cal.pixelHeight = pixelSize;
         
-        if (cal.getUnit() == null || cal.getUnit().equals("pixel") || cal.getUnit().isEmpty()) {
-            cal.setUnit("µm");
+        if (currentUnit.isEmpty()) {
+            currentUnit = "pixel"; 
         }
+        cal.setUnit(currentUnit);
+        
         selectedSettings.setCalibration(cal);
+        
+        // update the unit in sizeLabel
+        String displayUnit = currentUnit.equals("pixel") ? "px" : currentUnit;
+        sizeLabel.setText("Particle size (" + displayUnit + "²)");
     }
     
     /**
-     * Update the default pixel size for the calibration, try to take it from the image if it is already
-     * calibrated, otherwise take 1.0.
+     * Update the default pixel size and unit for the calibration, try to take them from the image if it is already
+     * calibrated, otherwise take 1.0 and µm.
      */
-    private void updateDefaultPixelSize() {
+    private void updateDefaultCalibration() {
     	// get the default pixel size if the image is already calibrated
         Calibration cal = selectedSettings.getCalibration();
         if (cal != null && cal.scaled()) {
+        	defaultUnit = cal.getUnit();
             defaultPixelSize = cal.pixelWidth;
         } else {
+        	defaultUnit = "µm";
         	defaultPixelSize = 1.0;
         }
     }
@@ -460,6 +505,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      * Reset the value of the calibration spinner.
      */
     private void resetManualCalibrationSpinner() {
+    	unitField.setText(defaultUnit);
         manualCalibrationSpinner.setValue(defaultPixelSize);
         enterManualCalibrationSpinner();
     }
@@ -651,6 +697,13 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     }
     
     /**
+     * Toggles diameter measurements based on the checkbox state.
+     */
+    private void toggleDiameter() {
+    	selectedSettings.setShowDiameter(diameterCheckbox.isSelected());
+    }
+    
+    /**
      * Toggles median measurements based on the checkbox state.
      */
     private void toggleMedian() {
@@ -689,6 +742,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     public void enableUIComponents(boolean enable) {
     	// CALIBRATION SETTINGS
     	isCalibratedCheckbox.setEnabled(enable);
+    	unitField.setEnabled(enable && isCalibratedCheckbox.isSelected());
     	manualCalibrationSpinner.setEnabled(enable && isCalibratedCheckbox.isSelected());
     	resetCalibrationButton.setEnabled(enable && isCalibratedCheckbox.isSelected());
     	
@@ -703,6 +757,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	
     	// MEASUREMENTS
         areaCheckbox.setEnabled(enable);
+        diameterCheckbox.setEnabled(enable);
         medianCheckbox.setEnabled(enable);
         meanCheckbox.setEnabled(enable);
         integratedDensityCheckbox.setEnabled(enable);
@@ -715,7 +770,8 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     public void resetUIComponents() {
     	// CALIBRATION SETTINGS
     	isCalibratedCheckbox.setSelected(selectedSettings.isCalibrated());
-    	updateDefaultPixelSize();
+    	updateDefaultCalibration();
+    	unitField.setText(defaultUnit);
 		manualCalibrationSpinner.setValue(defaultPixelSize);
     	manualCalibrationSpinner.setEnabled(isCalibratedCheckbox.isSelected());
     	
@@ -737,12 +793,14 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	
     	// MEASUREMENTS
     	selectedSettings.setShowArea(AnalysisSettings.DFL_SHOWING_OPT);
+    	selectedSettings.setShowDiameter(AnalysisSettings.DFL_SHOWING_OPT);
     	selectedSettings.setShowMedian(AnalysisSettings.DFL_SHOWING_OPT);
     	selectedSettings.setShowMean(AnalysisSettings.DFL_SHOWING_OPT);
     	selectedSettings.setShowIntegratedDensity(AnalysisSettings.DFL_SHOWING_OPT);
     	selectedSettings.setShowCircularity(AnalysisSettings.DFL_SHOWING_OPT);
     	
         areaCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
+        diameterCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
         medianCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
         meanCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
         integratedDensityCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
@@ -758,6 +816,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      * It considers only min/max size and circularity inputs, as measures checkboxes are always kept synchronized with the service.
      */
     public void updateInputValues() {
+    	enterManualCalibrationSpinner();
     	enterMinSizeField();
     	enterMaxSizeField();
     	enterMinCircularityField();
