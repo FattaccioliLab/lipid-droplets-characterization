@@ -226,14 +226,6 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
             if (rt.columnExists("Round")) rt.deleteColumn("Round");
             if (rt.columnExists("Solidity")) rt.deleteColumn("Solidity");
             if (!showCircularityEnabled) rt.deleteColumn("Circ."); // remove if the circularity parameter isn't activated
-            
-    		// close the ROI manager window that appear with the ParticlesAnalyzer WIP
-        	RoiManager rm = RoiManager.getInstance();
-            if (rm != null) {
-            	rm.setVisible(false);
-            	rm.reset();
-            	rm.close();
-            }
     		
     	} finally {
     		// ensure that the original calibration is restored in the end. 
@@ -242,7 +234,7 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     		}
     	}
     	
-    	return null;
+    	return rt;
 	}
 	
 }

@@ -8,6 +8,7 @@ import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.measure.Calibration;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
 import ij.plugin.ContrastEnhancer;
@@ -24,9 +25,6 @@ public class BatchFileWorker extends SwingWorker<ResultsTable,Void>{
 	private AnalysisSettings settings;
 	private File inputDirectory;
 	private File inputFile;
-	
-    // threshold for the circularity, to define if a particle is isolated or not, tmp
-    private double circularityThreshold = 0.5;
 	
 	/**
 	 * Creates a worker applying the workflow on the given {@code inputFile}.
@@ -127,63 +125,133 @@ public class BatchFileWorker extends SwingWorker<ResultsTable,Void>{
     	if (settings.showMedianEnabled()) measurements += Measurements.MEDIAN;
     	if (settings.showIntegratedDensityEnabled()) measurements += Measurements.INTEGRATED_DENSITY;
     	if (settings.showCircularityEnabled()) measurements += Measurements.CIRCULARITY;
+    	measurements += Measurements.CIRCULARITY;
+    	measurements += Measurements.RECT;
 		
     	ResultsTable rt = new ResultsTable();
     	int options = 0;
     	if (settings.analyseExcludeOnEdgesEnabled()) options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
     	
+    	double pxMinSize = settings.getAnalyseMinSize();
+    	double pxMaxSize = settings.getAnalyseMaxSize();
+    	
+    	if (settings.isCalibrated() && settings.getCalibration() != null && settings.getCalibration().scaled()) {
+    		// convert the unit² in px²
+    		double pixelArea = settings.getCalibration().pixelWidth * settings.getCalibration().pixelHeight;
+    		pxMinSize = settings.getAnalyseMinSize() / pixelArea;
+    		if (settings.getAnalyseMaxSize() != Double.MAX_VALUE) {
+    			pxMaxSize = settings.getAnalyseMaxSize() / pixelArea;
+    		}
+        }
+    	
     	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, rt, 
-    			settings.getAnalyseMinSize(), settings.getAnalyseMaxSize(), 
+    			pxMinSize, pxMaxSize, 
     			settings.getAnalyseMinCircularity(), settings.getAnalyseMaxCircularity());
     	
-    	// analyze each image of the stack
-    	boolean success = true;
-    	int stackSize = image.getStackSize();
-    	for (int i = 1; i <= stackSize; i++) {
-    		if (isCancelled()) return null;
-    		image.setSlice(i);
-    	    success = pa.analyze(image);
-    	    if (!success) return null;
+    	// save the original calibration
+    	Calibration backupCal = image.getCalibration();
+    	if (backupCal != null) {
+    		backupCal = backupCal.copy();	// deep copy of the original calibration
     	}
     	
-    	// detect for each particle if it is isolated
-    	if (rt.columnExists("Circ.")) { 
-	    	for (int row = 0; row < rt.getCounter(); row++) {
-	    		int isIsolated = 0;
-	    		
-	    		// check if the particle touches the edge of the image
-	    		boolean touchesEdge = false;
-	    		if (rt.columnExists("BX") && rt.columnExists("BY") && rt.columnExists("Width") && rt.columnExists("Height")) {
-	    			double bx = rt.getValue("BX", row);
-	    			double by = rt.getValue("BY", row);
-	    			double width = rt.getValue("Width", row);
-	    			double height = rt.getValue("Height", row);
-	    			if (bx <= 0 || by <= 0 || (bx + width) >= image.getWidth() || (by + height) >= image.getHeight()) {
-	    	            touchesEdge = true;
-	    	        }
-	    		}
-	    		
-	    		// check if the particle circularity is greater than the threshold, then it is isolated
-	    		if (!touchesEdge && rt.columnExists("Circ.")) {
-	    			if (rt.getValue("Circ.", row) >= circularityThreshold) isIsolated = 1;
-	    		}
-	    		
-	    		// add the attribute to the particle
-	    		rt.setValue("is_isolated", row, isIsolated);
-	    	}
-    	}
+    	try {
 
-    	// cleaning the results table : remove unused columns
-    	if (rt.columnExists("BX")) rt.deleteColumn("BX");
-        if (rt.columnExists("BY")) rt.deleteColumn("BY");
-        if (rt.columnExists("Width")) rt.deleteColumn("Width");
-        if (rt.columnExists("Height")) rt.deleteColumn("Height");
-        if (!settings.showCircularityEnabled()){
-        	rt.deleteColumn("Circ."); // remove if the circularity parameter isn't activated
-        	rt.deleteColumn("AR");
-        	rt.deleteColumn("Round");
-        	rt.deleteColumn("Solidity");
-        }
+    		// apply the given calibration
+    		if (settings.isCalibrated() && settings.getCalibration() != null) {		
+                image.setCalibration(settings.getCalibration());
+            } else {
+            	//  force a neutral calibration 1 pixel / 1 pixel
+                Calibration pixelCal = new ij.measure.Calibration();
+                pixelCal.pixelWidth = 1.0;
+                pixelCal.pixelHeight = 1.0;
+                pixelCal.setUnit("pixel");
+                image.setCalibration(pixelCal);
+            }
+    		
+        	// analyze each image of the stack
+        	boolean success = true;
+        	int stackSize = image.getStackSize();
+        	for (int i = 1; i <= stackSize; i++) {
+        		image.setSlice(i);
+        	    success = pa.analyze(image);
+        	    if (!success) {
+        	    	break;
+        	    }
+        	}
+        	
+        	if (rt.columnExists("Circ.")) { 
+    	    	// detect for each particle if it is isolated
+    	    	for (int row = 0; row < rt.getCounter(); row++) {
+    	    		int isIsolated = 0;
+    	    		
+    	    		// check if the particle touches the edge of the image
+    	    		boolean touchesEdge = false;
+    	    		if (rt.columnExists("BX") && rt.columnExists("BY") && rt.columnExists("Width") && rt.columnExists("Height")) {
+    	    			double bx = rt.getValue("BX", row);
+    	    			double by = rt.getValue("BY", row);
+    	    			double width = rt.getValue("Width", row);
+    	    			double height = rt.getValue("Height", row);
+    	    			if (bx <= 0 || by <= 0 || (bx + width) >= image.getWidth() || (by + height) >= image.getHeight()) {
+    	    	            touchesEdge = true;
+    	    	        }
+    	    		}
+    	    		
+    	    		// check if the particle circularity is greater than the threshold, then it is isolated
+    	    		if (!touchesEdge && rt.columnExists("Circ.")) {
+    	    			if (rt.getValue("Circ.", row) >= settings.getAnalyseCircularityThreshold()) isIsolated = 1;
+    	    		}
+    	    		
+    	    		// add the attribute to the particle
+    	    		rt.setValue("is_isolated", row, isIsolated);
+    	    	}
+        	}
+        	
+    		// get the unit of the calibration
+    		String unit = "px";
+    		if (settings.isCalibrated() && settings.getCalibration() != null) unit = settings.getCalibration().getUnit();
+    		
+    		// add the unit in the area column
+    		if (settings.showAreaEnabled() && rt.columnExists("Area")) {
+    			rt.renameColumn("Area", "Area(" + unit + "²)");
+    		}
+        	
+        	// compute the diameters
+        	if (settings.showDiameterEnabled() && rt.columnExists("Major") && rt.columnExists("Minor")) {
+        		int rowCount = rt.getCounter();
+        	    
+        		// get the values of big and small axes of the particles
+        		double[] majorAxis = rt.getColumnAsDoubles(rt.getColumnIndex("Major"));
+        		double[] minorAxis = rt.getColumnAsDoubles(rt.getColumnIndex("Minor"));
+        		
+        		// create the Diameter column with the correct unit
+        		int diameterIndex = rt.getFreeColumn("Diameter(" + unit + ")");
+        	    
+        		// compute and add the diameter for each particle
+        		for (int i = 0; i < rowCount; i++) {
+        			double diameter = (majorAxis[i] + minorAxis[i]) / 2.0;	// average of the two
+        			rt.setValue(diameterIndex, i, diameter);
+        		}
+        	}
+
+        	// cleaning the results table : remove unused columns
+        	if (rt.columnExists("BX")) rt.deleteColumn("BX");
+            if (rt.columnExists("BY")) rt.deleteColumn("BY");
+            if (rt.columnExists("Width")) rt.deleteColumn("Width");
+            if (rt.columnExists("Height")) rt.deleteColumn("Height");
+            if (rt.columnExists("Major")) rt.deleteColumn("Major");
+            if (rt.columnExists("Minor")) rt.deleteColumn("Minor");
+            if (rt.columnExists("Angle")) rt.deleteColumn("Angle");
+            if (rt.columnExists("AR")) rt.deleteColumn("AR");
+            if (rt.columnExists("Round")) rt.deleteColumn("Round");
+            if (rt.columnExists("Solidity")) rt.deleteColumn("Solidity");
+            if (!settings.showCircularityEnabled()) rt.deleteColumn("Circ."); // remove if the circularity parameter isn't activated
+    		
+    	} finally {
+    		// ensure that the original calibration is restored in the end. 
+    		if (backupCal != null) {
+    			image.setCalibration(backupCal);
+    		}
+    	}
         
         // Adds the relative path of the file (or just filename if in root directory)
         String relativeFilePath = getRelativeFilePath();

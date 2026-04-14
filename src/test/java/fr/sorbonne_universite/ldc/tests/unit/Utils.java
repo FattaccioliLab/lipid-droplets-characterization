@@ -2,9 +2,6 @@ package fr.sorbonne_universite.ldc.tests.unit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.Arrays;
-import java.util.List;
-
 import fr.sorbonne_universite.ldc.model.LDCService;
 import ij.ImagePlus;
 import ij.measure.ResultsTable;
@@ -79,18 +76,40 @@ public class Utils {
 	    
 	    String[] expectedColumns = expected.getHeadings();
 	    String[] actualColumns = actual.getHeadings();
-	    List<String> actualColumnsList = Arrays.asList(actualColumns);
+	    
+	    String areaColumn = null; // area column name in our plugin, with the scale used in parenthesis
 	    for (String expectedCol : expectedColumns) {
-	        assertTrue(actualColumnsList.contains(expectedCol), "Missing column: " + expectedCol);
+	    	// dont't count AR, Round, Solidity columns for now
+	    	if (!expectedCol.equals("AR") && !expectedCol.equals("Round") && !expectedCol.equals("Solidity")) {
+		    	boolean expectedIsHere = false;
+		    	for (String actualCol : actualColumns) {
+		    		if (actualCol.contains(expectedCol)) {
+			    		if (expectedCol.equals("Area")) {
+			    			areaColumn = actualCol;
+			    		}
+		    			expectedIsHere = true;
+		    			break;
+		    		}
+		    	}
+		    	assertTrue(expectedIsHere, "Missing column: " + expectedCol);
+	    	}
 	    }
 	    
 	    for (int row = 0; row < expected.size(); row++) {
 	        for (String column : expectedColumns) {
-	            double expectedValue = expected.getValue(column, row);
-	            double actualValue = actual.getValue(column, row);
+	        	// dont't count AR, Round, Solidity columns for now
+		    	if (!column.equals("AR") && !column.equals("Round") && !column.equals("Solidity")) {
+		            double expectedValue = expected.getValue(column, row);
+		            double actualValue;
+		            if (column.equals("Area")) {
+		            	actualValue = actual.getValue(areaColumn, row);
+		            } else {
+		            	actualValue = actual.getValue(column, row);
+		            }
+		            assertEquals(expectedValue, actualValue, tolerance, 
+		            		String.format("Row %d, column '%s': expected %.3f but was %.3f", row, column, expectedValue, actualValue));
+		    	}
 	            
-	            assertEquals(expectedValue, actualValue, tolerance, 
-	            		String.format("Row %d, column '%s': expected %.3f but was %.3f", row, column, expectedValue, actualValue));
 	        }
 	    }
 	}

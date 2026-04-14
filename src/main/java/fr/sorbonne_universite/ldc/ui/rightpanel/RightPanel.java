@@ -171,9 +171,7 @@ public class RightPanel extends JPanel {
         	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
-        	ResultsTable rt = ResultsTable.getResultsTable();
-        	rt.reset();
-        	SwingWorker<Void,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(leftPanel.getCurrentImage());
+        	SwingWorker<ResultsTable,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(leftPanel.getCurrentImage());
         	ImagePlus currentImg = leftPanel.getCurrentImage();
         	
         	// adding property change listener to the worker to show the table when the asynchronous task is completed
@@ -181,16 +179,19 @@ public class RightPanel extends JPanel {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if ("state".equals(evt.getPropertyName()) && SwingWorker.StateValue.DONE == evt.getNewValue()) {
-                        showTable(
-                        		selectedSettings.calculateSummaryTable(
-                        				ResultsTable.getResultsTable(),
-                        				currentImg.getCalibration(),
-                        				currentImg.getWidth(),
-                        				currentImg.getHeight()));
+                        try {
+							showTable(
+									selectedSettings.calculateSummaryTable(
+											measuresWorker.get(),
+											currentImg.getCalibration(),
+											currentImg.getWidth(),
+											currentImg.getHeight()));
+						} catch (InterruptedException | ExecutionException e) {
+							e.printStackTrace();
+						}
                     }
                 }
             });
-        	
         	measuresWorker.execute();
 
         });

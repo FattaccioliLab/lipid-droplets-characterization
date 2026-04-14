@@ -88,6 +88,8 @@ public class TestPipeline {
 		ldcPlugin.setAnalyseMinCircularity(0); // Not mandatory
 		ldcPlugin.setAnalyseMaxCircularity(1); // Not mandatory
 		ldcPlugin.setAnalyseExcludeOnEdges(true);
+		ldcPlugin.setCalibration(image.getCalibration());
+		ldcPlugin.setIsCalibrated(true);
         SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
         worker2.execute();
         ResultsTable results = null;
@@ -153,6 +155,8 @@ public class TestPipeline {
 		ldcPlugin.setAnalyseMinCircularity(0); // Not mandatory
 		ldcPlugin.setAnalyseMaxCircularity(0.8);
 		ldcPlugin.setAnalyseExcludeOnEdges(true);
+		ldcPlugin.setCalibration(image.getCalibration());
+		ldcPlugin.setIsCalibrated(true);
         SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
         worker2.execute();
         ResultsTable results = null;
@@ -222,6 +226,8 @@ public class TestPipeline {
 		ldcPlugin.setAnalyseMinCircularity(0); // Not mandatory
 		ldcPlugin.setAnalyseMaxCircularity(1); // Not mandatory
 		ldcPlugin.setAnalyseExcludeOnEdges(false); // Not mandatory
+		ldcPlugin.setCalibration(image.getCalibration());
+		ldcPlugin.setIsCalibrated(true);
         SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
         worker2.execute();
         ResultsTable results = null;

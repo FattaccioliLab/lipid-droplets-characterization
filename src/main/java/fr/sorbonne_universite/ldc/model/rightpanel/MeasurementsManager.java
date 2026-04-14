@@ -38,24 +38,11 @@ public class MeasurementsManager {
      * @param img 							The current image to consider.
 	 * @see MeasuresPreviewWorker
      */
-	public SwingWorker<Void,Void> createMeasuresPreviewWorker(
-    		boolean isCalibrated,
-    		Calibration calibration,
-			double minSize,
-			double maxSize,
-			double minCircularity,
-			double maxCircularity,
-			boolean excludeOnEdgesEnabled, 
+	public SwingWorker<Void,Void> createMeasuresPreviewWorker(boolean isCalibrated, Calibration calibration,
+			double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
 			ImagePlus img){
-		return new MeasuresPreviewWorker(
-				isCalibrated,
-				calibration,
-				minSize,
-				maxSize,
-				minCircularity,
-				maxCircularity,
-				excludeOnEdgesEnabled, 
-				img); 
+		return new MeasuresPreviewWorker(isCalibrated, calibration, minSize, maxSize,
+				minCircularity, maxCircularity, excludeOnEdgesEnabled, img); 
 	}
 	
     /**
@@ -77,38 +64,13 @@ public class MeasurementsManager {
      * @param img 							The current image to consider.
 	 * @see MeasuresProcessingWorker
      */
-	public SwingWorker<Void,Void> createMeasuresProcessingWorker(
-    		boolean isCalibrated,
-    		Calibration calibration,
-			double minSize,
-			double maxSize,
-			double minCircularity,
-			double maxCircularity,
-			boolean excludeOnEdgesEnabled,
-			double circularityThreshold,
-			boolean showAreaEnabled,
-			boolean showDiameterEnabled,
-			boolean showMedianEnabled,
-			boolean showMeanEnabled,
-			boolean showIntegratedDensityEnabled,
-			boolean showCircularityEnabled,
-			ImagePlus img){
-		return new MeasuresProcessingWorker(
-	    		isCalibrated,
-	    		calibration,
-				minSize,
-				maxSize,
-				minCircularity,
-				maxCircularity,
-				excludeOnEdgesEnabled,
-				circularityThreshold,
-				showAreaEnabled,
-				showDiameterEnabled,
-				showMedianEnabled,
-				showMeanEnabled,
-				showIntegratedDensityEnabled,
-				showCircularityEnabled, 
-				img); 
+	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(boolean isCalibrated, Calibration calibration,
+			double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled,
+			double circularityThreshold, boolean showAreaEnabled, boolean showDiameterEnabled, boolean showMedianEnabled, 
+			boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled, ImagePlus img){
+		return new MeasuresProcessingWorker(isCalibrated, calibration, minSize, maxSize, minCircularity,
+				maxCircularity, excludeOnEdgesEnabled, circularityThreshold, showAreaEnabled, showDiameterEnabled,
+				showMedianEnabled, showMeanEnabled, showIntegratedDensityEnabled, showCircularityEnabled, img); 
 	}
 	
     /**
