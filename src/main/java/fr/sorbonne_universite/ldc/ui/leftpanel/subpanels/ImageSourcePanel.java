@@ -254,6 +254,7 @@ public class ImageSourcePanel extends JPanel {
         currentImg.updateAndDraw();
         currentImg.repaintWindow();
         
+        closeBinaryWindow(currentImg);
         // Update the calibration with the one of the new image
         updateCalibrationState(currentImg);
     }

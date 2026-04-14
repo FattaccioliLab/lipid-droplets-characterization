@@ -43,18 +43,16 @@ public class PreprocessingManager {
 	}
 	
     /**
-     * Creates a {@link SwingWorker}, that can apply a median filter on a given {@link ImageStack}, or on an individual {@link ImageProcessor} among the given stack if executed.
+     * Creates a {@link SwingWorker}, that applies a median filter on a given {@link ImageStack} if executed.
 	 * @param medianFilterEnabled Indicates if the median filter is enabled.
 	 * @param radius The median filter radius (px).
 	 * @param stack The array of images to process (slices).
-	 * @param processAll True to process all slices.
-	 * @param targetSlice The specific slice to process if not all.
 	 * @throws IllegalArgumentException if {@code stack} == {@code null}.
 	 * @see PreprocessingApplyMedianWorker
      */
-	public SwingWorker<Void,Void> createApplyMedianWorker(boolean medianFilterEnabled, double radius, ImageStack stack, boolean processAll, int targetSlice){
+	public SwingWorker<Void,Void> createApplyMedianWorker(boolean medianFilterEnabled, double radius, ImageStack stack){
 		if (stack == null) throw new IllegalArgumentException("No stack given.");
 		
-		return new PreprocessingApplyMedianWorker(medianFilterEnabled, radius, stack, processAll, targetSlice); 
+		return new PreprocessingApplyMedianWorker(medianFilterEnabled, radius, stack); 
 	}
 }

@@ -179,8 +179,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	}
 	
 	/** @see PreprocessingApplyMedianWorker */
-	@Override public SwingWorker<Void, Void> createApplyMedianWorker(ImageStack stack, boolean processAll, int targetSlice) {  
-		return preprocessingManager.createApplyMedianWorker(medianFilterEnabled(), getMedianRadius(), stack, processAll, targetSlice);
+	@Override public SwingWorker<Void, Void> createApplyMedianWorker(ImageStack stack) {  
+		return preprocessingManager.createApplyMedianWorker(medianFilterEnabled(), getMedianRadius(), stack);
 	}
 	
     // ===========================
@@ -191,11 +191,11 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
         thresholdingManager.setManualThreshold(imp, settings.getThresholdMinValue(), settings.getThresholdMaxValue());
     }
 
-    @Override public double[] previewAutoThreshold(ImagePlus imp, String method, boolean darkBackground) {
-        return thresholdingManager.setAutoThreshold(imp, method, darkBackground);
+    @Override public double[] previewAutoThreshold(ImagePlus imp) {
+        return thresholdingManager.setAutoThreshold(imp, settings.getThresholdMethod(), settings.thresholdDarkBackgroundEnabled());
     }
 
-    @Override public boolean applyThreshold(ImagePlus imp) { return thresholdingManager.applyThreshold(imp); }
+    @Override public ImagePlus applyThreshold(ImagePlus imp) { return thresholdingManager.applyThreshold(imp); }
     
     @Override public boolean resetThreshold(ImagePlus imp) { return thresholdingManager.resetThreshold(imp); }
     
@@ -247,7 +247,7 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     }
     
 	/** @see MeasuresProcessingWorker */
-	@Override public SwingWorker<Void, Void> createMeasuresProcessingWorker(ImagePlus img) {
+	@Override public SwingWorker<ResultsTable, Void> createMeasuresProcessingWorker(ImagePlus img) {
 		return measurementsManager.createMeasuresProcessingWorker(
 				isCalibrated(),
 				getCalibration(),
