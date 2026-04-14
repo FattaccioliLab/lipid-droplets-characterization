@@ -100,11 +100,11 @@ public interface LDCService extends SciJavaService {
 	// ====================================
     // Morphology API
     // ====================================
+	
     public void captureMorphologySnapshot(ImagePlus imp);
     public void previewMorphology(ImagePlus imp);
     public boolean resetMorphologyPreview(ImagePlus imp);
     public boolean applyMorphology(ImagePlus imp);
-	
     
     // =================
     // Analyse particles
@@ -126,12 +126,27 @@ public interface LDCService extends SciJavaService {
 	public boolean analyseExcludeOnEdgesEnabled();
 	public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges);
 	
+	// Circularity threshold
+	public double getAnalyseCircularityThreshold();
+	public void setAnalyseCircularityThreshold(double analyseCircularityThreshold);
+	
+	// isCalibrated
+	public boolean isCalibrated();
+	public void setIsCalibrated(boolean isCalibrated);
+	
+	// Calibration
+	public Calibration getCalibration();
+	public void setCalibration(Calibration calibration);
+	
     // ============================
     // Measurements showing options
     // ============================
 	
 	public boolean showAreaEnabled();
 	public void setShowArea(boolean showArea);
+	
+	public boolean showDiameterEnabled();
+	public void setShowDiameter(boolean showDiameter);
 	
 	public boolean showMedianEnabled();
 	public void setShowMedian(boolean showMedian);

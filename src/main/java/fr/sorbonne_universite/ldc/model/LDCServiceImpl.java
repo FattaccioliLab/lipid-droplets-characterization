@@ -131,12 +131,24 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public boolean analyseExcludeOnEdgesEnabled() { return settings.analyseExcludeOnEdgesEnabled(); }
     @Override public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges) { settings.setAnalyseExcludeOnEdges(analyseExcludeOnEdges); }
 
+    @Override public double getAnalyseCircularityThreshold() { return settings.getAnalyseCircularityThreshold(); }
+    @Override public void setAnalyseCircularityThreshold(double analyseCircularityThreshold) { settings.setAnalyseCircularityThreshold(analyseCircularityThreshold); }
+    
+	@Override public boolean isCalibrated() {	return settings.isCalibrated(); }
+	@Override public void setIsCalibrated(boolean isCalibrated) { settings.setIsCalibrated(isCalibrated); }
+
+	@Override public Calibration getCalibration() { return settings.getCalibration(); }
+	@Override public void setCalibration(Calibration calibration) { settings.setCalibration(calibration); }
+    
     // ============================
     // Measurements showing options
     // ============================
     
 	@Override public boolean showAreaEnabled() { return settings.showAreaEnabled(); }
 	@Override public void setShowArea(boolean showArea) { settings.setShowArea(showArea); }
+	
+	@Override public boolean showDiameterEnabled() { return settings.showDiameterEnabled(); }
+	@Override public void setShowDiameter(boolean showDiameter) { settings.setShowDiameter(showDiameter); }
 
 	@Override public boolean showMedianEnabled() { return settings.showMedianEnabled(); }
 	@Override public void setShowMedian(boolean showMedian) { settings.setShowMedian(showMedian); }
@@ -224,15 +236,34 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	/** @see MeasuresPreviewWorker */
     @Override public SwingWorker<Void, Void> createMeasuresPreviewWorker(ImagePlus img){
 		return measurementsManager.createMeasuresPreviewWorker(
-				getAnalyseMinSize(), getAnalyseMaxSize(), getAnalyseMinCircularity(), getAnalyseMaxCircularity(), analyseExcludeOnEdgesEnabled(), 
-				showAreaEnabled(), showMedianEnabled(), showMeanEnabled(), showIntegratedDensityEnabled(), showCircularityEnabled(), img);
+				isCalibrated(),
+				getCalibration(),
+				getAnalyseMinSize(),
+				getAnalyseMaxSize(),
+				getAnalyseMinCircularity(),
+				getAnalyseMaxCircularity(),
+				analyseExcludeOnEdgesEnabled(),
+				img);
     }
     
 	/** @see MeasuresProcessingWorker */
 	@Override public SwingWorker<Void, Void> createMeasuresProcessingWorker(ImagePlus img) {
 		return measurementsManager.createMeasuresProcessingWorker(
-				getAnalyseMinSize(), getAnalyseMaxSize(), getAnalyseMinCircularity(), getAnalyseMaxCircularity(), analyseExcludeOnEdgesEnabled(), 
-				showAreaEnabled(), showMedianEnabled(), showMeanEnabled(), showIntegratedDensityEnabled(), showCircularityEnabled(), img);
+				isCalibrated(),
+				getCalibration(),
+				getAnalyseMinSize(),
+				getAnalyseMaxSize(),
+				getAnalyseMinCircularity(),
+				getAnalyseMaxCircularity(),
+				analyseExcludeOnEdgesEnabled(),
+				getAnalyseCircularityThreshold(),
+				showAreaEnabled(),
+				showDiameterEnabled(),
+				showMedianEnabled(),
+				showMeanEnabled(),
+				showIntegratedDensityEnabled(),
+				showCircularityEnabled(),
+				img);
 	}
 
 	@Override public void exportResultsTable(ResultsTable rt, String path) {
@@ -254,4 +285,5 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	@Override public SwingWorker<Void,Void> createBatchWorker(File inputDirectory, File outputFile, BatchWindow bw){
 		return new BatchWorker(settings.clone(), inputDirectory, outputFile, bw);
 	}
+
 }
