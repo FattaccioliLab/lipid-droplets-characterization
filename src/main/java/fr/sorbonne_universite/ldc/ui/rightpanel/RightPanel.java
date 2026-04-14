@@ -39,6 +39,9 @@ import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.display.ImageDisplayService;
 
+/**
+ * The {@link JPanel} at the right in the {@link MainGUI_LDC}.
+ */
 @SuppressWarnings("serial")
 public class RightPanel extends JPanel {
 	
@@ -69,7 +72,12 @@ public class RightPanel extends JPanel {
     private int nb_isolated = 0;	// save the number of isolated particle showed with the given measures parameters
     
     private JLabel nbIsolatedLabel; // label that show the number of isolated particles on the total number of particles
-    
+        
+    /**
+     * Constructor for the {@link RightPanel}.
+     * @param ctx			The LDC plugin context.
+     * @param leftPanel		The instance of the {@link RightPanel} of the {@link MainGUI_LDC}.
+     */
     public RightPanel(Context ctx, LeftPanel leftPanel) {
     	super();
     	ctx.inject(this);
@@ -155,15 +163,36 @@ public class RightPanel extends JPanel {
         // generate statistics button
         JButton statisticButton = new JButton("Statistics");
         statisticButton.addActionListener(e -> {
-        	// check if the table is null or empty
-        	if (currentTable == null || currentTable.getCounter() == 0) {
-        		IJ.showMessage("No statistics to show.");
-        		return;
+        	// check if there is an image
+        	if (leftPanel.getCurrentImage() == null) {
+        		IJ.showMessage("Please open an image first (File > Open)");
+        		return ;
         	}
         	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
+          
+        	ResultsTable rt = ResultsTable.getResultsTable();
+        	rt.reset();
+        	SwingWorker<Void,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(leftPanel.getCurrentImage());
         	ImagePlus currentImg = leftPanel.getCurrentImage();
-        	showTable(selectedSettings.calculateSummaryTable(currentTable, currentImg.getCalibration(), currentImg.getWidth(), currentImg.getHeight()));
+        	
+        	// adding property change listener to the worker to show the table when the asynchronous task is completed
+        	measuresWorker.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("state".equals(evt.getPropertyName()) && SwingWorker.StateValue.DONE == evt.getNewValue()) {
+                        showTable(
+                        		selectedSettings.calculateSummaryTable(
+                        				ResultsTable.getResultsTable(),
+                        				currentImg.getCalibration(),
+                        				currentImg.getWidth(),
+                        				currentImg.getHeight()));
+                    }
+                }
+            });
+        	
+        	measuresWorker.execute();
+
         });
     	footerPanel.add(statisticButton);
     	
@@ -233,7 +262,7 @@ public class RightPanel extends JPanel {
 	    	viewPanel.revalidate();
 	        viewPanel.repaint();
 	            
-//	        // if it is because there is no output for the given parameters
+	        // if it is because there is no output for the given parameters
     		if (rt != null && rt.getCounter() == 0) {
 	    		IJ.showMessage("No output for the given parameters");
     		}
@@ -265,7 +294,11 @@ public class RightPanel extends JPanel {
     		for (int j = 0; j < originalHeadings.length; j++) {
     			String colName = originalHeadings[j];
     			if (rt.columnExists(colName)) {
-                    data[i][j+1] = rt.getValue(colName, i);
+    				if ((colName.equals("Label") || colName.equals("Slice"))) {
+    					data[i][j+1] = rt.getStringValue(colName, i);
+    				}else {
+    					data[i][j+1] = rt.getValue(colName, i);    					
+    				}
                     if (colName.equals("is_isolated")) {
                     	nb_isolated += rt.getValue(colName, i); // is_isolated column is 1 or 0
                     }

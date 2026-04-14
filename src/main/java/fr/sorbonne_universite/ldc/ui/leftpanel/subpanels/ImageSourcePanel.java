@@ -22,6 +22,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.io.FileInfo;
+import ij.measure.Calibration;
 
 /**
  * Creates the top panel of the {@link LeftPanel}, containing image status and the "Replace Image" button.
@@ -87,7 +88,7 @@ public class ImageSourcePanel extends JPanel {
 	    add(resetImageButton);
 	    add(Box.createVerticalStrut(10));
 	    
-	    int fixedHeight = 150; 
+	    int fixedHeight = 200; 
 	    Dimension fixedSize = new Dimension(Integer.MAX_VALUE, fixedHeight);
 	    
 	    this.setMinimumSize(fixedSize);
@@ -131,7 +132,12 @@ public class ImageSourcePanel extends JPanel {
                 	leftPanel.setOriginalImage(currentImg.duplicate()); // original image saved
                 	leftPanel.setCurrentImage(currentImg);
                 	updateUIInfosNbSlices();
+                	
+                	// update the calibration
+                	updateCalibrationState(currentImg);
+                	
                 	imageStatusLabel.setText("<html><center>Current image: " + currentImg.getTitle() + "</center></html>");
+                	leftPanel.resetPanels();
                 	leftPanel.enablePanels(true);
                 	
                 // If there is an original LDC image previously saved, and there is no other current image opened, 
@@ -249,6 +255,8 @@ public class ImageSourcePanel extends JPanel {
         currentImg.repaintWindow();
         
         closeBinaryWindow(currentImg);
+        // Update the calibration with the one of the new image
+        updateCalibrationState(currentImg);
     }
     
     /**
@@ -271,6 +279,9 @@ public class ImageSourcePanel extends JPanel {
         currentImg.setTitle(currentTitle);
         currentImg.updateAndDraw();
         currentImg.repaintWindow();
+        
+        // update the calibration with the default one
+        updateCalibrationState(currentImg);
         
         closeBinaryWindow(currentImg);
     }
@@ -297,5 +308,24 @@ public class ImageSourcePanel extends JPanel {
             binaryImp.changes = false; 
             binaryImp.close();
         }
+    }
+    
+    
+    /**
+     * Call the LDCService API to update the settings about the calibration of the image,
+     * used when image is initialized.
+     * @param img		The current image to update it's calibration.
+     */
+    public void updateCalibrationState(ImagePlus img) {
+    	
+    	if (img != null) {
+    		Calibration cal = img.getCalibration();
+    		selectedSettings.setCalibration(cal);
+    		selectedSettings.setIsCalibrated(cal != null && cal.scaled());
+    	}else {
+    		selectedSettings.setIsCalibrated(false);
+    		selectedSettings.setCalibration(null);
+    	}
+    	
     }
 }

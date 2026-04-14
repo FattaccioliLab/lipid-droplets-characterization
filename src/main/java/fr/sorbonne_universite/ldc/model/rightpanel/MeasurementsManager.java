@@ -28,54 +28,93 @@ public class MeasurementsManager {
 
     /**
      * Creates a {@link SwingWorker}, that take care of processing and showing the measurements preview, if executed.
-     * @param minSize minimum particle size (px²).
-     * @param maxSize maximum particle size (px²).
-     * @param minCircularity minimum particle circularity.
-     * @param maxCircularity maximum particle circularity.
-     * @param excludeOnEdgesEnabled Particle Analyzer option.
-     * @param showAreaEnabled True if the 'Area' column must be shown in the results.
-     * @param showMedianEnabled True if the 'Median' column must be shown in the results.
-     * @param showMeanEnabled True if the 'Mean' column must be shown in the results.
-     * @param showIntegratedDensityEnabled True if the 'IntegratedDensity' column must be shown in the results.
-     * @param showCircularityEnabled True if the 'Circularity' column is shown must be the results.
-     * @param img the current image to consider.
+     * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
+     * @param Calibration					Given calibration.
+     * @param minSize 						Minimum particle size (unit² if IsCalibrated is true, otherwise px²).
+     * @param maxSize 						Maximum particle size (unit² if IsCalibrated is true, otherwise px²).
+     * @param minCircularity 				Minimum particle circularity.
+     * @param maxCircularity 				Maximum particle circularity.
+     * @param excludeOnEdgesEnabled 		Particle Analyzer option.
+     * @param img 							The current image to consider.
 	 * @see MeasuresPreviewWorker
      */
-	public SwingWorker<Void,Void> createMeasuresPreviewWorker(double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
-			boolean showAreaEnabled, boolean showMedianEnabled, boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled,
+	public SwingWorker<Void,Void> createMeasuresPreviewWorker(
+    		boolean isCalibrated,
+    		Calibration calibration,
+			double minSize,
+			double maxSize,
+			double minCircularity,
+			double maxCircularity,
+			boolean excludeOnEdgesEnabled, 
 			ImagePlus img){
-		return new MeasuresPreviewWorker(minSize, maxSize, minCircularity, maxCircularity, excludeOnEdgesEnabled, 
-				showAreaEnabled, showMedianEnabled, showMeanEnabled, showIntegratedDensityEnabled, showCircularityEnabled, 
+		return new MeasuresPreviewWorker(
+				isCalibrated,
+				calibration,
+				minSize,
+				maxSize,
+				minCircularity,
+				maxCircularity,
+				excludeOnEdgesEnabled, 
 				img); 
 	}
 	
     /**
-     * Creates a {@link SwingWorker}, that take care of processing measurements and returning them, if executed.
-     * @param minSize minimum particle size (px²).
-     * @param maxSize maximum particle size (px²).
-     * @param minCircularity minimum particle circularity.
-     * @param maxCircularity maximum particle circularity.
-     * @param excludeOnEdgesEnabled Particle Analyzer option.
-     * @param showAreaEnabled True if the 'Area' column must be shown in the results.
-     * @param showMedianEnabled True if the 'Median' column must be shown in the results.
-     * @param showMeanEnabled True if the 'Mean' column must be shown in the results.
-     * @param showIntegratedDensityEnabled True if the 'IntegratedDensity' column must be shown in the results.
-     * @param showCircularityEnabled True if the 'Circularity' column is shown must be the results.
-     * @param img the current image to consider.
+     * Creates a {@link SwingWorker}, that take care of processing measurements and showing them, if executed.
+     * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
+     * @param Calibration					Given calibration.
+     * @param minSize 						Minimum particle size (unit² if IsCalibrated is true, otherwise px²).
+     * @param maxSize 						Maximum particle size (unit² if IsCalibrated is true, otherwise px²).
+     * @param minCircularity 				Minimum particle circularity.
+     * @param maxCircularity 				Maximum particle circularity.
+     * @param excludeOnEdgesEnabled 		Particle Analyzer option.
+     * @param circularityThreshold 			Threshold on particle's circularity to define if they are isolated.
+     * @param showAreaEnabled 				If True then the 'Area' column must be shown in the results.
+     * @param showDiameterEnabled			If True then the 'Diameter' column must be shown in the results.
+     * @param showMedianEnabled 			If True then the 'Median' column must be shown in the results.
+     * @param showMeanEnabled 				If True then the 'Mean' column must be shown in the results.
+     * @param showIntegratedDensityEnabled 	If True then the 'IntegratedDensity' column must be shown in the results.
+     * @param showCircularityEnabled 		If True then the 'Circularity' column is shown must be the results.
+     * @param img 							The current image to consider.
 	 * @see MeasuresProcessingWorker
      */
-	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
-			boolean showAreaEnabled, boolean showMedianEnabled, boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled,
+	public SwingWorker<Void,Void> createMeasuresProcessingWorker(
+    		boolean isCalibrated,
+    		Calibration calibration,
+			double minSize,
+			double maxSize,
+			double minCircularity,
+			double maxCircularity,
+			boolean excludeOnEdgesEnabled,
+			double circularityThreshold,
+			boolean showAreaEnabled,
+			boolean showDiameterEnabled,
+			boolean showMedianEnabled,
+			boolean showMeanEnabled,
+			boolean showIntegratedDensityEnabled,
+			boolean showCircularityEnabled,
 			ImagePlus img){
-		return new MeasuresProcessingWorker(minSize, maxSize, minCircularity, maxCircularity, excludeOnEdgesEnabled, 
-				showAreaEnabled, showMedianEnabled, showMeanEnabled, showIntegratedDensityEnabled, showCircularityEnabled, 
+		return new MeasuresProcessingWorker(
+	    		isCalibrated,
+	    		calibration,
+				minSize,
+				maxSize,
+				minCircularity,
+				maxCircularity,
+				excludeOnEdgesEnabled,
+				circularityThreshold,
+				showAreaEnabled,
+				showDiameterEnabled,
+				showMedianEnabled,
+				showMeanEnabled,
+				showIntegratedDensityEnabled,
+				showCircularityEnabled, 
 				img); 
 	}
 	
     /**
      * Export as a CSV file the table passed in parameter. 
-     * @param rt the ResultsTable to export as a CSV file.
-     * @param path the path of the file as a String.
+     * @param rt 		The ResultsTable to export as a CSV file.
+     * @param path 		The path of the file as a String.
      */
     public void exportResultsTable(ResultsTable rt, String path) {
     	
@@ -98,113 +137,173 @@ public class MeasurementsManager {
     
     /**
      * Calculate the summary ResultTable generated by ImageJ.
-     * @param rt the ResultsTable to generate statistics from.
-     * @param cal the calibration of the current image to consider.
-     * @param imgWidth the width of the current image to consider.
-     * @param imgHeight the height of the current image to consider.
-     * @return the ResultsTable containing the statistics.  
+     * @param rt            The ResultsTable to generate statistics from.
+     * @param cal           The calibration of the current image to consider.
+     * @param imgWidth      The width of the current image to consider.
+     * @param imgHeight     The height of the current image to consider.
+     * @return              The ResultsTable containing the statistics.  
      */
     public ResultsTable calculateSummaryTable(ResultsTable rt, Calibration cal, double imgWidth, double imgHeight) {
-    	
-    	ResultsTable summaryRt = new ResultsTable();
-    	
-    	if (rt == null || rt.getCounter() == 0) {
-    		IJ.showMessage("No data yet.");
-    		return summaryRt;
-    	}
-    	
-        double totalImageArea = 0;
         
-        if (cal != null) {
-        	// calculate the total area of the image
-            double totalArea = cal.pixelWidth * cal.pixelHeight;
-            totalImageArea = imgWidth * imgHeight * totalArea;
+        ResultsTable summaryRt = new ResultsTable();
+        
+        if (rt == null || rt.getCounter() == 0) {
+            IJ.showMessage("No data yet.");
+            return summaryRt;
         }
         
-        // Slice number -> List of indexes of line that corresond to the slice
+        // Slice number -> List of indexes of line that correspond to the slice
         Map<Integer, List<Integer>> rowsBySlice = new HashMap<>();
+        List<Integer> allRows = new ArrayList<>(); // to store all rows for overall statistics
         
-        boolean hasSliceCol = rt.columnExists("Slice"); // check if there is a slice column in the table
+        boolean hasSliceCol = rt.columnExists("Slice"); // check if there is a slice column
         
         for (int i = 0; i < rt.getCounter(); i++) {
-            // if there is no slice columns, we consider that every rows are in slice 1
             int slice = hasSliceCol ? (int) rt.getValue("Slice", i) : 1;
             rowsBySlice.computeIfAbsent(slice, k -> new ArrayList<>()).add(i);
+            allRows.add(i);
         }
-              
+        
         // columns to compute statistics
         String[] headings = rt.getHeadings();
-        boolean hasArea = rt.columnExists("Area");
         
-        // columns to ignores
+        // columns to ignore
         Set<String> ignoredCols = new HashSet<>(Arrays.asList(
-            "Slice", "X", "Y"
+            "Slice", "is_isolated"
         ));
         
-        // sorting
+        // sorting slices
         List<Integer> sortedSlices = new ArrayList<>(rowsBySlice.keySet());
         Collections.sort(sortedSlices);
         
-        // compute statistics for each list
+        // compute and add overall statistics
+        addStatisticsRows(summaryRt, rt, allRows, "", headings, ignoredCols);
+        
+        // compute and add statistics for each slice
         for (int slice : sortedSlices) {
-        	
-        	List<Integer> rows = rowsBySlice.get(slice);
-        	int count = rows.size();
-        	
-        	summaryRt.incrementCounter();
-            summaryRt.addValue("Slice", slice);
-            summaryRt.addValue("Count", count);
-            
-            // if area column is present compute its statistics
-            if (hasArea) {
-                double sumArea = 0;
-                for (int row : rows) {
-                    sumArea += rt.getValue("Area", row);
-                }
-                double avgSize = (count > 0) ? sumArea / count : 0;
-                double pctArea = (totalImageArea > 0) ? (sumArea / totalImageArea) * 100.0 : 0;
-
-                summaryRt.addValue("Total Area", sumArea);
-                summaryRt.addValue("Average Size", avgSize);
-                summaryRt.addValue("%Area", pctArea);
-            }
-            
-            for (String col : headings) {
-                // skip area because already treated
-                if (col.equals("Area") || ignoredCols.contains(col)) {
-                    continue;
-                }
-
-                // check that the column exists
-                if (rt.columnExists(col)) {
-                    double sum = 0;
-                    int validValues = 0;
-                    
-                    for (int row : rows) {
-                        double val = rt.getValue(col, row);
-                        if (!Double.isNaN(val)) {
-                            sum += val;
-                            validValues++;
-                        }
-                    }
-                    
-                    // compute the average
-                    double average = (validValues > 0) ? sum / validValues : 0;
-                    
-                    // add the column to the summary
-                    summaryRt.addValue(col, average);
-                }
-            }
+            addStatisticsRows(summaryRt, rt, rowsBySlice.get(slice), String.valueOf(slice), headings, ignoredCols);
         }
 
         return summaryRt;
     }
-    
+
+    /**
+     * Helper method to calculate statistics and add the summary rows for a given set of rows.
+     * @param summaryRt			The Result Table of the summary to add rows to.
+     * @param rt				The Result Table to generate statistics from.
+     * @param rows				The set of rows to generate summary.
+     * @param sliceLabel		The slice to generate summary.
+     * @param headings			The headings of the summary table.
+     * @param ignoredCols		The set of columns to ignore.
+     */
+    private void addStatisticsRows(ResultsTable summaryRt, ResultsTable rt, List<Integer> rows, String sliceLabel, String[] headings, Set<String> ignoredCols) {
+        
+        // maps to store the computed statistic for each column heading
+        Map<String, Double> means = new HashMap<>();
+        Map<String, Double> medians = new HashMap<>();
+        Map<String, Double> sds = new HashMap<>();
+        Map<String, Double> cvs = new HashMap<>();
+        Map<String, Double> mins = new HashMap<>();
+        Map<String, Double> maxs = new HashMap<>();
+
+        for (String col : headings) {
+            // skip ignored columns
+            if (ignoredCols.contains(col)) continue;
+
+            int colIndex = rt.getColumnIndex(col);
+            if (colIndex != ResultsTable.COLUMN_NOT_FOUND) {
+                List<Double> values = new ArrayList<>();
+                float[] colData = rt.getColumn(colIndex);
+                
+                // collect valid values
+                for (int row : rows) {
+                    double val = colData[row];
+                    if (!Double.isNaN(val)) {
+                        values.add(val);
+                    }
+                }
+
+                int n = values.size();
+                
+                // compute statistics if values exist
+                if (n > 0) {
+                    Collections.sort(values);
+                    
+                    // Min and Max
+                    double min = values.get(0);
+                    double max = values.get(n - 1);
+                    
+                    // Mean
+                    double sum = 0;
+                    for (double v : values) sum += v;
+                    double mean = sum / n;
+                    
+                    // Median
+                    double median;
+                    if (n % 2 == 0) median = (values.get(n / 2 - 1) + values.get(n / 2)) / 2.0;
+                    else median = values.get(n / 2);
+                
+                    // Standard Deviation
+                    double stdDev = 0;
+                    if (n > 1) {
+                        double sumSqDiff = 0;
+                        for (double v : values) sumSqDiff += (v - mean) * (v - mean);
+                        stdDev = Math.sqrt(sumSqDiff / (n - 1));
+                    }
+                    
+                    // Coefficient of Variation
+                    double cv = (mean != 0) ? (stdDev / mean) * 100 : 0;
+                    
+                    // adding the data the maps
+                    means.put(col, mean);
+                    medians.put(col, median);
+                    sds.put(col, stdDev);
+                    cvs.put(col, cv);
+                    mins.put(col, min);
+                    maxs.put(col, max);
+                } else {
+                    // handle missing values
+                    means.put(col, Double.NaN);
+                    medians.put(col, Double.NaN);
+                    sds.put(col, Double.NaN);
+                    cvs.put(col, Double.NaN);
+                    mins.put(col, Double.NaN);
+                    maxs.put(col, Double.NaN);
+                }
+            }
+        }
+
+        // define the sequence of statistics rows
+        String[] statNames = {"Mean", "Median", "SD", "CV", "Min", "Max"};
+        @SuppressWarnings("unchecked")
+        Map<String, Double>[] statMaps = new Map[]{means, medians, sds, cvs, mins, maxs};
+
+        // construct the actual rows in the ResultsTable
+        for (int i = 0; i < statNames.length; i++) {
+            summaryRt.incrementCounter();
+            
+            // add Label and Slice columns
+            summaryRt.addValue("Label", statNames[i]);
+            summaryRt.addValue("Slice", sliceLabel); 
+
+            // add calculated values for each feature column
+            for (String col : headings) {
+                if (ignoredCols.contains(col)) continue;
+                
+                Double val = statMaps[i].get(col);
+                if (val != null) {
+                    summaryRt.addValue(col, val);
+                } else {
+                    summaryRt.addValue(col, Double.NaN);
+                }
+            }
+        }
+    }
     
     /**
      * Generate a list containing histograms for each columns of the ResultsTable.
-     * @param rt ResultsTable to generated histograms from.
-     * @return List that contain ImagePlus Object of histograms for each column of the table.
+     * @param rt 		ResultsTable to generated histograms from.
+     * @return 			List that contain ImagePlus Object of histograms for each column of the table.
      */
     public List<ImagePlus> generateHistograms(ResultsTable rt){
     	
