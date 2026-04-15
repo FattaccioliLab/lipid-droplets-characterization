@@ -28,9 +28,12 @@ public class MorphologyPanel extends JPanel {
 
     @Parameter
     private LDCService service;
+    
+    private boolean isApplied = false;
+    private Object cleanPixelBackup = null; // Stores a secure deep copy of the raw pixels
+
 
     // Components
-    private JCheckBox blackBackgroundCheck;
     private JCheckBox previewCheck;
     private JButton applyButton;
     
@@ -38,8 +41,6 @@ public class MorphologyPanel extends JPanel {
     private ButtonGroup optGroup;
     private JRadioButton noneRadio, erosionRadio, dilationRadio, openingRadio, closingRadio;
     
-    private boolean isApplied = false;
-
     public MorphologyPanel(Context ctx, LeftPanel leftPanel) {
         super();
         this.leftPanel = leftPanel;
@@ -49,15 +50,9 @@ public class MorphologyPanel extends JPanel {
 
         add(Box.createVerticalStrut(10));
         
-        // 1. Black Background Checkbox
-        blackBackgroundCheck = new JCheckBox("Black background (Objects are white)"); // Default true for typical masks
-        blackBackgroundCheck.setAlignmentX(Component.LEFT_ALIGNMENT);
-        blackBackgroundCheck.addActionListener(e -> handleSelectionChange());
-        add(blackBackgroundCheck);
-        
-        add(Box.createVerticalStrut(5));
 
-        // 2. Preview Checkbox
+
+        // Preview Checkbox
         previewCheck = new JCheckBox("Preview on binary slice");
         previewCheck.setAlignmentX(Component.LEFT_ALIGNMENT);
         previewCheck.addActionListener(e -> triggerPreview());
@@ -65,7 +60,7 @@ public class MorphologyPanel extends JPanel {
 
         add(Box.createVerticalStrut(10));
 
-        // 3. Radio Buttons (Single Selection)
+        // Radio Buttons (Single Selection)
         optGroup = new ButtonGroup();
         noneRadio = createRadio("None", true); // Default selected
         erosionRadio = createRadio("Erosion (Shrink objects)", false);
@@ -75,7 +70,7 @@ public class MorphologyPanel extends JPanel {
 
         add(Box.createVerticalStrut(15));
 
-        // 4. Apply Button
+        // Apply Button
         JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         buttonRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         applyButton = new JButton("Apply to Stack");
@@ -117,22 +112,14 @@ public class MorphologyPanel extends JPanel {
         boolean open = openingRadio.isSelected();
         boolean close = closingRadio.isSelected();
 
-        // If the background is WHITE, we must invert the operations mathematically
-        // to achieve the same visual result on the objects.
-        if (blackBackgroundCheck.isSelected()) {
-            boolean tempErode = erode;
-            erode = dilate;
-            dilate = tempErode;
-
-            boolean tempOpen = open;
-            open = close;
-            close = tempOpen;
-        }
-
-        service.setErosion(erode);
-        service.setDilation(dilate);
-        service.setOpening(open);
-        service.setClosing(close);
+ 
+        //we need to inverse this as by default these operations think the objects are black and background is white
+        //however, in our plugin we we get an binary mask where objects are white and background is black
+        //that's why we invert the operatations
+        service.setErosion(dilate);
+        service.setDilation(erode);
+        service.setOpening(close);
+        service.setClosing(open);
     }
 
     @Override
@@ -198,7 +185,7 @@ public class MorphologyPanel extends JPanel {
     }
 
     public void enableUIComponents(boolean enabled) {
-        blackBackgroundCheck.setEnabled(enabled);
+        //blackBackgroundCheck.setEnabled(enabled);
         noneRadio.setEnabled(enabled);
         erosionRadio.setEnabled(enabled);
         dilationRadio.setEnabled(enabled);
@@ -209,7 +196,7 @@ public class MorphologyPanel extends JPanel {
     }
     
     public void resetUIComponents() {
-        blackBackgroundCheck.setSelected(false); // Reset to default
+        //blackBackgroundCheck.setSelected(false); // Reset to default
         noneRadio.setSelected(true);            // Reset radio group to 'None'
         previewCheck.setSelected(false);
         updateServiceState();                   // Ensure service knows everything is false

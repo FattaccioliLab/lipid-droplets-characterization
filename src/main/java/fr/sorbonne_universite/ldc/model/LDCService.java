@@ -74,9 +74,9 @@ public interface LDCService extends SciJavaService {
 	public boolean thresholdDarkBackgroundEnabled();
 	public void setThresholdDarkBackground(boolean thresholdDarkBackground);
 	
-	// Process one slice or all slices
-	public boolean thresholdGlobalEnabled();
-	public void setThresholdGlobal(boolean thresholdGlobal);
+	// calculate threshold for each slice independantly or same range for all slices
+	public boolean getIndependentThreshold();
+	public void setIndependentThreshold(boolean indpendentThreshold);
 	
     // ====================================
     // Binary mask morphological operations

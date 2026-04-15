@@ -1,5 +1,6 @@
 package fr.sorbonne_universite.ldc.ui.leftpanel.subpanels;
 
+import javax.swing.Timer;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -23,6 +24,7 @@ import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.gui.YesNoCancelDialog;
 import net.imagej.display.ImageDisplayService;
 
 /**
@@ -53,12 +55,19 @@ public class ThresholdingPanel extends JPanel {
     private JButton resetButton;
     private boolean isApplied = false;
     private boolean isReset = false;
+    
+    //Slice Watcher variables
+    private Timer sliceWatcher;
+    private int lastSlice = -1;
 
     public ThresholdingPanel(Context ctx, LeftPanel leftPanel) {
         super();
         this.leftPanel = leftPanel;
         ctx.inject(this);
 
+        //Initialize the slice watcher
+        sliceWatcher = new Timer(100, e -> checkSliceChange());
+        
         PanelUtils.createVerticalPanel(this, "Segmentation / Thresholding", 450); // Increased height
 
         // 1. Histogram Visualization (Top)
@@ -143,9 +152,21 @@ public class ThresholdingPanel extends JPanel {
     public void setVisible(boolean aFlag) {
         super.setVisible(aFlag);
         if (aFlag) {
+            ImagePlus img = leftPanel.getCurrentImage();
+            if (img != null) {
+                lastSlice = img.getCurrentSlice(); // Remember where we started
+            }
+            
             refreshHistogramData();
             configureRanges();
             updateThresholdLogic();
+            
+            // Start watching for slice changes
+            if (sliceWatcher != null) sliceWatcher.start(); 
+            
+        } else {
+            // Stop watching when we navigate to Preprocessing or Morphology
+            if (sliceWatcher != null) sliceWatcher.stop(); 
         }
     }
 
@@ -261,11 +282,10 @@ public class ThresholdingPanel extends JPanel {
         if(newMask != null) {
         	newMask.show();
             IJ.showStatus("Threshold applied.");
-            //refreshHistogramData();
             leftPanel.updateWorkflowIndex(2);
+            
         }
     }
-    
     
     private void resetThreshold() {
         ImagePlus img = leftPanel.getCurrentImage();
@@ -373,5 +393,34 @@ public class ThresholdingPanel extends JPanel {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
         isReset = service.resetThreshold(img);
+    }
+    
+    
+    /**
+     * Checks if the user has scrolled to a new slice in the ImageJ window.
+     * If they have, it refreshes the histogram and re-applies the preview overlay.
+     */
+    private void checkSliceChange() {
+        // Don't do anything if the panel is hidden or if we already applied the threshold
+        if (!isVisible() || isApplied) return;
+        
+        ImagePlus img = leftPanel.getCurrentImage();
+        if (img == null) return;
+        
+        int currentSlice = img.getCurrentSlice();
+        
+        // If the slice has changed since the last time we checked...
+        if (currentSlice != lastSlice) {
+            lastSlice = currentSlice;
+            
+            // Get the new histogram data
+            refreshHistogramData();
+            
+            // Adjust slider limits if this slice is significantly brighter/darker
+            configureRanges(); 
+            
+            // Re-apply the red overlay to the new slice (and recalculate Auto if needed)
+            updateThresholdLogic();
+        }
     }
 }

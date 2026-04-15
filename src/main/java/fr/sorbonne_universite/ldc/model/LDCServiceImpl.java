@@ -90,8 +90,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public boolean thresholdDarkBackgroundEnabled() { return settings.thresholdDarkBackgroundEnabled(); }
     @Override public void setThresholdDarkBackground(boolean thresholdDarkBackground) { settings.setThresholdDarkBackground(thresholdDarkBackground); }
 
-    @Override public boolean thresholdGlobalEnabled() { return settings.thresholdGlobalEnabled(); }
-    @Override public void setThresholdGlobal(boolean thresholdGlobal) { settings.setThresholdGlobal(thresholdGlobal); }
+    @Override public boolean getIndependentThreshold() { return settings.getIndpendentThreshold(); }
+    @Override public void setIndependentThreshold(boolean thresholdGlobal) { settings.setIndpendentThreshold(thresholdGlobal); }
 
     // ====================================
     // Binary mask morphological operations

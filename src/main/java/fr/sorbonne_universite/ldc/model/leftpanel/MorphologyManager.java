@@ -12,11 +12,14 @@ import ij.process.ImageProcessor;
  */
 public class MorphologyManager {
 
+    private Object cleanPixels = null;
+    private int cleanSlice = -1;
+	
     /**
      * Applies morphological operations to a single slice for preview purposes.
      * Restores the image from its snapshot before applying, so operations don't compound endlessly.
      */
-    public void previewMorphology(ImagePlus imp, boolean erode, boolean dilate, boolean open, boolean close, boolean watershed) {
+   /* public void previewMorphology(ImagePlus imp, boolean erode, boolean dilate, boolean open, boolean close, boolean watershed) {
         if (imp == null) return;
         
         ImageProcessor ip = imp.getProcessor();
@@ -28,26 +31,72 @@ public class MorphologyManager {
         applyOperationsToProcessor(ip, erode, dilate, open, close, watershed);
         
         imp.updateAndDraw();
+    }*/
+    
+    /**
+     * Applies morphological operations to a single slice for preview purposes.
+     */
+    public void previewMorphology(ImagePlus imp, boolean erode, boolean dilate, boolean open, boolean close, boolean watershed) {
+        if (imp == null) return;
+        
+        ImageProcessor ip = imp.getProcessor();
+        
+        // 1. Revert to the clean, unmodified binary state using our private backup
+        if (cleanPixels != null && imp.getCurrentSlice() == cleanSlice) {
+            ip.setSnapshotPixels(cleanPixels);
+            ip.reset();
+        } else {
+            // If they changed slices and we don't have a backup, take one now
+            captureSnapshot(imp);
+        }
+        
+        // 2. Apply operations
+        applyOperationsToProcessor(ip, erode, dilate, open, close, watershed);
+        
+        imp.updateAndDraw();
     }
 
     /**
      * Resets the preview, returning the image to its original binary state.
      */
-    public boolean resetPreview(ImagePlus imp) {
+    /*public boolean resetPreview(ImagePlus imp) {
         if (imp == null) return false;
         imp.getProcessor().reset();
         imp.updateAndDraw();
         return true;
+    }*/
+    
+    /**
+     * Resets the preview, returning the image to its original binary state.
+     */
+    public boolean resetPreview(ImagePlus imp) {
+        if (imp == null) return false;
+        
+        ImageProcessor ip = imp.getProcessor();
+        
+        // Restore from our private backup
+        if (cleanPixels != null && imp.getCurrentSlice() == cleanSlice) {
+            ip.setSnapshotPixels(cleanPixels);
+            ip.reset();
+            imp.updateAndDraw();
+        }
+        return true;
     }
 
+    
     /**
-     * Takes a snapshot of the current slice to allow non-destructive previews.
+     * Takes a private snapshot of the current slice to allow non-destructive previews.
+     * Stored in a custom variable to prevent ImageJ's global Undo from overwriting it.
      */
     public void captureSnapshot(ImagePlus imp) {
         if (imp != null) {
-            imp.getProcessor().snapshot();
+            ImageProcessor ip = imp.getProcessor();
+            // getPixelsCopy() creates a deep copy of the raw image data
+            cleanPixels = ip.getPixelsCopy(); 
+            cleanSlice = imp.getCurrentSlice();
         }
     }
+    
 
     /**
      * Permanently applies the selected operations to the entire image stack.

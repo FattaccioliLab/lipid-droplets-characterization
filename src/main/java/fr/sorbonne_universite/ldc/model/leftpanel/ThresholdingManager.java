@@ -129,5 +129,97 @@ public class ThresholdingManager {
             e.printStackTrace();
             return null;
         }
+    }*/
+    
+    /**
+     * Creates a NEW binary mask image based on the current threshold settings.
+     * @param originalImp The source image (will not be modified).
+     * @param calculateAllSlices If true, recalculates the auto-threshold for each slice.
+     * @return true if successful, false otherwise.
+     */
+    public boolean applyThreshold(ImagePlus originalImp) {
+        if (originalImp == null) return false;
+        
+        try {
+            // Get global threshold from the current active slice as a baseline
+            double globalMin = originalImp.getProcessor().getMinThreshold();
+            double globalMax = originalImp.getProcessor().getMaxThreshold();
+            
+            //get the user agreement on calculating threshold for each slice independently or not
+            boolean calculateAllSlices = service.getIndependentThreshold();
+            
+            if (globalMin == ImageProcessor.NO_THRESHOLD && !calculateAllSlices) {
+                IJ.log("No threshold set.");
+                return false; 
+            }
+
+            // Get settings for per-slice calculation
+            String method = service.getThresholdMethod();
+            boolean darkBackground = service.thresholdDarkBackgroundEnabled();
+            boolean isManual = "Manual".equals(method);
+
+            ImageStack originalStack = originalImp.getStack();
+            int width = originalStack.getWidth();
+            int height = originalStack.getHeight();
+            int nSlices = originalStack.getSize();
+            
+            // Create a NEW empty stack for the 8-bit binary mask
+            ImageStack binaryStack = new ImageStack(width, height);
+            
+            // Process each slice
+            for (int i = 1; i <= nSlices; i++) {
+                ImageProcessor ip = originalStack.getProcessor(i);
+                
+                double sliceMin = globalMin;
+                double sliceMax = globalMax;
+
+                // RECALCULATE for this specific slice if requested (and not manual)
+                if (calculateAllSlices && !isManual) {
+                    
+                    // Critical: Apply contrast enhancement first if enabled, 
+                    // because the auto-threshold math depends on it!
+                    if (service.enhanceContrastEnabled()) {
+                        service.applyEnhanceContrast(ip);
+                    }
+                    
+                    // Calculate the new limits for this specific slice
+                    ip.setAutoThreshold(method, darkBackground, ImageProcessor.NO_LUT_UPDATE);
+                    sliceMin = ip.getMinThreshold();
+                    sliceMax = ip.getMaxThreshold();
+                }
+                
+                // Temporarily apply threshold to the slice mathematically
+                ip.setThreshold(sliceMin, sliceMax, ImageProcessor.NO_LUT_UPDATE);
+                
+                // Create an 8-bit mask (ByteProcessor) from the thresholded slice
+                ImageProcessor maskIp = ip.createMask();
+                
+                // Add the 8-bit mask to our new stack
+                binaryStack.addSlice(originalStack.getSliceLabel(i), maskIp);
+                
+                // Reset threshold on original slice to avoid messing up the original image
+                ip.resetThreshold();
+            }
+            
+            // Create a new ImagePlus with the 8-bit stack
+            ImagePlus binaryImp = new ImagePlus(originalImp.getShortTitle() + "_Binary", binaryStack);
+            
+            // Copy calibration (pixel size, mm/px, etc.)
+            binaryImp.setCalibration(originalImp.getCalibration());
+            
+            // Show the new binary image
+            binaryImp.show();
+            
+            // Restore the red preview overlay on the original image's current slice
+            originalImp.getProcessor().setThreshold(globalMin, globalMax, ImageProcessor.NO_LUT_UPDATE);
+            originalImp.updateAndDraw();
+            
+            return true;
+            
+        } catch (Exception e) {
+            IJ.log("Error generating binary mask: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 }
