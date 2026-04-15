@@ -24,7 +24,6 @@ public class ThresholdingManager {
     public void setManualThreshold(ImagePlus imp, double min, double max) {
         if (imp == null) return;
         ImageProcessor ip = imp.getProcessor();
-        if(service.enhanceContrastEnabled()) service.applyEnhanceContrast(ip);
         ip.setThreshold(min, max, ImageProcessor.RED_LUT);
         imp.updateAndDraw();
     }
@@ -40,24 +39,13 @@ public class ThresholdingManager {
 
         // 1. Let ImageJ calculate the Auto-Threshold values
         // We use NO_LUT_UPDATE because we don't care about the visuals yet
-        if (darkBackground) {
-            ip.setAutoThreshold(method, true, ImageProcessor.NO_LUT_UPDATE);
-        } else {
-            ip.setAutoThreshold(method, false, ImageProcessor.NO_LUT_UPDATE);
-        }
+        ip.setAutoThreshold(method, darkBackground, ImageProcessor.NO_LUT_UPDATE);
 
         // 2. CAPTURE the calculated values before they get destroyed!
         double computedMin = ip.getMinThreshold();
         double computedMax = ip.getMaxThreshold();
 
-        // 3. Apply your contrast enhancement 
-        // (This step internally resets the threshold, making the values -808080.0)
-        if (service.enhanceContrastEnabled()) {
-            // Use whatever your exact method signature is here
-            service.applyEnhanceContrast(ip); 
-        }
-
-        // 4. RE-APPLY the captured threshold with the RED overlay
+        // 3. RE-APPLY the captured threshold with the RED overlay
         if (computedMin != ImageProcessor.NO_THRESHOLD) {
             ip.setThreshold(computedMin, computedMax, ImageProcessor.RED_LUT);
         }
@@ -79,10 +67,10 @@ public class ThresholdingManager {
      * Creates a NEW binary mask image based on the current threshold settings.
      * The original image is left unchanged.
      * @param originalImp The source image (will not be modified).
-     * @return true if successful, false otherwise.
+     * @return the NEW binary mask image based on the current threshold settings, or {@code null} if an error occurred.
      */
-    /*public boolean applyThreshold(ImagePlus originalImp, boolean calculateAllSlices) {
-        if (originalImp == null) return false;
+    public ImagePlus applyThreshold(ImagePlus originalImp) {
+        if (originalImp == null) return null;
         
         try {
             // 1. Get threshold from the original image
@@ -91,7 +79,7 @@ public class ThresholdingManager {
             
             if (min == ImageProcessor.NO_THRESHOLD) {
                 IJ.log("No threshold set.");
-                return false; 
+                return null; 
             }
 
             ImageStack originalStack = originalImp.getStack();
@@ -121,23 +109,25 @@ public class ThresholdingManager {
             
             // 4. Create a new ImagePlus with the 8-bit stack
             ImagePlus binaryImp = new ImagePlus(originalImp.getShortTitle() + "_Binary", binaryStack);
+            binaryImp.setDimensions(
+                    originalImp.getNChannels(),
+                    originalImp.getNSlices(),
+                    originalImp.getNFrames()
+                );
             
             // Copy calibration (pixel size, mm/px, etc.)
             binaryImp.setCalibration(originalImp.getCalibration());
-            
-            // 5. Show the new binary image
-            binaryImp.show();
             
             // Restore the red preview overlay on the original image's current slice
             originalImp.getProcessor().setThreshold(min, max, ImageProcessor.RED_LUT);
             originalImp.updateAndDraw();
             
-            return true;
+            return binaryImp;
             
         } catch (Exception e) {
             IJ.log("Error generating binary mask: " + e.getMessage());
             e.printStackTrace();
-            return false;
+            return null;
         }
     }*/
     

@@ -100,11 +100,11 @@ public interface LDCService extends SciJavaService {
 	// ====================================
     // Morphology API
     // ====================================
+	
     public void captureMorphologySnapshot(ImagePlus imp);
     public void previewMorphology(ImagePlus imp);
     public boolean resetMorphologyPreview(ImagePlus imp);
     public boolean applyMorphology(ImagePlus imp);
-	
     
     // =================
     // Analyse particles
@@ -126,12 +126,27 @@ public interface LDCService extends SciJavaService {
 	public boolean analyseExcludeOnEdgesEnabled();
 	public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges);
 	
+	// Circularity threshold
+	public double getAnalyseCircularityThreshold();
+	public void setAnalyseCircularityThreshold(double analyseCircularityThreshold);
+	
+	// isCalibrated
+	public boolean isCalibrated();
+	public void setIsCalibrated(boolean isCalibrated);
+	
+	// Calibration
+	public Calibration getCalibration();
+	public void setCalibration(Calibration calibration);
+	
     // ============================
     // Measurements showing options
     // ============================
 	
 	public boolean showAreaEnabled();
 	public void setShowArea(boolean showArea);
+	
+	public boolean showDiameterEnabled();
+	public void setShowDiameter(boolean showDiameter);
 	
 	public boolean showMedianEnabled();
 	public void setShowMedian(boolean showMedian);
@@ -169,13 +184,11 @@ public interface LDCService extends SciJavaService {
 	public SwingWorker<Void,Void> createPreviewMedianWorker(ImageProcessor ip);
 	
     /**
-     * Creates a {@link SwingWorker}, that can apply a median filter on a given {@link ImageStack}, or on an individual {@link ImageProcessor} among the given stack if executed.
+     * Creates a {@link SwingWorker} that applies a median filter on a given {@link ImageStack} if executed.
 	 * @param stack The array of images to process (slices).
-	 * @param processAll True to process all slices.
-	 * @param targetSlice The specific slice to process if not all.
 	 * @see PreprocessingApplyMedianWorker
      */
-	public SwingWorker<Void,Void> createApplyMedianWorker(ImageStack stack, boolean processAll, int targetSlice);
+	public SwingWorker<Void,Void> createApplyMedianWorker(ImageStack stack);
 	
     // ===========================
     // Segmentation / thresholding
@@ -184,13 +197,13 @@ public interface LDCService extends SciJavaService {
 	/** Preview manual threshold on the image */
     public void previewManualThreshold(ImagePlus imp);
     
-    /** * Preview auto threshold. 
+    /** Preview auto threshold. 
      * @return double[] {min, max} calculated.
      */
-    public double[] previewAutoThreshold(ImagePlus imp, String method, boolean darkBackground);
+    public double[] previewAutoThreshold(ImagePlus imp);
     
     /** Apply final conversion to mask */
-    public boolean applyThreshold(ImagePlus imp);
+    public ImagePlus applyThreshold(ImagePlus imp);
     public boolean resetThreshold(ImagePlus imp);
 	
     // ============
@@ -206,11 +219,11 @@ public interface LDCService extends SciJavaService {
     public SwingWorker<Void,Void> createMeasuresPreviewWorker(ImagePlus img);
     
     /**
-     * Creates a {@link SwingWorker}, that take care of processing measurements and showing them, if executed.
+     * Creates a {@link SwingWorker}, that take care of processing measurements and returning them, if executed.
      * @param img The current image to consider.
 	 * @see MeasuresProcessingWorker
      */
-	public SwingWorker<Void,Void> createMeasuresProcessingWorker(ImagePlus img);
+	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(ImagePlus img);
 	
     /**
      * Export as a CSV file the table passed in parameter. 

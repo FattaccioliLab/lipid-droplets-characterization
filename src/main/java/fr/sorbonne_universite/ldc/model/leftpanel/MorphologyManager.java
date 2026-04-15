@@ -1,5 +1,6 @@
 package fr.sorbonne_universite.ldc.model.leftpanel;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.filter.EDM;
