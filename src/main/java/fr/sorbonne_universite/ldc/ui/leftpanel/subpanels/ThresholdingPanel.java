@@ -299,7 +299,7 @@ public class ThresholdingPanel extends JPanel {
         //updating the analysisSetting via l'api, we will be useful during testing
         service.setIndependentThreshold(calculateAllSlices);
         
-        isApplied = service.applyThreshold(img);
+        isApplied = service.applyThreshold(img) == null ? false : true;
         
         if(isApplied) {
             IJ.showStatus("Threshold applied.");

@@ -81,8 +81,8 @@ public class ThresholdingManager {
      * @param calculateAllSlices If true, recalculates the auto-threshold for each slice.
      * @return true if successful, false otherwise.
      */
-    public boolean applyThreshold(ImagePlus originalImp) {
-        if (originalImp == null) return false;
+    public ImagePlus applyThreshold(ImagePlus originalImp) {
+        if (originalImp == null) return null;
         
         try {
             // Get global threshold from the current active slice as a baseline
@@ -94,7 +94,7 @@ public class ThresholdingManager {
             
             if (globalMin == ImageProcessor.NO_THRESHOLD && !calculateAllSlices) {
                 IJ.log("No threshold set.");
-                return false; 
+                return null; 
             }
 
             // Get settings for per-slice calculation
@@ -158,12 +158,12 @@ public class ThresholdingManager {
             originalImp.getProcessor().setThreshold(globalMin, globalMax, ImageProcessor.NO_LUT_UPDATE);
             originalImp.updateAndDraw();
             
-            return true;
+            return binaryImp;
             
         } catch (Exception e) {
             IJ.log("Error generating binary mask: " + e.getMessage());
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 }

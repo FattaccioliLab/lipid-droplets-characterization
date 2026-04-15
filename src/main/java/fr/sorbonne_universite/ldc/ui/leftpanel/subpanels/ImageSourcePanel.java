@@ -88,7 +88,7 @@ public class ImageSourcePanel extends JPanel {
 	    add(resetImageButton);
 	    add(Box.createVerticalStrut(10));
 	    
-	    int fixedHeight = 200; 
+	    int fixedHeight = 150; 
 	    Dimension fixedSize = new Dimension(Integer.MAX_VALUE, fixedHeight);
 	    
 	    this.setMinimumSize(fixedSize);
