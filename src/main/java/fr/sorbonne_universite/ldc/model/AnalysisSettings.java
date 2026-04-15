@@ -65,9 +65,9 @@ public class AnalysisSettings implements Cloneable {
 	public final static boolean DFL_THRESHOLD_DARK_BACKGROUND = false;
 	private boolean thresholdDarkBackground = DFL_THRESHOLD_DARK_BACKGROUND;
 	
-	// Process one slice or all slices (global)
-	public final static boolean DFL_THRESHOLD_GLOBAL = false;
-	private boolean thresholdGlobal = DFL_THRESHOLD_GLOBAL;
+	// calculate threshold for each slice independantly or same range for all slices
+	public final static boolean DFL_IND_THRESHOLD = false;
+	private boolean indpendentThreshold = DFL_IND_THRESHOLD;
 
     // ====================================
     // Binary mask morphological operations
@@ -178,8 +178,8 @@ public class AnalysisSettings implements Cloneable {
 	public void setThresholdDarkBackground(boolean thresholdDarkBackground) { this.thresholdDarkBackground = thresholdDarkBackground; }
 	
 	// Process one slice or all slices
-	public boolean thresholdGlobalEnabled() { return thresholdGlobal; }
-	public void setThresholdGlobal(boolean thresholdGlobal) { this.thresholdGlobal = thresholdGlobal; }
+	public boolean getIndpendentThreshold() { return indpendentThreshold; }
+	public void setIndpendentThreshold(boolean indpendentThreshold) { this.indpendentThreshold = indpendentThreshold; }
 	
     // ====================================
     // Binary mask morphological operations
