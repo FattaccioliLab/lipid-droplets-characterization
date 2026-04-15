@@ -279,6 +279,7 @@ public class ThresholdingPanel extends JPanel {
         boolean calculateAllSlices = false;
         String currentMethod = (String) methodComboBox.getSelectedItem();
 
+        //these whole section is not in visible in merged main
         // Only ask if they are using an Auto method
         if (!"Manual".equals(currentMethod)) {
             YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Threshold Stack", 
