@@ -1,7 +1,9 @@
 package fr.sorbonne_universite.ldc.ui.leftpanel;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
@@ -63,7 +65,13 @@ public class LeftPanel extends JPanel {
         this.mainGUI = mainGUI;
 
         setLayout(new BorderLayout());
-
+        setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 0)); // (top, left, bottom, right) : 15 pixels of left padding
+    	// --- Add a visual separator line and padding ---
+        // A CompoundBorder applies two borders together: an outer line, and inner padding.
+        setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 0, 1, Color.LIGHT_GRAY), // Outer: 1px gray line on the right
+            BorderFactory.createEmptyBorder(8, 5, 8, 8)                  // Inner: 5px left padding, 15px right padding
+        ));
         JPanel mainContainer = new JPanel();
         mainContainer.setLayout(new BoxLayout(mainContainer, BoxLayout.Y_AXIS));
 

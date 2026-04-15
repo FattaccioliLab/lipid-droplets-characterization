@@ -9,6 +9,7 @@ import java.awt.Insets;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
@@ -400,7 +401,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
 
 	    // LAYOUT
 	    
-	    add(Box.createVerticalStrut(5));
+	    add(Box.createVerticalStrut(10));
 	    
 	    add(calibrationPanel);
 	    
@@ -414,18 +415,43 @@ public class ParticleAnalysisParamsPanel extends JPanel {
 	    particlesSettings.add(circularityThresholdPanel);
 	    add(particlesSettings);
 	    
-	    measurementsInfos.add(areaCheckbox);
-	    measurementsInfos.add(Box.createVerticalStrut(5));
-	    measurementsInfos.add(diameterCheckbox);
-	    measurementsInfos.add(Box.createVerticalStrut(5));
-	    measurementsInfos.add(medianCheckbox);
-	    measurementsInfos.add(Box.createVerticalStrut(5));
-	    measurementsInfos.add(meanCheckbox);
-	    measurementsInfos.add(Box.createVerticalStrut(5));
-	    measurementsInfos.add(integratedDensityCheckbox);
-	    measurementsInfos.add(Box.createVerticalStrut(5));
-	    measurementsInfos.add(circularityCheckbox);
-	    add(measurementsInfos);
+	    
+	    // --- CREATE A HORIZONTAL CONTAINER FOR THE COLUMNS ---
+	    add(Box.createVerticalStrut(10));
+        JPanel checkboxColumnsContainer = new JPanel();
+        checkboxColumnsContainer.setLayout(new BoxLayout(checkboxColumnsContainer, BoxLayout.X_AXIS));
+        checkboxColumnsContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // --- LEFT COLUMN (First 3 items) ---
+        JPanel leftColumn = new JPanel();
+        leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.Y_AXIS));
+        leftColumn.setAlignmentY(Component.TOP_ALIGNMENT); // Aligns column to the top
+        
+        leftColumn.add(areaCheckbox);
+        leftColumn.add(Box.createVerticalStrut(5));
+        leftColumn.add(diameterCheckbox);
+        leftColumn.add(Box.createVerticalStrut(5));
+        leftColumn.add(medianCheckbox);
+
+        // --- RIGHT COLUMN (Rest of the items) ---
+        JPanel rightColumn = new JPanel();
+        rightColumn.setLayout(new BoxLayout(rightColumn, BoxLayout.Y_AXIS));
+        rightColumn.setAlignmentY(Component.TOP_ALIGNMENT); // Aligns column to the top
+        
+        rightColumn.add(meanCheckbox);
+        rightColumn.add(Box.createVerticalStrut(5));
+        rightColumn.add(integratedDensityCheckbox);
+        rightColumn.add(Box.createVerticalStrut(5));
+        rightColumn.add(circularityCheckbox);
+
+        // --- ADD COLUMNS TO CONTAINER WITH A GAP BETWEEN THEM ---
+        checkboxColumnsContainer.add(leftColumn);
+        checkboxColumnsContainer.add(Box.createHorizontalStrut(30)); // 30px gap between left and right columns
+        checkboxColumnsContainer.add(rightColumn);
+
+        // --- ADD TO THE MAIN MEASUREMENTS PANEL ---
+        measurementsInfos.add(checkboxColumnsContainer);
+        add(measurementsInfos);
 	    
 	    add(Box.createVerticalStrut(10));
     }

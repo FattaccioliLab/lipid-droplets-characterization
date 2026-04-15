@@ -1,14 +1,10 @@
 package fr.sorbonne_universite.ldc.ui;
 
-import java.awt.Color;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 
 import javax.swing.JFrame;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
+import javax.swing.JSplitPane;
 
 import org.scijava.Context;
 import org.scijava.plugin.Parameter;
@@ -24,15 +20,14 @@ import ij.ImagePlus;
 @SuppressWarnings("serial")
 public class MainGUI_LDC extends JFrame {
     
-	private static final int WINDOW_WIDTH = 1000;
-	private static final int WINDOW_HEIGHT = 650;
-	
-	@Parameter
+    private static final int WINDOW_WIDTH = 1000;
+    private static final int WINDOW_HEIGHT = 750;
+    
+    @Parameter
     private LDCService selectedSettings;
     
     private final LeftPanel leftContent;
     private final RightPanel rightContent;
-    
     
     // The current ImagePlus considered
     private ImagePlus currentImage = null;
@@ -41,50 +36,40 @@ public class MainGUI_LDC extends JFrame {
     
     public MainGUI_LDC(final Context ctx) {
         ctx.inject(this);
-    	
+        
         this.leftContent = new LeftPanel(ctx, this);
         this.rightContent = new RightPanel(ctx, this.leftContent);
-        this.leftContent.setPreferredSize(new Dimension(0, 0));
-        this.rightContent.setPreferredSize(new Dimension(0, 0));
+        
+        // --- Enforce Minimum Widths ---
+        // JSplitPane will absolutely refuse to drag past these minimums, 
+        // protecting your Left Panel from getting squished.
+        this.leftContent.setMinimumSize(new Dimension(470, 0)); 
+        this.rightContent.setMinimumSize(new Dimension(400, 0)); 
         
         // Initialization of the MainGUI itself
-        
-        //Set the initial size
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        
-        //Set the MINIMUM size (User cannot resize smaller than this)
-        setMinimumSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
+        setMinimumSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT)); // Protect the whole window
         setLocationRelativeTo(null);
-        
         setTitle("Lipid Droplets Characterization");
 
-        // --- Layout Configuration (GridBagLayout) ---
-        setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
+        // --- Layout Configuration (JSplitPane) ---
+        // We switch to BorderLayout as it's the best container for a SplitPane
+        setLayout(new BorderLayout());
         
-        // General settings for all components
-        gbc.fill = GridBagConstraints.BOTH; // Fill available space vertically and horizontally
-        gbc.weighty = 1.0;                  // Give full vertical height
+        // Create the Split Pane, putting Left on the left, Right on the right
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftContent, rightContent);
         
-        //Adding Left Panel
-        gbc.gridx = 0;
-        gbc.weightx = 0.5; // Allocate 50% of width for leftPanel
-        getContentPane().add(leftContent, gbc);
+        // --- UX Upgrades ---
+        splitPane.setContinuousLayout(true); // Redraws the panels smoothly AS you drag, not just when you let go
+        splitPane.setOneTouchExpandable(true); // Adds tiny little arrows to the divider to instantly collapse/expand a panel
+        splitPane.setDividerSize(8); //the draggable bar thickness
         
-        //Adding Vertical Separator
-        gbc.gridx = 1;
-        gbc.weightx = 0.0; //no extra width to keep it thin
-        gbc.insets = new Insets(0, 5, 0, 5);  // small padding around the line if desired
-
+        // Initial configuration
+        splitPane.setDividerLocation(470); // Start with 470 pixels given to the Left Panel
+        splitPane.setResizeWeight(0.4); // When the whole window resizes, give slightly more of the new space to the Right Panel (data)
         
-        JSeparator sep = new JSeparator(SwingConstants.VERTICAL);
-        sep.setForeground(Color.GRAY); // Optional: Make it more visible
-        getContentPane().add(sep, gbc);
-        
-        //Adding Right Panel
-        gbc.gridx = 2;
-        gbc.weightx = 0.5; // Allocate remaining 50% of width for rightPanel
-        getContentPane().add(rightContent, gbc);
+        // Add it to the window
+        getContentPane().add(splitPane, BorderLayout.CENTER);
     }
     
     // =========================================================================

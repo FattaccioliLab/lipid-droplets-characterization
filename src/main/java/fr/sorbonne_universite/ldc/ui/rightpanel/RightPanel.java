@@ -10,7 +10,9 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+
 import javax.swing.BorderFactory;
+import java.awt.Color;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -84,6 +86,15 @@ public class RightPanel extends JPanel {
     	this.leftPanel = leftPanel;
     	
     	setLayout(new BorderLayout());
+    	
+    	// formate : (top, left, bottom, right)
+    	// --- Add a visual separator line and padding ---
+        // A CompoundBorder applies two borders together: an outer line, and inner padding.
+        setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY), // Outer: 1px gray line on the LEFT
+            BorderFactory.createEmptyBorder(8, 10, 8, 8)                  // Inner:  padding
+        ));
+    	
     	
     	JPanel headerPanel = new JPanel();
         JPanel footerPanel = new JPanel();

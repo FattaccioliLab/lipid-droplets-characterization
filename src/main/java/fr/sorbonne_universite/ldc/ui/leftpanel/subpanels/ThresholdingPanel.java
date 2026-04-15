@@ -278,9 +278,30 @@ public class ThresholdingPanel extends JPanel {
     private void applyThreshold() {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
-        ImagePlus newMask = service.applyThreshold(img);
-        if(newMask != null) {
-        	newMask.show();
+        
+        boolean calculateAllSlices = false;
+        String currentMethod = (String) methodComboBox.getSelectedItem();
+
+        //these whole section is not in visible in merged main
+        // Only ask if they are using an Auto method
+        if (!"Manual".equals(currentMethod)) {
+            YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Threshold Stack", 
+                    "Do you want to calculate the threshold for each slice independently?\n \n"
+                    + "'Yes' : Calculates " + currentMethod + " for every slice.\n"
+                    + "'No' : Applies the current slice's range to the whole stack.");
+            
+            if (d.cancelPressed()) {
+                return; // Abort the apply process
+            }
+            calculateAllSlices = d.yesPressed();
+        }
+        
+        //updating the analysisSetting via l'api, we will be useful during testing
+        service.setIndependentThreshold(calculateAllSlices);
+        
+        isApplied = service.applyThreshold(img) == null ? false : true;
+        
+        if(isApplied) {
             IJ.showStatus("Threshold applied.");
             leftPanel.updateWorkflowIndex(2);
             
