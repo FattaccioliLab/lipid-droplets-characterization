@@ -74,7 +74,10 @@ public class MorphologyPanel extends JPanel {
         JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         buttonRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         applyButton = new JButton("Apply to Stack");
-        applyButton.addActionListener(e -> applyMorphology());
+        applyButton.addActionListener(e -> {
+        	applyMorphology();
+        	leftPanel.updateWorkflowIndex(3);
+        });
         buttonRow.add(applyButton);
         add(buttonRow);
     }

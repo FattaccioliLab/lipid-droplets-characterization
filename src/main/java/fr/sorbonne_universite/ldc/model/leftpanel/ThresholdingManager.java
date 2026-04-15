@@ -24,7 +24,6 @@ public class ThresholdingManager {
     public void setManualThreshold(ImagePlus imp, double min, double max) {
         if (imp == null) return;
         ImageProcessor ip = imp.getProcessor();
-        if(service.enhanceContrastEnabled()) service.applyEnhanceContrast(ip);
         ip.setThreshold(min, max, ImageProcessor.RED_LUT);
         imp.updateAndDraw();
     }
@@ -40,24 +39,13 @@ public class ThresholdingManager {
 
         // 1. Let ImageJ calculate the Auto-Threshold values
         // We use NO_LUT_UPDATE because we don't care about the visuals yet
-        if (darkBackground) {
-            ip.setAutoThreshold(method, true, ImageProcessor.NO_LUT_UPDATE);
-        } else {
-            ip.setAutoThreshold(method, false, ImageProcessor.NO_LUT_UPDATE);
-        }
+        ip.setAutoThreshold(method, darkBackground, ImageProcessor.NO_LUT_UPDATE);
 
         // 2. CAPTURE the calculated values before they get destroyed!
         double computedMin = ip.getMinThreshold();
         double computedMax = ip.getMaxThreshold();
 
-        // 3. Apply your contrast enhancement 
-        // (This step internally resets the threshold, making the values -808080.0)
-        if (service.enhanceContrastEnabled()) {
-            // Use whatever your exact method signature is here
-            service.applyEnhanceContrast(ip); 
-        }
-
-        // 4. RE-APPLY the captured threshold with the RED overlay
+        // 3. RE-APPLY the captured threshold with the RED overlay
         if (computedMin != ImageProcessor.NO_THRESHOLD) {
             ip.setThreshold(computedMin, computedMax, ImageProcessor.RED_LUT);
         }
@@ -77,63 +65,37 @@ public class ThresholdingManager {
 
     /**
      * Creates a NEW binary mask image based on the current threshold settings.
+     * The original image is left unchanged.
      * @param originalImp The source image (will not be modified).
-     * @param calculateAllSlices If true, recalculates the auto-threshold for each slice.
-     * @return true if successful, false otherwise.
+     * @return the NEW binary mask image based on the current threshold settings, or {@code null} if an error occurred.
      */
     public ImagePlus applyThreshold(ImagePlus originalImp) {
         if (originalImp == null) return null;
         
         try {
-            // Get global threshold from the current active slice as a baseline
-            double globalMin = originalImp.getProcessor().getMinThreshold();
-            double globalMax = originalImp.getProcessor().getMaxThreshold();
+            // 1. Get threshold from the original image
+            double min = originalImp.getProcessor().getMinThreshold();
+            double max = originalImp.getProcessor().getMaxThreshold();
             
-            //get the user agreement on calculating threshold for each slice independently or not
-            boolean calculateAllSlices = service.getIndependentThreshold();
-            
-            if (globalMin == ImageProcessor.NO_THRESHOLD && !calculateAllSlices) {
+            if (min == ImageProcessor.NO_THRESHOLD) {
                 IJ.log("No threshold set.");
                 return null; 
             }
-
-            // Get settings for per-slice calculation
-            String method = service.getThresholdMethod();
-            boolean darkBackground = service.thresholdDarkBackgroundEnabled();
-            boolean isManual = "Manual".equals(method);
 
             ImageStack originalStack = originalImp.getStack();
             int width = originalStack.getWidth();
             int height = originalStack.getHeight();
             int nSlices = originalStack.getSize();
             
-            // Create a NEW empty stack for the 8-bit binary mask
+            // 2. Create a NEW empty stack for the 8-bit binary mask
             ImageStack binaryStack = new ImageStack(width, height);
             
-            // Process each slice
+            // 3. Process each slice
             for (int i = 1; i <= nSlices; i++) {
                 ImageProcessor ip = originalStack.getProcessor(i);
                 
-                double sliceMin = globalMin;
-                double sliceMax = globalMax;
-
-                // RECALCULATE for this specific slice if requested (and not manual)
-                if (calculateAllSlices && !isManual) {
-                    
-                    // Critical: Apply contrast enhancement first if enabled, 
-                    // because the auto-threshold math depends on it!
-                    if (service.enhanceContrastEnabled()) {
-                        service.applyEnhanceContrast(ip);
-                    }
-                    
-                    // Calculate the new limits for this specific slice
-                    ip.setAutoThreshold(method, darkBackground, ImageProcessor.NO_LUT_UPDATE);
-                    sliceMin = ip.getMinThreshold();
-                    sliceMax = ip.getMaxThreshold();
-                }
-                
                 // Temporarily apply threshold to the slice mathematically
-                ip.setThreshold(sliceMin, sliceMax, ImageProcessor.NO_LUT_UPDATE);
+                ip.setThreshold(min, max, ImageProcessor.NO_LUT_UPDATE);
                 
                 // Create an 8-bit mask (ByteProcessor) from the thresholded slice
                 ImageProcessor maskIp = ip.createMask();
@@ -145,17 +107,18 @@ public class ThresholdingManager {
                 ip.resetThreshold();
             }
             
-            // Create a new ImagePlus with the 8-bit stack
+            // 4. Create a new ImagePlus with the 8-bit stack
             ImagePlus binaryImp = new ImagePlus(originalImp.getShortTitle() + "_Binary", binaryStack);
+            binaryImp.setDimensions(
+                    originalImp.getNChannels(),
+                    originalImp.getNSlices(),
+                    originalImp.getNFrames()
+                );
             
             // Copy calibration (pixel size, mm/px, etc.)
             binaryImp.setCalibration(originalImp.getCalibration());
             
-            // Show the new binary image
-            binaryImp.show();
-            
-            // Restore the red preview overlay on the original image's current slice
-            originalImp.getProcessor().setThreshold(globalMin, globalMax, ImageProcessor.NO_LUT_UPDATE);
+            originalImp.getProcessor().setThreshold(min, max, ImageProcessor.NO_LUT_UPDATE);
             originalImp.updateAndDraw();
             
             return binaryImp;
