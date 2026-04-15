@@ -230,20 +230,16 @@ public class LeftPanel extends JPanel {
     	morphologyPanel.resetUIComponents();
     	particleAnalysisParamsPanel.resetUIComponents();
     	
-    	workflowIndex = 0; // Workflow back to preprocessing
-    	
-    	//IDEA : ui goes back to the preprocessing panel
-    	/*
+    	// Workflow and navigation back to preprocessing
+    	workflowIndex = 0;
+    	navigationIndex = 0;
     	preprocessingPanel.setVisible(true);
     	thresholdingPanel.setVisible(false);
     	morphologyPanel.setVisible(false);
     	particleAnalysisParamsPanel.setVisible(false);
-    	
-    	
-    	// Update Footer Buttons
+
         footerLeftPanel.setPrevButtonEnabled(false);
     	footerLeftPanel.setNextButtonEnabled(true);
-    	*/
     }
     
     // =========================================================================
