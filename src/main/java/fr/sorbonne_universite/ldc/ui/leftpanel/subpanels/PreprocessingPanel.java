@@ -35,7 +35,7 @@ import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.gui.YesNoCancelDialog;
+import ij.gui.GenericDialog;
 import ij.process.ImageProcessor;
 import net.imagej.display.ImageDisplayService;
 
@@ -248,8 +248,7 @@ public class PreprocessingPanel extends JPanel{
             applyButton.setEnabled(true);
             return;
         }
-        
-        boolean processAllSlices = false;
+
         Set<Integer> slices = null;
         int nbSlices = img.getStackSize();
         
@@ -266,15 +265,16 @@ public class PreprocessingPanel extends JPanel{
         	return;
         }
         
-        // We ask if we must process all slices
-        YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Process Stack?", 
-        		"Do you want to process all " + nbSlices + " images ?\nIf 'No' only the current slice will be processed.\nThere is no undo.");
-        if (d.cancelPressed()) {
-        	applyButton.setEnabled(true);
-        	return;
+        // We ask if we must apply preprocessing parameters and allow the user to access to the next workflow step
+        GenericDialog gd = new GenericDialog("Process Stack?", leftPanel.getMainGUI());
+        gd.addMessage("Do you want to process all " + nbSlices + " images ?\nThere is no undo.");
+        gd.enableYesNoCancel("Yes", "Cancel");
+        gd.hideCancelButton();
+        gd.showDialog();
+        if (!gd.wasOKed()) {
+            applyButton.setEnabled(true);
+            return;
         }
-        // We (might) process all given slices
-        processAllSlices = d.yesPressed();
         
         // If median filter is enabled : 
         // Start from the original image's copy : applies eventually enhance contrast + applies median filter + locks preprocessing UI at the end
@@ -282,13 +282,13 @@ public class PreprocessingPanel extends JPanel{
         if (selectedSettings.medianFilterEnabled()) {
 	
 	        // If applying to stack while preview is active, undo preview first
-	        if (processAllSlices && medianPreviewCheckbox.isSelected()) {
+	        if (medianPreviewCheckbox.isSelected()) {
 	        	medianPreviewCheckbox.setSelected(false);
 	        	performMedianPreviewAsync(); // reset the preview, synchronously in that case
 	        }
 	
 	        // The new stack range will be considered inside the called method
-	        launchApplyWorker(processAllSlices, img.getCurrentSlice(), slices);
+	        launchApplyWorker(slices);
         
 	    // Else :
 	    // Start from the original image's copy : applies eventually enhance contrast + locks preprocessing UI here
@@ -618,22 +618,11 @@ public class PreprocessingPanel extends JPanel{
     }
     
     /**
-     * Launches a dedicated background worker to apply the filter to the image (or stack).
-     * @param doProcessAll      True if the whole stack should be processed.
-     * @param currentSliceIndex The index of the current slice (if not processing all).
-     */
-    private void launchApplyWorker(boolean doProcessAll, int currentSliceIndex) {
-    	launchApplyWorker(doProcessAll, currentSliceIndex, null);
-    }
-    
-    /**
      * Launches a dedicated background worker to apply the filter to the image (= stack).<br>
      * If a set of {@code slices} is given, it considers them for the current image.
-     * @param doProcessAll      True if the whole stack should be processed.
-     * @param currentSliceIndex The index of the current slice (if not processing all).
      * @param slices    		Slices associated to a sub-stack of the current image's stack to consider. If {@code null}, the original stack is considered.
      */
-    private void launchApplyWorker(boolean doProcessAll, int currentSliceIndex, Set<Integer> slices) {
+    private void launchApplyWorker(Set<Integer> slices) {
         setPreprocessingEnabled(false);
         ImagePlus img = leftPanel.getCurrentImage();
         
@@ -651,7 +640,7 @@ public class PreprocessingPanel extends JPanel{
         // There is no enhance contrast on the original ImageProcessor, so we apply it if needed.
         if (selectedSettings.enhanceContrastEnabled()) selectedSettings.applyEnhanceContrast(toProcess.getProcessor());
         
-        SwingWorker<Void,Void> applyWorker = selectedSettings.createApplyMedianWorker(toProcess.getImageStack(), doProcessAll, currentSliceIndex);
+        SwingWorker<Void,Void> applyWorker = selectedSettings.createApplyMedianWorker(toProcess.getImageStack());
         currentWorker = applyWorker;
         applyWorker.addPropertyChangeListener(evt -> {
         	

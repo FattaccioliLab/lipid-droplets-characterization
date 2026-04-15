@@ -46,7 +46,7 @@ public class MorphologyPanel extends JPanel {
         this.leftPanel = leftPanel;
         ctx.inject(this);
 
-        PanelUtils.createVerticalPanel(this, "Morphological Operations", 280);
+        PanelUtils.createVerticalPanel(this, "Morphological Operations", 500);
 
         add(Box.createVerticalStrut(10));
         

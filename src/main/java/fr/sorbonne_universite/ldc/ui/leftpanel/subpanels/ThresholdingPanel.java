@@ -89,7 +89,15 @@ public class ThresholdingPanel extends JPanel {
         String[] methods = service.getThresholdMethodsList().toArray(new String[0]);
         methodComboBox = new JComboBox<>(methods);
         methodComboBox.setSelectedItem(service.getThresholdMethod());
-        methodComboBox.addActionListener(e -> updateThresholdLogic());
+        methodComboBox.addActionListener(e -> {
+        	// if manual mode, disables dark BG check box, otherwise enables it
+        	if ("Manual".equals((String)methodComboBox.getSelectedItem())) {
+        		darkBackgroundCheckbox.setEnabled(false);
+        	} else {
+        		darkBackgroundCheckbox.setEnabled(true);
+        	}
+        	updateThresholdLogic();
+        });
         methodRow.add(methodComboBox, BorderLayout.CENTER);
         add(methodRow);
         
@@ -104,6 +112,7 @@ public class ThresholdingPanel extends JPanel {
             service.setThresholdDarkBackground(darkBackgroundCheckbox.isSelected());
             updateThresholdLogic();
         });
+        if ("Manual".equals((String)methodComboBox.getSelectedItem())) darkBackgroundCheckbox.setEnabled(false);
         add(darkBackgroundCheckbox);
         
         add(Box.createVerticalStrut(10));
@@ -242,20 +251,14 @@ public class ThresholdingPanel extends JPanel {
 
         String method = (String) methodComboBox.getSelectedItem();
         boolean isManual = "Manual".equals(method);
-        boolean isDark = darkBackgroundCheckbox.isSelected();
-
-        
         service.setThresholdMethod(method);
-        
-        darkBackgroundCheckbox.setEnabled(!isManual);	//if manual mode, disables dark BG check box, otherwise enables it
 
         if (isManual) {
             enableSliders(methodComboBox.isEnabled()); // Sliders enabled if the method combo box with "Manual" is also enabled
             service.previewManualThreshold(img);
-            darkBackgroundCheckbox.setSelected(false);
         } else {
             enableSliders(false);
-            double[] computed = service.previewAutoThreshold(img, method, isDark);
+            double[] computed = service.previewAutoThreshold(img);
             
             // Update sliders to match what the algo found
             int cMin = (int)computed[0];
@@ -275,29 +278,9 @@ public class ThresholdingPanel extends JPanel {
     private void applyThreshold() {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
-        
-        boolean calculateAllSlices = false;
-        String currentMethod = (String) methodComboBox.getSelectedItem();
-
-        // Only ask if they are using an Auto method
-        if (!"Manual".equals(currentMethod)) {
-            YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Threshold Stack", 
-                    "Do you want to calculate the threshold for each slice independently?\n \n"
-                    + "'Yes' : Calculates " + currentMethod + " for every slice.\n"
-                    + "'No' : Applies the current slice's range to the whole stack.");
-            
-            if (d.cancelPressed()) {
-                return; // Abort the apply process
-            }
-            calculateAllSlices = d.yesPressed();
-        }
-        
-        //updating the analysisSetting via l'api, we will be useful during testing
-        service.setIndependentThreshold(calculateAllSlices);
-        
-        isApplied = service.applyThreshold(img);
-        
-        if(isApplied) {
+        ImagePlus newMask = service.applyThreshold(img);
+        if(newMask != null) {
+        	newMask.show();
             IJ.showStatus("Threshold applied.");
             leftPanel.updateWorkflowIndex(2);
             
@@ -364,7 +347,7 @@ public class ThresholdingPanel extends JPanel {
         boolean isManual = "Manual".equals(methodComboBox.getSelectedItem());
 
         methodComboBox.setEnabled(enabled);
-        darkBackgroundCheckbox.setEnabled(enabled && !isManual);	//dark bg check box visibility
+        darkBackgroundCheckbox.setEnabled(enabled && !isManual);
         applyButton.setEnabled(enabled);
         
         if(enabled) {
