@@ -9,7 +9,7 @@ import java.util.concurrent.Future;
 
 import javax.swing.SwingWorker;
 
-import fr.sorbonne_universite.ldc.model.AnalysisSettings;
+import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.ui.rightpanel.BatchWindow;
 import ij.measure.ResultsTable;
 
@@ -20,7 +20,7 @@ import ij.measure.ResultsTable;
  */
 public class BatchWorker extends SwingWorker<Void, Void> {
 
-	private AnalysisSettings settings;
+	private LDCService ldcPlugin;
 	private File inputDirectory;
 	private File outputFile;
 	private BatchWindow bw;
@@ -28,18 +28,17 @@ public class BatchWorker extends SwingWorker<Void, Void> {
 	// For sub-workers management
 	private List<BatchFileWorker> workers = new ArrayList<>();
 	private List<Future<ResultsTable>> futures = new ArrayList<>();
-
+	
 	/**
 	 * Creates a BatchWorker.
-	 * 
-	 * @param settings       Particle analysis settings, used by {@link BatchFileWorker}.
-	 * @param inputDirectory The input directory where it has to find '.tif' and '.tiff' files.
-	 * @param outputFile     The output '.csv' where it writes the results.
-	 * @param bw             A reference to the {@link BatchWindow} creating this
-	 *                       worker, needed to update the progress bar.
+     * @param ldcPlugin			The LDC plugin, used within {@link BatchFileWorker} for the API calls.
+	 * @param inputDirectory	The input directory where it has to find '.tif' and '.tiff' files.
+	 * @param outputFile     	The output '.csv' where it writes the results.
+	 * @param bw             	A reference to the {@link BatchWindow} creating this
+	 *                       	worker, needed to update the progress bar.
 	 */
-	public BatchWorker(AnalysisSettings settings, File inputDirectory, File outputFile, BatchWindow bw) {
-		this.settings = settings;
+	public BatchWorker(LDCService ldcPlugin, File inputDirectory, File outputFile, BatchWindow bw) {
+		this.ldcPlugin = ldcPlugin;
 		this.inputDirectory = inputDirectory;
 		this.outputFile = outputFile;
 		this.bw = bw;
@@ -54,7 +53,7 @@ public class BatchWorker extends SwingWorker<Void, Void> {
 
 		// Creates sub-workers : 1 for each file
 		for (File inputFile : files) {
-			workers.add(new BatchFileWorker(settings, inputDirectory, inputFile));
+			workers.add(new BatchFileWorker(ldcPlugin, inputDirectory, inputFile));
 		}
 
 		// Cancellation check

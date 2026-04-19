@@ -235,35 +235,12 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 
 	/** @see MeasuresPreviewWorker */
     @Override public SwingWorker<Void, Void> createMeasuresPreviewWorker(ImagePlus img){
-		return measurementsManager.createMeasuresPreviewWorker(
-				isCalibrated(),
-				getCalibration(),
-				getAnalyseMinSize(),
-				getAnalyseMaxSize(),
-				getAnalyseMinCircularity(),
-				getAnalyseMaxCircularity(),
-				analyseExcludeOnEdgesEnabled(),
-				img);
+		return measurementsManager.createMeasuresPreviewWorker(settings, img);
     }
     
 	/** @see MeasuresProcessingWorker */
 	@Override public SwingWorker<ResultsTable, Void> createMeasuresProcessingWorker(ImagePlus img) {
-		return measurementsManager.createMeasuresProcessingWorker(
-				isCalibrated(),
-				getCalibration(),
-				getAnalyseMinSize(),
-				getAnalyseMaxSize(),
-				getAnalyseMinCircularity(),
-				getAnalyseMaxCircularity(),
-				analyseExcludeOnEdgesEnabled(),
-				getAnalyseCircularityThreshold(),
-				showAreaEnabled(),
-				showDiameterEnabled(),
-				showMedianEnabled(),
-				showMeanEnabled(),
-				showIntegratedDensityEnabled(),
-				showCircularityEnabled(),
-				img);
+		return measurementsManager.createMeasuresProcessingWorker(settings, img);
 	}
 
 	@Override public void exportResultsTable(ResultsTable rt, String path) {
@@ -283,7 +260,7 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // ============
 	
 	@Override public SwingWorker<Void,Void> createBatchWorker(File inputDirectory, File outputFile, BatchWindow bw){
-		return new BatchWorker(settings.clone(), inputDirectory, outputFile, bw);
+		return new BatchWorker(this, inputDirectory, outputFile, bw);
 	}
 
 }

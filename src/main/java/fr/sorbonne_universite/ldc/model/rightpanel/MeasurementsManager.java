@@ -13,6 +13,7 @@ import java.util.Set;
 import javax.swing.SwingWorker;
 
 import fr.sorbonne_universite.ldc.model.workers.MeasuresProcessingWorker;
+import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.workers.MeasuresPreviewWorker;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.PreprocessingPanel;
 import ij.IJ;
@@ -28,49 +29,22 @@ public class MeasurementsManager {
 
     /**
      * Creates a {@link SwingWorker}, that take care of processing and showing the measurements preview, if executed.
-     * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
-     * @param Calibration					Given calibration.
-     * @param minSize 						Minimum particle size (unit² if IsCalibrated is true, otherwise px²).
-     * @param maxSize 						Maximum particle size (unit² if IsCalibrated is true, otherwise px²).
-     * @param minCircularity 				Minimum particle circularity.
-     * @param maxCircularity 				Maximum particle circularity.
-     * @param excludeOnEdgesEnabled 		Particle Analyzer option.
+     * @param settings						The plugin settings.
      * @param img 							The current image to consider.
 	 * @see MeasuresPreviewWorker
      */
-	public SwingWorker<Void,Void> createMeasuresPreviewWorker(boolean isCalibrated, Calibration calibration,
-			double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled, 
-			ImagePlus img){
-		return new MeasuresPreviewWorker(isCalibrated, calibration, minSize, maxSize,
-				minCircularity, maxCircularity, excludeOnEdgesEnabled, img); 
+	public SwingWorker<Void,Void> createMeasuresPreviewWorker(AnalysisSettings settings, ImagePlus img){
+		return new MeasuresPreviewWorker(settings, img); 
 	}
 	
     /**
      * Creates a {@link SwingWorker}, that take care of processing measurements and showing them, if executed.
-     * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
-     * @param Calibration					Given calibration.
-     * @param minSize 						Minimum particle size (unit² if IsCalibrated is true, otherwise px²).
-     * @param maxSize 						Maximum particle size (unit² if IsCalibrated is true, otherwise px²).
-     * @param minCircularity 				Minimum particle circularity.
-     * @param maxCircularity 				Maximum particle circularity.
-     * @param excludeOnEdgesEnabled 		Particle Analyzer option.
-     * @param circularityThreshold 			Threshold on particle's circularity to define if they are isolated.
-     * @param showAreaEnabled 				If True then the 'Area' column must be shown in the results.
-     * @param showDiameterEnabled			If True then the 'Diameter' column must be shown in the results.
-     * @param showMedianEnabled 			If True then the 'Median' column must be shown in the results.
-     * @param showMeanEnabled 				If True then the 'Mean' column must be shown in the results.
-     * @param showIntegratedDensityEnabled 	If True then the 'IntegratedDensity' column must be shown in the results.
-     * @param showCircularityEnabled 		If True then the 'Circularity' column is shown must be the results.
+     * @param settings						The plugin settings.
      * @param img 							The current image to consider.
 	 * @see MeasuresProcessingWorker
      */
-	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(boolean isCalibrated, Calibration calibration,
-			double minSize, double maxSize, double minCircularity, double maxCircularity, boolean excludeOnEdgesEnabled,
-			double circularityThreshold, boolean showAreaEnabled, boolean showDiameterEnabled, boolean showMedianEnabled, 
-			boolean showMeanEnabled, boolean showIntegratedDensityEnabled, boolean showCircularityEnabled, ImagePlus img){
-		return new MeasuresProcessingWorker(isCalibrated, calibration, minSize, maxSize, minCircularity,
-				maxCircularity, excludeOnEdgesEnabled, circularityThreshold, showAreaEnabled, showDiameterEnabled,
-				showMedianEnabled, showMeanEnabled, showIntegratedDensityEnabled, showCircularityEnabled, img); 
+	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(AnalysisSettings settings, ImagePlus img){
+		return new MeasuresProcessingWorker(settings, img); 
 	}
 	
     /**

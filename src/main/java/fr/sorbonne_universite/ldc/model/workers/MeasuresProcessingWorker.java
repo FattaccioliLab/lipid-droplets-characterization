@@ -2,6 +2,7 @@ package fr.sorbonne_universite.ldc.model.workers;
 
 import javax.swing.SwingWorker;
 
+import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
@@ -18,70 +19,16 @@ import ij.plugin.filter.ParticleAnalyzer;
  */
 public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     
-	private boolean isCalibrated;
-	private Calibration calibration;
-	private double minSize;
-	private double maxSize;
-	private double minCircularity;
-	private double maxCircularity;
-    private boolean excludeOnEdgesEnabled;
-    private double circularityThreshold;
-    private boolean showAreaEnabled;
-    private boolean showDiameterEnabled;
-    private boolean showMeanEnabled;
-    private boolean showMedianEnabled;
-    private boolean showIntegratedDensityEnabled;
-    private boolean showCircularityEnabled;
+	private AnalysisSettings settings;
     private ImagePlus img;
     
     /**
      * Creates a {@code MeasuresProcessingWorker}.
-     * @param isCalibrated					Boolean that tell if the image there is a calibration given for the image
-     * @param Calibration					Given calibration.
-     * @param minSize 						Minimum particle size (unit² if IsCalibrated is true, otherwise px²).
-     * @param maxSize 						Maximum particle size (unit² if IsCalibrated is true, otherwise px²).
-     * @param minCircularity 				Minimum particle circularity.
-     * @param maxCircularity 				Maximum particle circularity.
-     * @param excludeOnEdgesEnabled 		Particle Analyzer option.
-     * @param circularityThreshold 			Threshold on particle's circularity to define if they are isolated. 
-     * @param showAreaEnabled 				If True then the 'Area' column must be shown in the results.
-     * @param showDiameterEnabled			If True then the 'Diameter' column must be shown in the results.
-     * @param showMedianEnabled 			If True then the 'Median' column must be shown in the results.
-     * @param showMeanEnabled 				If True then the 'Mean' column must be shown in the results.
-     * @param showIntegratedDensityEnabled 	If True then the 'IntegratedDensity' column must be shown in the results.
-     * @param showCircularityEnabled 		If True then the 'Circularity' column is shown must be the results.
+     * @param settings						The plugin settings.
      * @param img 							The current image to consider.
      */
-    public MeasuresProcessingWorker(
-    		boolean isCalibrated,
-    		Calibration calibration,
-    		double minSize, 
-    		double maxSize,
-    		double minCircularity,
-    		double maxCircularity,
-    		boolean excludeOnEdgesEnabled,
-    		double circularityThreshold,
-    		boolean showAreaEnabled,
-    		boolean showDiameterEnabled,
-    		boolean showMedianEnabled,
-    		boolean showMeanEnabled,
-    		boolean showIntegratedDensityEnabled,
-    		boolean showCircularityEnabled,
-    		ImagePlus img) {
-    	this.isCalibrated = isCalibrated;
-    	this.calibration = calibration;
-    	this.minSize = minSize;
-    	this.maxSize = maxSize;
-    	this.minCircularity = minCircularity;
-    	this.maxCircularity = maxCircularity;
-    	this.excludeOnEdgesEnabled = excludeOnEdgesEnabled;
-    	this.circularityThreshold = circularityThreshold;
-    	this.showAreaEnabled = showAreaEnabled;
-    	this.showDiameterEnabled = showDiameterEnabled;
-    	this.showMedianEnabled = showMedianEnabled;
-    	this.showMeanEnabled = showMeanEnabled;
-    	this.showIntegratedDensityEnabled = showIntegratedDensityEnabled;
-    	this.showCircularityEnabled = showCircularityEnabled;
+    public MeasuresProcessingWorker(AnalysisSettings settings, ImagePlus img) {
+    	this.settings = settings;
     	this.img = img;
     }
 
@@ -91,11 +38,11 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     	int measurements = 0;
     	measurements += Measurements.CENTROID; // center of the particle (x,y)
     	measurements += Measurements.STACK_POSITION; // image position in stack (z)  	
-    	if (showAreaEnabled) measurements += Measurements.AREA;
-    	if (showMeanEnabled) measurements += Measurements.MEAN;
-    	if (showMedianEnabled) measurements += Measurements.MEDIAN;
-    	if (showIntegratedDensityEnabled) measurements += Measurements.INTEGRATED_DENSITY;
-    	if (showDiameterEnabled) measurements += Measurements.ELLIPSE;
+    	if (settings.showAreaEnabled()) measurements += Measurements.AREA;
+    	if (settings.showMeanEnabled()) measurements += Measurements.MEAN;
+    	if (settings.showMedianEnabled()) measurements += Measurements.MEDIAN;
+    	if (settings.showIntegratedDensityEnabled()) measurements += Measurements.INTEGRATED_DENSITY;
+    	if (settings.showDiameterEnabled()) measurements += Measurements.ELLIPSE;
     	
     	// measure circularity even if the show circularity is disabled, to tell if a particle is isolated
     	measurements += Measurements.CIRCULARITY;
@@ -107,7 +54,7 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     	
     	// set options for Particles Analyzer
     	int options = 0;
-    	if (excludeOnEdgesEnabled) options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
+    	if (settings.analyseExcludeOnEdgesEnabled()) options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
 
     	// get current image
     	if (img == null) {
@@ -115,19 +62,21 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     		return null;
     	}
     	
-    	double pxMinSize = minSize;
-    	double pxMaxSize = maxSize;
+    	double pxMinSize = settings.getAnalyseMinSize();
+    	double pxMaxSize = settings.getAnalyseMaxSize();
     	
-    	if (isCalibrated && calibration != null && calibration.scaled()) {
+    	Calibration calibration = settings.getCalibration();
+    	if (settings.isCalibrated() && calibration != null && calibration.scaled()) {
     		// convert the unit² in px²
     		double pixelArea = calibration.pixelWidth * calibration.pixelHeight;
-    		pxMinSize = minSize / pixelArea;
-    		if (maxSize != Double.MAX_VALUE) {
-    			pxMaxSize = maxSize / pixelArea;
+    		pxMinSize = settings.getAnalyseMinSize() / pixelArea;
+    		if (settings.getAnalyseMaxSize() != Double.MAX_VALUE) {
+    			pxMaxSize = settings.getAnalyseMaxSize() / pixelArea;
     		}
         }
     	
-    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, rt, pxMinSize, pxMaxSize, minCircularity, maxCircularity);
+    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, rt, pxMinSize, pxMaxSize, 
+    			settings.getAnalyseMinCircularity(), settings.getAnalyseMaxCircularity());
     	
     	// save the original calibration
     	Calibration backupCal = img.getCalibration();
@@ -138,7 +87,7 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     	try {
 
     		// apply the given calibration
-    		if (isCalibrated && calibration != null) {		
+    		if (settings.isCalibrated() && calibration != null) {		
                 img.setCalibration(calibration);
             } else {
             	//  force a neutral calibration 1 pixel / 1 pixel
@@ -179,7 +128,7 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     	    		
     	    		// check if the particle circularity is greater than the threshold, then it is isolated
     	    		if (!touchesEdge && rt.columnExists("Circ.")) {
-    	    			if (rt.getValue("Circ.", row) >= circularityThreshold) isIsolated = 1;
+    	    			if (rt.getValue("Circ.", row) >= settings.getAnalyseCircularityThreshold()) isIsolated = 1;
     	    		}
     	    		
     	    		// add the attribute to the particle
@@ -189,15 +138,15 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
         	
     		// get the unit of the calibration
     		String unit = "px";
-    		if (isCalibrated && calibration != null) unit = calibration.getUnit();
+    		if (settings.isCalibrated() && calibration != null) unit = calibration.getUnit();
     		
     		// add the unit in the area column
-    		if (showAreaEnabled && rt.columnExists("Area")) {
+    		if (settings.showAreaEnabled() && rt.columnExists("Area")) {
     			rt.renameColumn("Area", "Area(" + unit + "²)");
     		}
         	
         	// compute the diameters
-        	if (showDiameterEnabled && rt.columnExists("Major") && rt.columnExists("Minor")) {
+        	if (settings.showDiameterEnabled() && rt.columnExists("Major") && rt.columnExists("Minor")) {
         		int rowCount = rt.getCounter();
         	    
         		// get the values of big and small axes of the particles
@@ -225,7 +174,7 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
             if (rt.columnExists("AR")) rt.deleteColumn("AR");
             if (rt.columnExists("Round")) rt.deleteColumn("Round");
             if (rt.columnExists("Solidity")) rt.deleteColumn("Solidity");
-            if (!showCircularityEnabled) rt.deleteColumn("Circ."); // remove if the circularity parameter isn't activated
+            if (!settings.showCircularityEnabled()) rt.deleteColumn("Circ."); // remove if the circularity parameter isn't activated
     		
     	} finally {
     		// ensure that the original calibration is restored in the end. 

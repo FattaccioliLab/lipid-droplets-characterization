@@ -2,6 +2,7 @@ package fr.sorbonne_universite.ldc.model.workers;
 
 import javax.swing.SwingWorker;
 
+import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -17,42 +18,16 @@ import ij.plugin.filter.ParticleAnalyzer;
  */
 public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     
-	private boolean isCalibrated;
-	private Calibration calibration;
-	private double minSize;
-	private double maxSize;
-	private double minCircularity;
-	private double maxCircularity;
-    private boolean excludeOnEdgesEnabled;
+	private AnalysisSettings settings;
     private ImagePlus img;
     
     /**
      * Creates a {@code MeasuresPreviewWorker}.
-     * @param isCalibrated						Boolean that tell if the image there is a calibration given for the image
-     * @param Calibration						Given calibration.
-     * @param minSize 							Minimum particle size (unit² if IsCalibrated is true, otherwise px²).
-     * @param maxSize 							Maximum particle size (unit² if IsCalibrated is true, otherwise px²).
-     * @param minCircularity 					Minimum particle circularity.
-     * @param maxCircularity 					Maximum particle circularity.
-     * @param excludeOnEdgesEnabled 			Particle Analyzer option.
-     * @param img 								The current image to consider.
+     * @param settings						The plugin settings.
+     * @param img 							The current image to consider.
      */
-    public MeasuresPreviewWorker(
-    		boolean isCalibrated,
-    		Calibration calibration,
-    		double minSize,
-    		double maxSize,
-    		double minCircularity,
-    		double maxCircularity,
-    		boolean excludeOnEdgesEnabled,
-    		ImagePlus img) {
-    	this.isCalibrated = isCalibrated;
-    	this.calibration = calibration;
-    	this.minSize = minSize;
-    	this.maxSize = maxSize;
-    	this.minCircularity = minCircularity;
-    	this.maxCircularity = maxCircularity;
-    	this.excludeOnEdgesEnabled = excludeOnEdgesEnabled;
+    public MeasuresPreviewWorker(AnalysisSettings settings, ImagePlus img) {
+    	this.settings = settings;
     	this.img = img;
     }
 
@@ -62,7 +37,7 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     	// set options for Particles Analyzer
     	int options = 0;
     	options += ParticleAnalyzer.SHOW_OUTLINES; // show outlines of every particles in each images of the stack
-    	if (excludeOnEdgesEnabled) options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
+    	if (settings.analyseExcludeOnEdgesEnabled()) options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
     	
     	// get current image
     	if (img == null) {
@@ -70,19 +45,21 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     		return null;
     	}
     	
-    	double pxMinSize = minSize;
-    	double pxMaxSize = maxSize;
+    	double pxMinSize = settings.getAnalyseMinSize();
+    	double pxMaxSize = settings.getAnalyseMaxSize();
     	
-    	if (isCalibrated && calibration != null && calibration.scaled()) {
+    	Calibration calibration = settings.getCalibration();
+    	if (settings.isCalibrated() && calibration != null && calibration.scaled()) {
     		// convert the unit² in px²
     		double pixelArea = calibration.pixelWidth * calibration.pixelHeight;
-    		pxMinSize = minSize / pixelArea;
-    		if (maxSize != Double.MAX_VALUE) {
-    			pxMaxSize = maxSize / pixelArea;
+    		pxMinSize = settings.getAnalyseMinSize() / pixelArea;
+    		if (settings.getAnalyseMaxSize() != Double.MAX_VALUE) {
+    			pxMaxSize = settings.getAnalyseMaxSize() / pixelArea;
     		}
     	}
     	
-    	ParticleAnalyzer pa = new ParticleAnalyzer(options, 0, null, pxMinSize, pxMaxSize, minCircularity, maxCircularity);
+    	ParticleAnalyzer pa = new ParticleAnalyzer(options, 0, null, pxMinSize, pxMaxSize, 
+    			settings.getAnalyseMinCircularity(), settings.getAnalyseMaxCircularity());
     	pa.setHideOutputImage(true);
     	
     	// save the original calibration
@@ -94,7 +71,7 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     	try {
     		
     		// apply the given calibration
-    		if (isCalibrated && calibration != null) {		
+    		if (settings.isCalibrated() && calibration != null) {		
                 img.setCalibration(calibration);
             } else {
             	//  force a neutral calibration 1 pixel / 1 pixel
