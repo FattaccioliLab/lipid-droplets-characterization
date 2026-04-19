@@ -284,7 +284,7 @@ public class ThresholdingPanel extends JPanel {
 
         //these whole section is not in visible in merged main
         // Only ask if they are using an Auto method
-        if (!"Manual".equals(currentMethod)) {
+        /*if (!"Manual".equals(currentMethod)) {
             YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Threshold Stack", 
                     "Do you want to calculate the threshold for each slice independently?\n \n"
                     + "'Yes' : Calculates " + currentMethod + " for every slice.\n"
@@ -298,6 +298,7 @@ public class ThresholdingPanel extends JPanel {
         
         //updating the analysisSetting via l'api, we will be useful during testing
         service.setIndependentThreshold(calculateAllSlices);
+        */
         
         ImagePlus mask = service.applyThreshold(img);
         

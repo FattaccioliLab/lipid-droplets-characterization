@@ -30,7 +30,6 @@ public class MorphologyPanel extends JPanel {
     private LDCService service;
     
     private boolean isApplied = false;
-    private Object cleanPixelBackup = null; // Stores a secure deep copy of the raw pixels
 
 
     // Components
@@ -95,7 +94,7 @@ public class MorphologyPanel extends JPanel {
     }
 
     /**
-     * Called whenever a radio button or the background checkbox is clicked.
+     * Called whenever a radio button is clicked.
      * Updates the logic and refreshes the preview.
      */
     private void handleSelectionChange() {
@@ -116,13 +115,11 @@ public class MorphologyPanel extends JPanel {
         boolean close = closingRadio.isSelected();
 
  
-        //we need to inverse this as by default these operations think the objects are black and background is white
-        //however, in our plugin we we get an binary mask where objects are white and background is black
-        //that's why we invert the operatations
-        service.setErosion(dilate);
-        service.setDilation(erode);
-        service.setOpening(close);
-        service.setClosing(open);
+
+        service.setErosion(erode);
+        service.setDilation(dilate);
+        service.setOpening(open);
+        service.setClosing(close);
     }
 
     @Override

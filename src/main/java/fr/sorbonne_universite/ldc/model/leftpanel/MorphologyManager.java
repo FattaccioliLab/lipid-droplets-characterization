@@ -1,6 +1,5 @@
 package fr.sorbonne_universite.ldc.model.leftpanel;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.filter.EDM;
@@ -17,24 +16,12 @@ public class MorphologyManager {
 	
     /**
      * Applies morphological operations to a single slice for preview purposes.
-     * Restores the image from its snapshot before applying, so operations don't compound endlessly.
      */
-   /* public void previewMorphology(ImagePlus imp, boolean erode, boolean dilate, boolean open, boolean close, boolean watershed) {
-        if (imp == null) return;
-        
-        ImageProcessor ip = imp.getProcessor();
-        
-        // 1. Revert to the clean, unmodified binary state
-        ip.reset(); 
-        
-        // 2. Apply operations in a logical sequence
-        applyOperationsToProcessor(ip, erode, dilate, open, close, watershed);
-        
-        imp.updateAndDraw();
-    }*/
+ 
     
     /**
      * Applies morphological operations to a single slice for preview purposes.
+     * Restores the image from locally stored cleanPixels before applying, so operations don't compound endlessly.
      */
     public void previewMorphology(ImagePlus imp, boolean erode, boolean dilate, boolean open, boolean close, boolean watershed) {
         if (imp == null) return;
@@ -50,21 +37,14 @@ public class MorphologyManager {
             captureSnapshot(imp);
         }
         
-        // 2. Apply operations
-        applyOperationsToProcessor(ip, erode, dilate, open, close, watershed);
+        //we need to inverse this because by default these operations think the objects are black and background is white
+        //however, in our plugin we we get an binary mask where objects are white and background is black
+        //that's why we invert the operatations : erode -> dilate; dilate -> erode; open -> close; close -> open
+        applyOperationsToProcessor(ip, dilate, erode, close, open, watershed);
         
         imp.updateAndDraw();
     }
 
-    /**
-     * Resets the preview, returning the image to its original binary state.
-     */
-    /*public boolean resetPreview(ImagePlus imp) {
-        if (imp == null) return false;
-        imp.getProcessor().reset();
-        imp.updateAndDraw();
-        return true;
-    }*/
     
     /**
      * Resets the preview, returning the image to its original binary state.
@@ -115,7 +95,11 @@ public class MorphologyManager {
                 // Ensure we don't have lingering preview artifacts
                 ip.reset(); 
                 
-                applyOperationsToProcessor(ip, erode, dilate, open, close, watershed);
+                //we need to inverse this because by default these operations think the objects are black and background is white
+                //however, in our plugin we we get an binary mask where objects are white and background is black
+                //that's why we invert the operatations
+                // erode -> dilate; dilate -> erode; open -> close; close -> open
+                applyOperationsToProcessor(ip, dilate, erode, close, open, watershed);
             }
             
             // Update the ImagePlus to reflect the modified stack

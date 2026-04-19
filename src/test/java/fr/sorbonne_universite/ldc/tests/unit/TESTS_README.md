@@ -190,8 +190,8 @@ Through ImageJ :
 ### test5
 
 Through ImageJ :  
-- Process > Binary > Erode (on all slices)  
 - Process > Binary > Open (on all slices)  
+- Process > Binary > Erode (on all slices)  
 -> resulting image : `.../expected/test_binary_operations/test5.tif`  
 
 ### test6

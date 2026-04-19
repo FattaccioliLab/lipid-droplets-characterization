@@ -125,6 +125,7 @@ public class TestBinaryMaskOperations {
     // MIXED OPERATIONS
     // =========================================================================
 	
+	//Opening -> Erosion
 	@Test
 	public void test5() {
 		LDCService ldcPlugin = new LDCServiceImpl();
@@ -133,9 +134,16 @@ public class TestBinaryMaskOperations {
 		ImagePlus expectedMask = importImage("/expected/test_binary_operations/test5.tif");
 		ImagePlus mask = importImage("/TestMask.tif");
 		
-		ldcPlugin.setErosion(true);
-		ldcPlugin.setOpening(true);
-		ldcPlugin.applyMorphology(mask);
+		// Apply Opening FIRST
+        ldcPlugin.setOpening(true);
+        ldcPlugin.applyMorphology(mask);
+        ldcPlugin.setOpening(false); // Reset before next step
+        
+        //Apply Erosion SECOND
+        ldcPlugin.setErosion(true);
+        ldcPlugin.applyMorphology(mask);
+        ldcPlugin.setErosion(false); // Reset
+
         
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
@@ -144,6 +152,7 @@ public class TestBinaryMaskOperations {
         Utils.cleanup(new ImagePlus[]{expectedMask, mask}, ldcPlugin);
 	}
 	
+	//Dilation -> Opening -> Closing
 	@Test
 	public void test6() {
 		LDCService ldcPlugin = new LDCServiceImpl();
@@ -152,10 +161,20 @@ public class TestBinaryMaskOperations {
 		ImagePlus expectedMask = importImage("/expected/test_binary_operations/test6.tif");
 		ImagePlus mask = importImage("/TestMask.tif");
 		
-		ldcPlugin.setDilation(true);
-		ldcPlugin.setOpening(true);
-		ldcPlugin.setClosing(true);
-		ldcPlugin.applyMorphology(mask);
+		// Apply Dilation
+        ldcPlugin.setDilation(true);
+        ldcPlugin.applyMorphology(mask);
+        ldcPlugin.setDilation(false); // Reset
+        
+        // Apply Opening
+        ldcPlugin.setOpening(true);
+        ldcPlugin.applyMorphology(mask);
+        ldcPlugin.setOpening(false); // Reset
+        
+        // Apply Closing
+        ldcPlugin.setClosing(true);
+        ldcPlugin.applyMorphology(mask);
+        ldcPlugin.setClosing(false); // Reset
         
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
