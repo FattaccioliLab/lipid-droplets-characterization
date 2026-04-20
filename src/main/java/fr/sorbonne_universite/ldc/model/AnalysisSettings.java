@@ -67,13 +67,18 @@ public class AnalysisSettings implements Cloneable {
 	public final static boolean DFL_THRESHOLD_DARK_BACKGROUND = false;
 	private boolean thresholdDarkBackground = DFL_THRESHOLD_DARK_BACKGROUND;
 	
-	// calculate threshold for each slice independantly or same range for all slices
-	public final static boolean DFL_IND_THRESHOLD = false;
-	private boolean indpendentThreshold = DFL_IND_THRESHOLD;
+
 
     // ====================================
     // Binary mask morphological operations
     // ====================================
+
+	// Possible threshold methods
+	private List<String> morphologicalOperationsList = new ArrayList<>(Arrays.asList("None", "Erode", "Dilate", "Open", "Close"));
+	
+	// The current threshold method
+	public final static String DFL_MORPHO_OPERATION = "None";
+	private String morphologicalOperation = DFL_THRESHOLD_METHOD;
 	
 	public final static boolean DFL_BINARY_MASK_OP = false;
 	private boolean erosion = DFL_BINARY_MASK_OP;
@@ -194,13 +199,21 @@ public class AnalysisSettings implements Cloneable {
 	public boolean thresholdDarkBackgroundEnabled() { return thresholdDarkBackground; }
 	public void setThresholdDarkBackground(boolean thresholdDarkBackground) { this.thresholdDarkBackground = thresholdDarkBackground; }
 	
-	// Process one slice or all slices
-	public boolean getIndpendentThreshold() { return indpendentThreshold; }
-	public void setIndpendentThreshold(boolean indpendentThreshold) { this.indpendentThreshold = indpendentThreshold; }
+
 	
     // ====================================
     // Binary mask morphological operations
     // ====================================
+	
+	// Morphological Operations
+	public List<String> getMorphologicalOperationsList() { return new ArrayList<>(morphologicalOperationsList); } // new independant copy 
+	// Threshold current method
+	public String getMorphologicalOperation() { return morphologicalOperation; }
+	
+	public void setMorphologicalOperation(String newMorphologicalOperation) {
+		if (!morphologicalOperationsList.contains(newMorphologicalOperation)) throw new IllegalArgumentException(newMorphologicalOperation+" is not an existing operation");
+		morphologicalOperation = newMorphologicalOperation;
+	}
 	
 	public boolean erosionEnabled() { return erosion; }
 	public void setErosion(boolean erosion) { this.erosion = erosion; }

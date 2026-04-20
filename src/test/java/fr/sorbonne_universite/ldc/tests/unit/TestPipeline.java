@@ -212,7 +212,7 @@ public class TestPipeline {
 		ImagePlus mask = ldcPlugin.applyThreshold(image);
 		
 		// Binary morphological operation
-		ldcPlugin.setErosion(true);
+		ldcPlugin.setMorphologicalOperation("Erode");
 		ldcPlugin.applyMorphology(mask);
 		
 		// Particle Analysis

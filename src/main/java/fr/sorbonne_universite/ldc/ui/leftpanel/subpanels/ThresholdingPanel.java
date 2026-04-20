@@ -279,8 +279,8 @@ public class ThresholdingPanel extends JPanel {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
         
-        boolean calculateAllSlices = false;
-        String currentMethod = (String) methodComboBox.getSelectedItem();
+        //boolean calculateAllSlices = false;
+        //String currentMethod = (String) methodComboBox.getSelectedItem();
 
         //these whole section is not in visible in merged main
         // Only ask if they are using an Auto method

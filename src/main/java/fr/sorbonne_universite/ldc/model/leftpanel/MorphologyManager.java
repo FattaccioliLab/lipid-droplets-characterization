@@ -6,7 +6,7 @@ import ij.plugin.filter.EDM;
 import ij.process.ImageProcessor;
 
 /**
- * Provides binary morphological operations (Erosion, Dilation, Opening, Closing, Watershed).
+ * Provides binary morphological operations (Erode, Dilate, Open, Close, Watershed).
  * Used by the MorphologyPanel.
  */
 public class MorphologyManager {
@@ -23,7 +23,7 @@ public class MorphologyManager {
      * Applies morphological operations to a single slice for preview purposes.
      * Restores the image from locally stored cleanPixels before applying, so operations don't compound endlessly.
      */
-    public void previewMorphology(ImagePlus imp, boolean erode, boolean dilate, boolean open, boolean close, boolean watershed) {
+    public void previewMorphology(ImagePlus imp, String morphologicalOperation){
         if (imp == null) return;
         
         ImageProcessor ip = imp.getProcessor();
@@ -36,11 +36,8 @@ public class MorphologyManager {
             // If they changed slices and we don't have a backup, take one now
             captureSnapshot(imp);
         }
-        
-        //we need to inverse this because by default these operations think the objects are black and background is white
-        //however, in our plugin we we get an binary mask where objects are white and background is black
-        //that's why we invert the operatations : erode -> dilate; dilate -> erode; open -> close; close -> open
-        applyOperationsToProcessor(ip, dilate, erode, close, open, watershed);
+
+        applyOperationsToProcessor(ip, morphologicalOperation);
         
         imp.updateAndDraw();
     }
@@ -81,7 +78,7 @@ public class MorphologyManager {
     /**
      * Permanently applies the selected operations to the entire image stack.
      */
-    public boolean applyMorphology(ImagePlus imp, boolean erode, boolean dilate, boolean open, boolean close, boolean watershed) {
+    public boolean applyMorphology(ImagePlus imp, String morphologicalOperations) {
         if (imp == null) return false;
         
         try {
@@ -95,11 +92,7 @@ public class MorphologyManager {
                 // Ensure we don't have lingering preview artifacts
                 ip.reset(); 
                 
-                //we need to inverse this because by default these operations think the objects are black and background is white
-                //however, in our plugin we we get an binary mask where objects are white and background is black
-                //that's why we invert the operatations
-                // erode -> dilate; dilate -> erode; open -> close; close -> open
-                applyOperationsToProcessor(ip, dilate, erode, close, open, watershed);
+                applyOperationsToProcessor(ip, morphologicalOperations);
             }
             
             // Update the ImagePlus to reflect the modified stack
@@ -119,25 +112,46 @@ public class MorphologyManager {
 
     /**
      * Helper method to execute the math on a specific ImageProcessor.
+     * 
+	 * Why we use raw filters (MIN/MAX) instead of ip.erode() and ip.dilate():
+	 * * ImageJ's native methods dynamically change their mathematical behavior 
+	 * based on the image's Look-Up Table (LUT) state. For example:
+	 * public void erode() { return isInvertedLut() ? filter(MIN) : filter(MAX); }
+	 *
+	 * This causes unpredictable inversions depending on how the binary mask was 
+	 * generated or current GUI settings. To guarantee mathematical stability 
+	 * (always shrinking/expanding white pixels), we bypass the LUT checks and 
+	 * apply the raw deterministic filters directly.
+	 
      */
-    private void applyOperationsToProcessor(ImageProcessor ip, boolean erode, boolean dilate, boolean open, boolean close, boolean watershed) {
-        if (erode) ip.erode();
+    private void applyOperationsToProcessor(ImageProcessor ip, String morphologicalOperations){
         
-        if (dilate) ip.dilate();
-        
-        if (open) { 
-            ip.erode(); 
-            ip.dilate(); 
+    	//A MIN filter replaces pixels with the lowest nearby value (0). White (255) gets eaten by Black (0). This is true Erosion for white objects.
+    	//A MAX filter replaces pixels with the highest nearby value (255). White (255) spreads over Black (0). This is true Dilation for white objects.
+    	
+    	boolean erode = morphologicalOperations.equals("Erode");
+    	boolean dilate =  morphologicalOperations.equals("Dilate");
+    	boolean open =  morphologicalOperations.equals("Open");
+    	boolean close =  morphologicalOperations.equals("Close");
+    	
+    	//boolean watershed;
+    	
+    	if (erode) {
+    		ip.filter(ImageProcessor.MIN);	// Shrinks 255 (white).
+        }else if (dilate) {
+        	ip.filter(ImageProcessor.MAX);	// Expands 255 (white).
+        }else if (open) { 
+        	ip.filter(ImageProcessor.MIN); // Erode first
+            ip.filter(ImageProcessor.MAX); // Then Dilate
+        }else if (close) { 
+        	ip.filter(ImageProcessor.MAX); // Dilate first
+            ip.filter(ImageProcessor.MIN); // Then Erode
         }
         
-        if (close) { 
-            ip.dilate(); 
-            ip.erode(); 
-        }
-        
-        if (watershed) {
-            EDM edm = new EDM();
-            edm.toWatershed(ip);
-        }
+        //if (watershed) {
+        //    EDM edm = new EDM();
+        //    edm.toWatershed(ip);
+        //}
+    	
     }
 }

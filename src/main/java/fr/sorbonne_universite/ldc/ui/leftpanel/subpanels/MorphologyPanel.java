@@ -62,10 +62,10 @@ public class MorphologyPanel extends JPanel {
         // Radio Buttons (Single Selection)
         optGroup = new ButtonGroup();
         noneRadio = createRadio("None", true); // Default selected
-        erosionRadio = createRadio("Erosion (Shrink objects)", false);
-        dilationRadio = createRadio("Dilation (Expand objects)", false);
-        openingRadio = createRadio("Opening (Remove small noise)", false);
-        closingRadio = createRadio("Closing (Fill small holes)", false);
+        erosionRadio = createRadio("Erode (Shrink objects)", false);
+        dilationRadio = createRadio("Dilate (Expand objects)", false);
+        openingRadio = createRadio("Open (Remove small noise)", false);
+        closingRadio = createRadio("Close (Fill small holes)", false);
 
         add(Box.createVerticalStrut(15));
 
@@ -114,12 +114,9 @@ public class MorphologyPanel extends JPanel {
         boolean open = openingRadio.isSelected();
         boolean close = closingRadio.isSelected();
 
- 
+        String morphologicalOperation = erode? "Erode" : dilate ? "Dilate" : open? "Open" :  close? "Close" : "None";
+        service.setMorphologicalOperation(morphologicalOperation);
 
-        service.setErosion(erode);
-        service.setDilation(dilate);
-        service.setOpening(open);
-        service.setClosing(close);
     }
 
     @Override

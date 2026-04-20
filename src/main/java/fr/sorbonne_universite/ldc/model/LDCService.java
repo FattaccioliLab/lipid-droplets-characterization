@@ -74,25 +74,14 @@ public interface LDCService extends SciJavaService {
 	public boolean thresholdDarkBackgroundEnabled();
 	public void setThresholdDarkBackground(boolean thresholdDarkBackground);
 	
-	// calculate threshold for each slice independantly or same range for all slices
-	public boolean getIndependentThreshold();
-	public void setIndependentThreshold(boolean indpendentThreshold);
 	
     // ====================================
     // Binary mask morphological operations
     // ====================================
 	
-	public boolean erosionEnabled();
-	public void setErosion(boolean erosion);
-	
-	public boolean dilationEnabled();
-	public void setDilation(boolean dilation);
-	
-	public boolean openingEnabled();
-	public void setOpening(boolean opening);
-	
-	public boolean closingEnabled();
-	public void setClosing(boolean closing);
+    public List<String> getMorphologicalOperationsList();
+    public String getMorphologicalOperation();
+    public void setMorphologicalOperation(String method);
 	
 	public boolean watershedEnabled();
 	public void setWathershed(boolean watershed);
