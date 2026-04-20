@@ -90,24 +90,15 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public boolean thresholdDarkBackgroundEnabled() { return settings.thresholdDarkBackgroundEnabled(); }
     @Override public void setThresholdDarkBackground(boolean thresholdDarkBackground) { settings.setThresholdDarkBackground(thresholdDarkBackground); }
 
-    @Override public boolean getIndependentThreshold() { return settings.getIndpendentThreshold(); }
-    @Override public void setIndependentThreshold(boolean thresholdGlobal) { settings.setIndpendentThreshold(thresholdGlobal); }
+
 
     // ====================================
     // Binary mask morphological operations
     // ====================================
 
-    @Override public boolean erosionEnabled() { return settings.erosionEnabled(); }
-    @Override public void setErosion(boolean erosion) { settings.setErosion(erosion); }
-
-    @Override public boolean dilationEnabled() { return settings.dilationEnabled(); }
-    @Override public void setDilation(boolean dilation) { settings.setDilation(dilation); }
-
-    @Override public boolean openingEnabled() { return settings.openingEnabled(); }
-    @Override public void setOpening(boolean opening) { settings.setOpening(opening); }
-
-    @Override public boolean closingEnabled() { return settings.closingEnabled(); }
-    @Override public void setClosing(boolean closing) { settings.setClosing(closing); }
+    public List<String> getMorphologicalOperationsList(){return settings.getMorphologicalOperationsList();}
+    public String getMorphologicalOperation() {return settings.getMorphologicalOperation();}
+    public void setMorphologicalOperation(String method) {settings.setMorphologicalOperation(method);}
 
     @Override public boolean watershedEnabled() { return settings.watershedEnabled(); }
     @Override public void setWathershed(boolean watershed) { settings.setWathershed(watershed); }
@@ -207,26 +198,14 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     	morphologyManager.captureSnapshot(imp);
     }
     public void previewMorphology(ImagePlus imp) {
-    	morphologyManager.previewMorphology(
-    						imp, 
-    						settings.erosionEnabled(), 
-    						settings.dilationEnabled(), 
-    						settings.openingEnabled(), 
-    						settings.closingEnabled(), 
-    						settings.watershedEnabled());
+    	morphologyManager.previewMorphology(imp, settings.getMorphologicalOperation());
     }
     public boolean resetMorphologyPreview(ImagePlus imp) {
     	return morphologyManager.resetPreview(imp);
     }
     
     public boolean applyMorphology(ImagePlus imp) {
-    	return morphologyManager.applyMorphology(
-				imp, 
-				settings.erosionEnabled(), 
-				settings.dilationEnabled(), 
-				settings.openingEnabled(), 
-				settings.closingEnabled(), 
-				settings.watershedEnabled());
+    	return morphologyManager.applyMorphology(imp, settings.getMorphologicalOperation());
     }
 	
     // ============================

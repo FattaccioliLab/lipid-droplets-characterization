@@ -45,7 +45,7 @@ public class TestBinaryMaskOperations {
 		ImagePlus expectedMask = importImage("/expected/test_binary_operations/test1.tif"); // works with test2.tif (dilatation)
 		ImagePlus mask = importImage("/TestMask.tif");
 		
-		ldcPlugin.setErosion(true);
+		ldcPlugin.setMorphologicalOperation("Erode");
 		ldcPlugin.applyMorphology(mask);
         
         Utils.checkSameDimensions(expectedMask, mask);
@@ -67,7 +67,7 @@ public class TestBinaryMaskOperations {
 		ImagePlus expectedMask = importImage("/expected/test_binary_operations/test2.tif");
 		ImagePlus mask = importImage("/TestMask.tif");
 		
-		ldcPlugin.setDilation(true);
+		ldcPlugin.setMorphologicalOperation("Dilate");
 		ldcPlugin.applyMorphology(mask);
         
         Utils.checkSameDimensions(expectedMask, mask);
@@ -89,7 +89,7 @@ public class TestBinaryMaskOperations {
 		ImagePlus expectedMask = importImage("/expected/test_binary_operations/test3.tif");
 		ImagePlus mask = importImage("/TestMask.tif");
 		
-		ldcPlugin.setOpening(true);
+		ldcPlugin.setMorphologicalOperation("Open");
 		ldcPlugin.applyMorphology(mask);
         
         Utils.checkSameDimensions(expectedMask, mask);
@@ -111,7 +111,7 @@ public class TestBinaryMaskOperations {
 		ImagePlus expectedMask = importImage("/expected/test_binary_operations/test4.tif");
 		ImagePlus mask = importImage("/TestMask.tif");
 		
-		ldcPlugin.setClosing(true);
+		ldcPlugin.setMorphologicalOperation("Close");
 		ldcPlugin.applyMorphology(mask);
         
         Utils.checkSameDimensions(expectedMask, mask);
@@ -135,14 +135,12 @@ public class TestBinaryMaskOperations {
 		ImagePlus mask = importImage("/TestMask.tif");
 		
 		// Apply Opening FIRST
-        ldcPlugin.setOpening(true);
+		ldcPlugin.setMorphologicalOperation("Open");
         ldcPlugin.applyMorphology(mask);
-        ldcPlugin.setOpening(false); // Reset before next step
         
         //Apply Erosion SECOND
-        ldcPlugin.setErosion(true);
+		ldcPlugin.setMorphologicalOperation("Erode");
         ldcPlugin.applyMorphology(mask);
-        ldcPlugin.setErosion(false); // Reset
 
         
         Utils.checkSameDimensions(expectedMask, mask);
@@ -162,19 +160,16 @@ public class TestBinaryMaskOperations {
 		ImagePlus mask = importImage("/TestMask.tif");
 		
 		// Apply Dilation
-        ldcPlugin.setDilation(true);
+		ldcPlugin.setMorphologicalOperation("Dilate");
         ldcPlugin.applyMorphology(mask);
-        ldcPlugin.setDilation(false); // Reset
         
         // Apply Opening
-        ldcPlugin.setOpening(true);
+		ldcPlugin.setMorphologicalOperation("Open");
         ldcPlugin.applyMorphology(mask);
-        ldcPlugin.setOpening(false); // Reset
         
         // Apply Closing
-        ldcPlugin.setClosing(true);
+		ldcPlugin.setMorphologicalOperation("Close");
         ldcPlugin.applyMorphology(mask);
-        ldcPlugin.setClosing(false); // Reset
         
         Utils.checkSameDimensions(expectedMask, mask);
         Utils.checkSameDisplayRange(expectedMask, mask);
