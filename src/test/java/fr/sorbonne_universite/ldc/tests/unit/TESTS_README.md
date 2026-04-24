@@ -256,9 +256,8 @@ Through ImageJ :
 - Process > Binary > Make Binary : method Otsu, Background Dark, Black background selected + Create new stack  
 - Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
 - Process > Binary > Erode (on all slices)  
-- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
-- (focus on binary mask window) Analyze > Analyze particles ... : Size : 1 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Add to manager selected + process all 3 slices   
-- (focus on image window) ROI manager (previously opened window) > measure
+- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : TestSample.tif, decimal places : 4  
+- (focus on binary mask window) Analyze > Analyze particles ... : Size : 1 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test4_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test4_mask.tif`  
 -> resulting csv : `.../expected/test_pipeline/test4_table.csv`  
