@@ -194,17 +194,18 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // ====================================
     // Morphology
     // ====================================
-    public void captureMorphologySnapshot(ImagePlus imp) {
+    
+    @Override public void captureMorphologySnapshot(ImagePlus imp) {
     	morphologyManager.captureSnapshot(imp);
     }
-    public void previewMorphology(ImagePlus imp) {
+    @Override public void previewMorphology(ImagePlus imp) {
     	morphologyManager.previewMorphology(imp, settings.getMorphologicalOperation());
     }
-    public boolean resetMorphologyPreview(ImagePlus imp) {
+    @Override public boolean resetMorphologyPreview(ImagePlus imp) {
     	return morphologyManager.resetPreview(imp);
     }
     
-    public boolean applyMorphology(ImagePlus imp) {
+    @Override public boolean applyMorphology(ImagePlus imp) {
     	return morphologyManager.applyMorphology(imp, settings.getMorphologicalOperation());
     }
 	
