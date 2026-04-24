@@ -52,8 +52,8 @@ jobs:
     - name: Install Xvfb
       run: sudo apt-get update && sudo apt-get install -y xvfb
         
-    - name: Build with Maven
-      run: mvn -B clean package
+    - name: Build with Maven (skip tests)
+      run: mvn -B clean compile -DskipTests
       
     - name: Run tests with Xvfb
       run: xvfb-run -a mvn test
