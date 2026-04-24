@@ -212,7 +212,7 @@ public interface LDCService extends SciJavaService {
      * @param img The current image to consider.
 	 * @see MeasuresProcessingWorker
      */
-	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(ImagePlus img);
+	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(ImagePlus img, ImagePlus binaryImg);
 	
     /**
      * Export as a CSV file the table passed in parameter. 

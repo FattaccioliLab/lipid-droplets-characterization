@@ -218,8 +218,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     }
     
 	/** @see MeasuresProcessingWorker */
-	@Override public SwingWorker<ResultsTable, Void> createMeasuresProcessingWorker(ImagePlus img) {
-		return measurementsManager.createMeasuresProcessingWorker(settings, img);
+	@Override public SwingWorker<ResultsTable, Void> createMeasuresProcessingWorker(ImagePlus img, ImagePlus binaryImg) {
+		return measurementsManager.createMeasuresProcessingWorker(settings, img, binaryImg);
 	}
 
 	@Override public void exportResultsTable(ResultsTable rt, String path) {

@@ -90,7 +90,7 @@ public class TestPipeline {
 		ldcPlugin.setAnalyseExcludeOnEdges(true);
 		ldcPlugin.setCalibration(image.getCalibration());
 		ldcPlugin.setIsCalibrated(true);
-        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
+        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image, mask);
         worker2.execute();
         ResultsTable results = null;
         try {
@@ -157,7 +157,7 @@ public class TestPipeline {
 		ldcPlugin.setAnalyseExcludeOnEdges(true);
 		ldcPlugin.setCalibration(image.getCalibration());
 		ldcPlugin.setIsCalibrated(true);
-        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
+        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image, mask);
         worker2.execute();
         ResultsTable results = null;
         try {
@@ -224,7 +224,7 @@ public class TestPipeline {
 		ldcPlugin.setAnalyseExcludeOnEdges(false); // Not mandatory
 		ldcPlugin.setCalibration(image.getCalibration());
 		ldcPlugin.setIsCalibrated(true);
-        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
+        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image, mask);
         worker2.execute();
         ResultsTable results = null;
         try {
@@ -295,7 +295,7 @@ public class TestPipeline {
 		ldcPlugin.setAnalyseExcludeOnEdges(false); // Not mandatory
 		ldcPlugin.setCalibration(image.getCalibration());
 		ldcPlugin.setIsCalibrated(true);
-        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
+        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image, mask);
         worker2.execute();
         ResultsTable results = null;
         try {

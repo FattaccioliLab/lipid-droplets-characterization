@@ -43,8 +43,8 @@ public class MeasurementsManager {
      * @param img 							The current image to consider.
 	 * @see MeasuresProcessingWorker
      */
-	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(AnalysisSettings settings, ImagePlus img){
-		return new MeasuresProcessingWorker(settings, img); 
+	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(AnalysisSettings settings, ImagePlus img, ImagePlus binaryImg){
+		return new MeasuresProcessingWorker(settings, img, binaryImg); 
 	}
 	
     /**
