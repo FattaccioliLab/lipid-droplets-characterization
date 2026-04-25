@@ -228,7 +228,6 @@ public class RightPanel extends JPanel {
 							showTable(
 									selectedSettings.calculateSummaryTable(
 											measuresWorker.get(),
-											currentImg.getCalibration(),
 											currentImg.getWidth(),
 											currentImg.getHeight()));
 						} catch (InterruptedException | ExecutionException e) {

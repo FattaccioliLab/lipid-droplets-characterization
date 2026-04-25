@@ -132,6 +132,7 @@ public class AnalysisSettings implements Cloneable {
 	private boolean showMean = DFL_SHOWING_OPT;
 	private boolean showIntegratedDensity = DFL_SHOWING_OPT;
 	private boolean showCircularity = DFL_SHOWING_OPT;
+	private boolean showDefaultCalibration = DFL_SHOWING_OPT;
 	
     // =========================================================================
     // METHODS (getters / setters)
@@ -306,4 +307,7 @@ public class AnalysisSettings implements Cloneable {
 	public boolean showCircularityEnabled() { return showCircularity; }
 	public void setShowCircularity(boolean showCircularity) { this.showCircularity = showCircularity; }
 
+	public boolean showDefaultCalibrationEnabled() { return showDefaultCalibration; }
+	public void setShowDefaultCalibration(boolean showDefaultCalibration) { this.showDefaultCalibration = showDefaultCalibration; }
+	
 }
