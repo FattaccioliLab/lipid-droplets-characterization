@@ -77,6 +77,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     private JCheckBox meanCheckbox;
     private JCheckBox integratedDensityCheckbox;
     private JCheckBox circularityCheckbox;
+    private JCheckBox defaultCalibrationCheckbox;
     
     public ParticleAnalysisParamsPanel(Context ctx) {
         super();
@@ -399,6 +400,14 @@ public class ParticleAnalysisParamsPanel extends JPanel {
 	    circularityCheckbox.setFocusPainted(false);
 	    circularityCheckbox.addActionListener(e -> toggleCircularity());
 
+	    // --- Default calibration section ---
+	    defaultCalibrationCheckbox = new JCheckBox("Show results with default calibration unit");
+	    defaultCalibrationCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
+	    defaultCalibrationCheckbox.setSelected(selectedSettings.showDefaultCalibrationEnabled());
+	    defaultCalibrationCheckbox.setFocusPainted(false);
+	    defaultCalibrationCheckbox.addActionListener(e -> toggleDefaultCalibration());
+	    defaultCalibrationCheckbox.setEnabled(!isCalibratedCheckbox.isSelected());
+	   
 	    // LAYOUT
 	    
 	    add(Box.createVerticalStrut(10));
@@ -422,7 +431,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         checkboxColumnsContainer.setLayout(new BoxLayout(checkboxColumnsContainer, BoxLayout.X_AXIS));
         checkboxColumnsContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // --- LEFT COLUMN (First 3 items) ---
+        // --- LEFT COLUMN (First 4 items) ---
         JPanel leftColumn = new JPanel();
         leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.Y_AXIS));
         leftColumn.setAlignmentY(Component.TOP_ALIGNMENT); // Aligns column to the top
@@ -432,17 +441,19 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         leftColumn.add(diameterCheckbox);
         leftColumn.add(Box.createVerticalStrut(5));
         leftColumn.add(medianCheckbox);
+        leftColumn.add(Box.createVerticalStrut(5));
+        leftColumn.add(meanCheckbox);
 
         // --- RIGHT COLUMN (Rest of the items) ---
         JPanel rightColumn = new JPanel();
         rightColumn.setLayout(new BoxLayout(rightColumn, BoxLayout.Y_AXIS));
         rightColumn.setAlignmentY(Component.TOP_ALIGNMENT); // Aligns column to the top
         
-        rightColumn.add(meanCheckbox);
-        rightColumn.add(Box.createVerticalStrut(5));
         rightColumn.add(integratedDensityCheckbox);
         rightColumn.add(Box.createVerticalStrut(5));
         rightColumn.add(circularityCheckbox);
+        rightColumn.add(Box.createVerticalStrut(5));
+        rightColumn.add(defaultCalibrationCheckbox);
 
         // --- ADD COLUMNS TO CONTAINER WITH A GAP BETWEEN THEM ---
         checkboxColumnsContainer.add(leftColumn);
@@ -470,6 +481,12 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	unitField.setEnabled(isSelected);
     	manualCalibrationSpinner.setEnabled(isSelected);
     	resetCalibrationButton.setEnabled(isSelected);
+    	
+    	// reset default calibration
+    	defaultCalibrationCheckbox.setEnabled(!isSelected);
+    	defaultCalibrationCheckbox.setSelected(false);
+    	toggleDefaultCalibration();
+    	
     	selectedSettings.setIsCalibrated(isSelected);
         
     	String unit = "px";
@@ -810,6 +827,13 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	selectedSettings.setShowCircularity(circularityCheckbox.isSelected());
     }
     
+    /**
+     * Toggle default calibration measurements based on the checkbox state.
+     */
+    private void toggleDefaultCalibration() {
+    	selectedSettings.setShowDefaultCalibration(defaultCalibrationCheckbox.isSelected());
+    }
+    
     // =========================================================================
     // ENABLING/DISABLING UI COMPONENTS
     // =========================================================================
@@ -841,6 +865,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         meanCheckbox.setEnabled(enable);
         integratedDensityCheckbox.setEnabled(enable);
         circularityCheckbox.setEnabled(enable);
+        defaultCalibrationCheckbox.setEnabled(enable && !isCalibratedCheckbox.isSelected());
     }
     
     /**
@@ -877,6 +902,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	selectedSettings.setShowMean(AnalysisSettings.DFL_SHOWING_OPT);
     	selectedSettings.setShowIntegratedDensity(AnalysisSettings.DFL_SHOWING_OPT);
     	selectedSettings.setShowCircularity(AnalysisSettings.DFL_SHOWING_OPT);
+    	selectedSettings.setShowDefaultCalibration(AnalysisSettings.DFL_SHOWING_OPT);
     	
         areaCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
         diameterCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
@@ -884,6 +910,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         meanCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
         integratedDensityCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
         circularityCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
+        defaultCalibrationCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
     }
     
     // =========================================================================

@@ -90,12 +90,15 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     		if (settings.isCalibrated() && calibration != null) {		
                 img.setCalibration(calibration);
             } else {
-            	//  force a neutral calibration 1 pixel / 1 pixel
-                Calibration pixelCal = new ij.measure.Calibration();
-                pixelCal.pixelWidth = 1.0;
-                pixelCal.pixelHeight = 1.0;
-                pixelCal.setUnit("pixel");
-                img.setCalibration(pixelCal);
+            	// if the checkbox to keep the default calibration is unchecked or the image don't have a default calibration
+            	if (!settings.showDefaultCalibrationEnabled() || img.getCalibration() == null) {            		
+            		//  force a neutral calibration 1 pixel / 1 pixel
+            		Calibration pixelCal = new ij.measure.Calibration();
+            		pixelCal.pixelWidth = 1.0;
+            		pixelCal.pixelHeight = 1.0;
+            		pixelCal.setUnit("pixel");
+            		img.setCalibration(pixelCal);
+            	}
             }
     		
         	// analyze each image of the stack
@@ -139,6 +142,7 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     		// get the unit of the calibration
     		String unit = "px";
     		if (settings.isCalibrated() && calibration != null) unit = calibration.getUnit();
+    		if (settings.showDefaultCalibrationEnabled() && img.getCalibration() != null) unit = calibration.getUnit();
     		
     		// add the unit in the area column
     		if (settings.showAreaEnabled() && rt.columnExists("Area")) {

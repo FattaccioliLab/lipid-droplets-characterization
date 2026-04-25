@@ -153,6 +153,10 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	@Override public boolean showCircularityEnabled() { return settings.showCircularityEnabled(); }
 	@Override public void setShowCircularity(boolean showCircularity) { settings.setShowCircularity(showCircularity); }    
     
+	@Override public boolean showDefaultCalibrationEnabled() { return settings.showDefaultCalibrationEnabled(); }
+	@Override public void setShowDefaultCalibration(boolean showDefaultCalibration) { settings.setShowDefaultCalibration(showDefaultCalibration); }
+	
+	
     // =========================================================================
     // OPERATIONS
     // =========================================================================
@@ -188,12 +192,12 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 
     @Override public ImagePlus applyThreshold(ImagePlus imp) { return thresholdingManager.applyThreshold(imp); }
     
-    @Override public boolean resetThreshold(ImagePlus imp) { return thresholdingManager.resetThreshold(imp); }
-    
+    @Override public boolean resetThreshold(ImagePlus imp) { return thresholdingManager.resetThreshold(imp); } 
     
     // ====================================
     // Morphology
     // ====================================
+    
     public void captureMorphologySnapshot(ImagePlus imp) {
     	morphologyManager.captureSnapshot(imp);
     }
@@ -209,7 +213,7 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     }
 	
     // ============================
-    // Measurements showing options
+    // Measures
     // ============================
 
 	/** @see MeasuresPreviewWorker */
@@ -226,8 +230,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 		measurementsManager.exportResultsTable(rt, path);
 	}
 	
-	@Override public ResultsTable calculateSummaryTable(ResultsTable rt, Calibration cal, double imgWidth, double imgHeight) {
-		return measurementsManager.calculateSummaryTable(rt, cal, imgWidth, imgHeight);
+	@Override public ResultsTable calculateSummaryTable(ResultsTable rt, double imgWidth, double imgHeight) {
+		return measurementsManager.calculateSummaryTable(rt, imgWidth, imgHeight);
 	}
 	
 	@Override public List<ImagePlus> generateHistograms(ResultsTable rt) {
