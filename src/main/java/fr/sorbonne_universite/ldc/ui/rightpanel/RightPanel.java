@@ -104,16 +104,28 @@ public class RightPanel extends JPanel {
         previewButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
 //        previewButton.setPreferredSize(new Dimension(80, 25));
         previewButton.addActionListener(e -> {
+        	ImagePlus img = leftPanel.getCurrentImage();
         	// check if there is an image
-        	if (leftPanel.getCurrentImage() == null) {
+        	if (img == null) {
         		IJ.showMessage("Please open an image first (File > Open)");
         		return ;
         	}
         	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
             
-        	// launch the preview worker
-        	SwingWorker<Void,Void> previewWorker = selectedSettings.createMeasuresPreviewWorker(leftPanel.getCurrentImage());
+        	// --- Fetch the current img's binary mask ---
+            String binaryTitle = img.getShortTitle() + "_Binary";
+            ImagePlus binaryImg = ij.WindowManager.getImage(binaryTitle);
+            
+            if (binaryImg == null) {
+                IJ.showMessage("Please complete the thresholding step first to generate a mask.");
+                return;
+            }
+            // ----------------------------------------------
+        	
+        	
+        	// launch the preview worker on the binary mask
+        	SwingWorker<Void,Void> previewWorker = selectedSettings.createMeasuresPreviewWorker(binaryImg);
         	previewWorker.execute();
         });;
         headerPanel.add(previewButton);
@@ -122,15 +134,26 @@ public class RightPanel extends JPanel {
         JButton resultsButton = new JButton("Show results");
         resultsButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
         resultsButton.addActionListener(e -> {
+        	ImagePlus img = leftPanel.getCurrentImage();
         	// check if there is an image
         	if (leftPanel.getCurrentImage() == null) {
         		IJ.showMessage("Please open an image first (File > Open)");
         		return ;
         	}
         	
+        	// --- Fetch the current img's binary mask ---
+            String binaryTitle = img.getShortTitle() + "_Binary";
+            ImagePlus binaryImg = ij.WindowManager.getImage(binaryTitle);
+            
+            if (binaryImg == null) {
+                IJ.showMessage("Please complete the thresholding step first to generate a mask.");
+                return;
+            }
+            // ----------------------------------------------
+        	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
-        	SwingWorker<ResultsTable,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(leftPanel.getCurrentImage());
+        	SwingWorker<ResultsTable,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(img, binaryImg);
         	
         	// adding property change listener to the worker to show the table when the asynchronous task is completed
         	measuresWorker.addPropertyChangeListener(new PropertyChangeListener() {
@@ -174,15 +197,26 @@ public class RightPanel extends JPanel {
         // generate statistics button
         JButton statisticButton = new JButton("Statistics");
         statisticButton.addActionListener(e -> {
+        	ImagePlus img = leftPanel.getCurrentImage();
         	// check if there is an image
         	if (leftPanel.getCurrentImage() == null) {
         		IJ.showMessage("Please open an image first (File > Open)");
         		return ;
         	}
         	
+        	// --- Fetch the current img's binary mask ---
+            String binaryTitle = img.getShortTitle() + "_Binary";
+            ImagePlus binaryImg = ij.WindowManager.getImage(binaryTitle);
+            
+            if (binaryImg == null) {
+                IJ.showMessage("Please complete the thresholding step first to generate a mask.");
+                return;
+            }
+            // ----------------------------------------------
+        	
         	this.leftPanel.getParticleAnalysisParamsPanel().updateInputValues(); // consider updated analysis input values, if not updated
           
-        	SwingWorker<ResultsTable,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(leftPanel.getCurrentImage());
+        	SwingWorker<ResultsTable,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(img, binaryImg);
         	ImagePlus currentImg = leftPanel.getCurrentImage();
         	
         	// adding property change listener to the worker to show the table when the asynchronous task is completed

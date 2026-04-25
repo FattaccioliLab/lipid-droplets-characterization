@@ -60,7 +60,7 @@ public class BatchFileWorker extends SwingWorker<ResultsTable,Void>{
 		
         // PARTICLE ANALYSIS
 		if (isCancelled()) return null;
-        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image);
+        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image, mask);
         worker2.execute();
         ResultsTable results = null;
         try {

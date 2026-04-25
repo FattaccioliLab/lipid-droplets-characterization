@@ -8,6 +8,7 @@ import ij.ImagePlus;
 import ij.measure.Calibration;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
+import ij.plugin.filter.Analyzer;
 import ij.plugin.filter.ParticleAnalyzer;
 
 /**
@@ -20,16 +21,18 @@ import ij.plugin.filter.ParticleAnalyzer;
 public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     
 	private AnalysisSettings settings;
-    private ImagePlus img;
+    private ImagePlus img;			// The original grayscale image (for intensities)
+    private ImagePlus binaryImg;	// The binary mask (for shapes/boundaries)
     
     /**
      * Creates a {@code MeasuresProcessingWorker}.
      * @param settings						The plugin settings.
      * @param img 							The current image to consider.
      */
-    public MeasuresProcessingWorker(AnalysisSettings settings, ImagePlus img) {
+    public MeasuresProcessingWorker(AnalysisSettings settings, ImagePlus img, ImagePlus binaryImg) {
     	this.settings = settings;
     	this.img = img;
+    	this.binaryImg = binaryImg;
     }
 
 	@Override
@@ -57,8 +60,8 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     	if (settings.analyseExcludeOnEdgesEnabled()) options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
 
     	// get current image
-    	if (img == null) {
-    		IJ.showMessage("Please open an image first (File > Open)");
+    	if (img == null || binaryImg == null) {
+    		IJ.showMessage("Missing original image or binary mask.");
     		return null;
     	}
     	
@@ -89,6 +92,7 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     		// apply the given calibration
     		if (settings.isCalibrated() && calibration != null) {		
                 img.setCalibration(calibration);
+                binaryImg.setCalibration(calibration);
             } else {
             	// if the checkbox to keep the default calibration is unchecked or the image don't have a default calibration
             	if (!settings.showDefaultCalibrationEnabled() || img.getCalibration() == null) {            		
@@ -101,12 +105,18 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
             	}
             }
     		
+            //REDIRECTION : Tell ImageJ to get intensity values from the original grayscale image!
+    		Analyzer.setRedirectImage(img);
+    		
         	// analyze each image of the stack
         	boolean success = true;
-        	int stackSize = img.getStackSize();
+        	int stackSize = binaryImg.getStackSize(); // Loop over the mask
         	for (int i = 1; i <= stackSize; i++) {
         	    img.setSlice(i);
-        	    success = pa.analyze(img);
+        	    binaryImg.setSlice(i);
+        	    
+        	    // Analyze the MASK (It will secretly pull data from 'img')
+                success = pa.analyze(binaryImg);
         	    if (!success) {
         	    	break;
         	    }
@@ -181,6 +191,10 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
             if (!settings.showCircularityEnabled()) rt.deleteColumn("Circ."); // remove if the circularity parameter isn't activated
     		
     	} finally {
+    		
+    		//ensure that the redirection is reset
+    		Analyzer.setRedirectImage(null);
+    		
     		// ensure that the original calibration is restored in the end. 
     		if (backupCal != null) {
     			img.setCalibration(backupCal);

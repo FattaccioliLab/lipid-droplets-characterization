@@ -1,5 +1,4 @@
 name: Lipid Droplets Characterization CI
-
 on: [push, pull_request]
 
 jobs:
@@ -22,9 +21,39 @@ jobs:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
         cache: maven
+    
+    # Cache APT packages (Xvfb)
+    - name: Cache APT packages
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: xvfb
+        version: 1.0
+    
+    # Cache Maven wrapper
+    - name: Cache Maven wrapper
+      uses: actions/cache@v4
+      with:
+        path: |
+          .mvn/wrapper
+        key: ${{ runner.os }}-maven-wrapper-${{ hashFiles('.mvn/wrapper/maven-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-wrapper-
+    
+    # Cache target/ for re-using builds
+    - name: Cache Maven target
+      uses: actions/cache@v4
+      with:
+        path: target
+        key: ${{ runner.os }}-maven-target-${{ matrix.java }}-${{ hashFiles('pom.xml') }}-${{ hashFiles('src/**') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-target-${{ matrix.java }}-${{ hashFiles('pom.xml') }}-
+          ${{ runner.os }}-maven-target-${{ matrix.java }}-
+    
+    - name: Install Xvfb
+      run: sudo apt-get update && sudo apt-get install -y xvfb
         
-    - name: Build with Maven
-      run: mvn -B clean package
+    - name: Build with Maven (skip tests)
+      run: mvn -B clean compile -DskipTests
       
-    - name: Run tests
-      run: mvn test
+    - name: Run tests with Xvfb
+      run: xvfb-run -a mvn test

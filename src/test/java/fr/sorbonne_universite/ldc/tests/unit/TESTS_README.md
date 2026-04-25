@@ -166,30 +166,35 @@ Original mask used before those operations : `src/test/resources/TestMask.tif`.
 ### test1
 
 Through ImageJ :  
+- Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
 - Process > Binary > Erode (on all slices)  
 -> resulting image : `.../expected/test_binary_operations/test1.tif`  
 
 ### test2
 
 Through ImageJ :  
+- Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
 - Process > Binary > Dilate (on all slices)  
 -> resulting image : `.../expected/test_binary_operations/test2.tif`  
 
 ### test3
 
 Through ImageJ :  
+- Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
 - Process > Binary > Open (on all slices)  
 -> resulting image : `.../expected/test_binary_operations/test3.tif`  
 
 ### test4
 
 Through ImageJ :  
+- Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
 - Process > Binary > Close (on all slices)  
 -> resulting image : `.../expected/test_binary_operations/test4.tif`  
 
 ### test5
 
 Through ImageJ :  
+- Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
 - Process > Binary > Open (on all slices)  
 - Process > Binary > Erode (on all slices)  
 -> resulting image : `.../expected/test_binary_operations/test5.tif`  
@@ -197,6 +202,7 @@ Through ImageJ :
 ### test6
 
 Through ImageJ :  
+- Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
 - Process > Binary > Dilate (on all slices)  
 - Process > Binary > Open (on all slices)  
 - Process > Binary > Close (on all slices)  
@@ -212,8 +218,8 @@ Original image used before applying the pipeline: `src/test/resources/TestSample
 Through ImageJ :
 - Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
 - Process > Binary > Make Binary : method Moments, Background Dark, Black background selected + Create new stack  
-- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median selected. Redirect to : None, decimal places : 4  
-- Analyze > Analyze particles ... : Size : 0 - Infinity (pixel units selected). Circularity : 0 - 1. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
+- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
+- (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test1_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test1_mask.tif`  
 -> resulting csv : `.../expected/test_pipeline/test1_table.csv`  
@@ -224,8 +230,8 @@ Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 0,35%  
 - Process > Filters > Median... : Radius 4 pixels + process all 3 slices  
 - Process > Binary > Make Binary : method Triangle, Background Dark, Black background selected + Create new stack  
-- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median selected. Redirect to : None, decimal places : 4  
-- Analyze > Analyze particles ... : Size : 0 - Infinity (pixel units selected). Circularity : 0 - 0.8. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
+- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
+- (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 0.8. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test2_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test2_mask.tif`  
 -> resulting csv : `.../expected/test_pipeline/test2_table.csv`  
@@ -236,9 +242,22 @@ Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 4%  
 - Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
 - Process > Binary > Make Binary : method Otsu, Background Dark, Black background selected + Create new stack  
-- Process > Binary > Erode (on all slices)  
-- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median selected. Redirect to : None, decimal places : 4  
-- Analyze > Analyze particles ... : Size : 1 - Infinity (pixel units selected). Circularity : 0 - 1. Show : Nothing. Only Display results selected + process all 3 slices   
+- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
+- (focus on image window) Analyze > Analyze particles ... : Size : 1 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test3_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test3_mask.tif`  
 -> resulting csv : `.../expected/test_pipeline/test3_table.csv`  
+
+### test4
+
+Through ImageJ :
+- Process > Enhance Contrast : Saturated pixels 4%  
+- Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
+- Process > Binary > Make Binary : method Otsu, Background Dark, Black background selected + Create new stack  
+- Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
+- Process > Binary > Erode (on all slices)  
+- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : TestSample.tif, decimal places : 4  
+- (focus on binary mask window) Analyze > Analyze particles ... : Size : 1 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results selected + process all 3 slices   
+-> resulting image : `.../expected/test_pipeline/test4_res.tif`  
+-> resulting mask : `.../expected/test_pipeline/test4_mask.tif`  
+-> resulting csv : `.../expected/test_pipeline/test4_table.csv`  

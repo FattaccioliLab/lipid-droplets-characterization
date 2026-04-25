@@ -85,15 +85,6 @@ public interface LDCService extends SciJavaService {
 	
 	public boolean watershedEnabled();
 	public void setWathershed(boolean watershed);
-	
-	// ====================================
-    // Morphology API
-    // ====================================
-	
-    public void captureMorphologySnapshot(ImagePlus imp);
-    public void previewMorphology(ImagePlus imp);
-    public boolean resetMorphologyPreview(ImagePlus imp);
-    public boolean applyMorphology(ImagePlus imp);
     
     // =================
     // Analyse particles
@@ -185,17 +176,44 @@ public interface LDCService extends SciJavaService {
     // Segmentation / thresholding
     // ===========================
 	
-	/** Preview manual threshold on the image */
+	/**
+	 * Preview manual threshold on the image.
+	 * @param imp The image on which the preview must be done.
+	 */
     public void previewManualThreshold(ImagePlus imp);
     
-    /** Preview auto threshold. 
-     * @return double[] {min, max} calculated.
+    /**
+     * Preview auto threshold on the image.
+     * @param imp The image on which the preview must be done.
+     * @return {min, max} computed threshold bounds.
      */
     public double[] previewAutoThreshold(ImagePlus imp);
     
-    /** Apply final conversion to mask */
+    /**
+     * Apply final conversion to mask.
+     * @param imp The image on which the preview has been previously done.
+     * @return The resulting mask.
+     */
     public ImagePlus applyThreshold(ImagePlus imp);
+    
+    /**
+     * Reset threshold.
+     * @param imp
+     * @return
+     */
     public boolean resetThreshold(ImagePlus imp);
+    
+    // ====================================
+    // Morphology
+    // ====================================
+    
+    public void captureMorphologySnapshot(ImagePlus imp);
+    
+    public void previewMorphology(ImagePlus imp);
+    
+    public boolean resetMorphologyPreview(ImagePlus imp);
+    
+    public boolean applyMorphology(ImagePlus imp);
 	
     // ============
     // Measurements
@@ -210,11 +228,11 @@ public interface LDCService extends SciJavaService {
     public SwingWorker<Void,Void> createMeasuresPreviewWorker(ImagePlus img);
     
     /**
-     * Creates a {@link SwingWorker}, that take care of processing measurements and returning them, if executed.
+     * Create a {@link SwingWorker}, that take care of processing measurements and returning them, if executed.
      * @param img The current image to consider.
 	 * @see MeasuresProcessingWorker
      */
-	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(ImagePlus img);
+	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(ImagePlus img, ImagePlus binaryImg);
 	
     /**
      * Export as a CSV file the table passed in parameter. 
@@ -244,7 +262,7 @@ public interface LDCService extends SciJavaService {
     // ============
     
     /**
-     * Creates a {@link SwingWorker}, that has the goal of applying particle analysis on a whole given {@code directory}.
+     * Create a {@link SwingWorker}, that has the goal of applying particle analysis on a whole given {@code directory}.
 	 * @param inputDirectory	The input directory where it has to find '.tif' and '.tiff' files.
 	 * @param outputFile		The output '.csv' where it writes the results.
 	 * @param bw				A reference to the {@link BatchWindow} creating this worker, needed to update the progress bar.

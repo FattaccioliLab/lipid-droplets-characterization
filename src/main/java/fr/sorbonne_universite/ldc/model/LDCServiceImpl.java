@@ -198,17 +198,18 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // Morphology
     // ====================================
     
-    public void captureMorphologySnapshot(ImagePlus imp) {
+
+    @Override public void captureMorphologySnapshot(ImagePlus imp) {
     	morphologyManager.captureSnapshot(imp);
     }
-    public void previewMorphology(ImagePlus imp) {
+    @Override public void previewMorphology(ImagePlus imp) {
     	morphologyManager.previewMorphology(imp, settings.getMorphologicalOperation());
     }
-    public boolean resetMorphologyPreview(ImagePlus imp) {
+    @Override public boolean resetMorphologyPreview(ImagePlus imp) {
     	return morphologyManager.resetPreview(imp);
     }
     
-    public boolean applyMorphology(ImagePlus imp) {
+    @Override public boolean applyMorphology(ImagePlus imp) {
     	return morphologyManager.applyMorphology(imp, settings.getMorphologicalOperation());
     }
 	
@@ -222,8 +223,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     }
     
 	/** @see MeasuresProcessingWorker */
-	@Override public SwingWorker<ResultsTable, Void> createMeasuresProcessingWorker(ImagePlus img) {
-		return measurementsManager.createMeasuresProcessingWorker(settings, img);
+	@Override public SwingWorker<ResultsTable, Void> createMeasuresProcessingWorker(ImagePlus img, ImagePlus binaryImg) {
+		return measurementsManager.createMeasuresProcessingWorker(settings, img, binaryImg);
 	}
 
 	@Override public void exportResultsTable(ResultsTable rt, String path) {
