@@ -20,11 +20,12 @@ import org.scijava.Context;
 import org.scijava.plugin.Parameter;
 
 import fr.sorbonne_universite.ldc.model.LDCService;
+import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
+import fr.sorbonne_universite.ldc.ui.leftpanel.UIOnParamsImport;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.YesNoCancelDialog;
 import net.imagej.display.ImageDisplayService;
 
 /**
@@ -32,12 +33,12 @@ import net.imagej.display.ImageDisplayService;
  * Replicates the native ImageJ Threshold Adjuster workflow.
  */
 @SuppressWarnings("serial")
-public class ThresholdingPanel extends JPanel {
+public class ThresholdingPanel extends JPanel implements UIOnParamsImport {
 
     private LeftPanel leftPanel;
 
     @Parameter
-    private LDCService service;
+    private LDCService ldc;
     @Parameter
     private ImageDisplayService imageDisplayService;
 
@@ -86,17 +87,11 @@ public class ThresholdingPanel extends JPanel {
         methodRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         methodRow.add(new JLabel(" Method: "), BorderLayout.WEST);
         
-        String[] methods = service.getThresholdMethodsList().toArray(new String[0]);
+        String[] methods = ldc.getThresholdMethodsList().toArray(new String[0]);
         methodComboBox = new JComboBox<>(methods);
-        methodComboBox.setSelectedItem(service.getThresholdMethod());
+        methodComboBox.setSelectedItem(ldc.getThresholdMethod());
         methodComboBox.addActionListener(e -> {
-        	// if manual mode, disables dark BG check box, otherwise enables it
-        	if ("Manual".equals((String)methodComboBox.getSelectedItem())) {
-        		darkBackgroundCheckbox.setEnabled(false);
-        	} else {
-        		darkBackgroundCheckbox.setEnabled(true);
-        	}
-        	updateThresholdLogic();
+        	updateThresholdMethod();
         });
         methodRow.add(methodComboBox, BorderLayout.CENTER);
         add(methodRow);
@@ -107,12 +102,11 @@ public class ThresholdingPanel extends JPanel {
         // 3. Dark Background Option
         darkBackgroundCheckbox = new JCheckBox("Dark Background");
         darkBackgroundCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        darkBackgroundCheckbox.setSelected(service.thresholdDarkBackgroundEnabled());
+        darkBackgroundCheckbox.setSelected(ldc.thresholdDarkBackgroundEnabled());
         darkBackgroundCheckbox.addActionListener(e -> {
-            service.setThresholdDarkBackground(darkBackgroundCheckbox.isSelected());
-            updateThresholdLogic();
+            updateDarkBackground();
         });
-        if ("Manual".equals((String)methodComboBox.getSelectedItem())) darkBackgroundCheckbox.setEnabled(false);
+        if ("Manual".equals(ldc.getThresholdMethod())) darkBackgroundCheckbox.setEnabled(false);
         add(darkBackgroundCheckbox);
         
         add(Box.createVerticalStrut(10));
@@ -156,7 +150,6 @@ public class ThresholdingPanel extends JPanel {
             if (img != null) {
                 lastSlice = img.getCurrentSlice(); // Remember where we started
             }
-            
             refreshHistogramData();
             configureRanges();
             updateThresholdLogic();
@@ -190,7 +183,7 @@ public class ThresholdingPanel extends JPanel {
         lbl.setPreferredSize(new Dimension(40, 30));
         row.add(lbl, BorderLayout.WEST);
 
-        int initialVal = isMinControl ? service.getThresholdMinValue() : service.getThresholdMaxValue();
+        int initialVal = isMinControl ? ldc.getThresholdMinValue() : ldc.getThresholdMaxValue();
         
         JSpinner spinner = new JSpinner(new SpinnerNumberModel(initialVal, min, max, 1));
         JSlider slider = new JSlider(min, max, initialVal);
@@ -207,13 +200,13 @@ public class ThresholdingPanel extends JPanel {
             
             //Special case i : min slider is crossing the max slider, 
             //we will make them move simultanously, so that min slider never cross max slider 
-            if(isMinControl && slider.getValue() > service.getThresholdMaxValue()) {
+            if(isMinControl && slider.getValue() > ldc.getThresholdMaxValue()) {
                 updateManualValues(!isMinControl, slider.getValue());
                 maxSpinner.setValue(slider.getValue());
             }
             
             //Special case ii : max slider value is getting lesser than Min slider value, we will decrease also the min slider value
-            else if(!isMinControl && slider.getValue() < service.getThresholdMinValue()) {	 
+            else if(!isMinControl && slider.getValue() < ldc.getThresholdMinValue()) {	 
                 updateManualValues(isMinControl, slider.getValue());
                 minSpinner.setValue(slider.getValue());
             }
@@ -232,15 +225,42 @@ public class ThresholdingPanel extends JPanel {
     private void updateManualValues(boolean isMin, int value) {
         if(isApplied) return;
         
-        if(isMin) service.setThresholdMinValue(value);
-        else      service.setThresholdMaxValue(value);
+        if(isMin) ldc.setThresholdMinValue(value);
+        else      ldc.setThresholdMaxValue(value);
         
         // Update the Red Graph Overlay immediately
-        histogramPanel.setThresholdRange(service.getThresholdMinValue(), service.getThresholdMaxValue());
+        histogramPanel.setThresholdRange(ldc.getThresholdMinValue(), ldc.getThresholdMaxValue());
 
         if ("Manual".equals(methodComboBox.getSelectedItem())) {
             updateThresholdLogic();
         }
+    }
+    
+    /**
+     * Called when the dark background checkbox is changed.
+     * Updates the LDC plug-in dark background info, and then updates the logic.
+     */
+    public void updateDarkBackground() {
+    	ldc.setThresholdDarkBackground(darkBackgroundCheckbox.isSelected());
+        updateThresholdLogic();
+    }
+    
+    /**
+     * Called when the threshold input method is changed.
+     * Updates the LDC plug-in threshold method info, and then updates the logic.
+     */
+    public void updateThresholdMethod() {
+    	// added, using updateThresholdLogic with inside ldc.setThresholdMethod when you change the input method AND 
+    	// when you don't change it is an absolutely TERRIBLE choice.
+    	
+    	// if manual mode, disables dark BG check box, otherwise enables it
+    	if ("Manual".equals((String)methodComboBox.getSelectedItem())) {
+    		darkBackgroundCheckbox.setEnabled(false);
+    	} else {
+    		darkBackgroundCheckbox.setEnabled(true);
+    	}
+    	ldc.setThresholdMethod(((String)methodComboBox.getSelectedItem()));
+    	updateThresholdLogic();
     }
 
     public void updateThresholdLogic() {
@@ -251,14 +271,13 @@ public class ThresholdingPanel extends JPanel {
 
         String method = (String) methodComboBox.getSelectedItem();
         boolean isManual = "Manual".equals(method);
-        service.setThresholdMethod(method);
 
         if (isManual) {
             enableSliders(methodComboBox.isEnabled()); // Sliders enabled if the method combo box with "Manual" is also enabled
-            service.previewManualThreshold(img);
+            ldc.previewManualThreshold(img);
         } else {
             enableSliders(false);
-            double[] computed = service.previewAutoThreshold(img);
+            double[] computed = ldc.previewAutoThreshold(img);
             
             // Update sliders to match what the algo found
             int cMin = (int)computed[0];
@@ -272,7 +291,7 @@ public class ThresholdingPanel extends JPanel {
         }
         
         // Final sync of the graph visualization
-        histogramPanel.setThresholdRange(service.getThresholdMinValue(), service.getThresholdMaxValue());
+        histogramPanel.setThresholdRange(ldc.getThresholdMinValue(), ldc.getThresholdMaxValue());
     }
 
     private void applyThreshold() {
@@ -300,21 +319,20 @@ public class ThresholdingPanel extends JPanel {
         service.setIndependentThreshold(calculateAllSlices);
         */
         
-        ImagePlus mask = service.applyThreshold(img);
+        ImagePlus mask = ldc.applyThreshold(img);
         
         if(mask != null) {
         	isApplied = true;
         	mask.show();
             IJ.showStatus("Threshold applied.");
-            leftPanel.updateWorkflowIndex(2);
-            
+            leftPanel.updateWorkflowIndex(MainGUI_LDC.MORPHOLOGICAL_STEP);
         }
     }
     
     private void resetThreshold() {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
-        isReset = service.resetThreshold(img);
+        isReset = ldc.resetThreshold(img);
         if(isReset) {
             isApplied = false;
             enableUIComponents(true);
@@ -341,8 +359,8 @@ public class ThresholdingPanel extends JPanel {
     private void configureRanges() { 
     	if(this.effectiveMaxBin != null) {
             // Update sliders to this new "Zoomed" range
-            updateControlModel(minSlider, minSpinner, 0, effectiveMaxBin, service.getThresholdMinValue());
-            updateControlModel(maxSlider, maxSpinner, 0, effectiveMaxBin, service.getThresholdMaxValue());
+            updateControlModel(minSlider, minSpinner, 0, effectiveMaxBin, ldc.getThresholdMinValue());
+            updateControlModel(maxSlider, maxSpinner, 0, effectiveMaxBin, ldc.getThresholdMaxValue());
     	}
     }
 
@@ -401,22 +419,22 @@ public class ThresholdingPanel extends JPanel {
     public void resetUIComponents() {
     	isApplied = false;
     	
-    	service.setThresholdMethod("Manual");
-    	methodComboBox.setSelectedItem(service.getThresholdMethod());
+    	ldc.setThresholdMethod("Manual");
+    	methodComboBox.setSelectedItem(ldc.getThresholdMethod());
     	
     	darkBackgroundCheckbox.setSelected(false);
-    	service.setThresholdDarkBackground(darkBackgroundCheckbox.isSelected());
+    	ldc.setThresholdDarkBackground(darkBackgroundCheckbox.isSelected());
     	
     	minSlider.setValue(0);
     	maxSlider.setValue(0);
     	minSpinner.setValue(0);
     	maxSpinner.setValue(0);
-    	service.setThresholdMinValue(0);
-    	service.setThresholdMaxValue(0);
+    	ldc.setThresholdMinValue(0);
+    	ldc.setThresholdMaxValue(0);
     	
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
-        isReset = service.resetThreshold(img);
+        isReset = ldc.resetThreshold(img);
     }
     
     
@@ -447,4 +465,29 @@ public class ThresholdingPanel extends JPanel {
             updateThresholdLogic();
         }
     }
+
+
+    // =========================================================================
+    // ON NEW PARAMETERS IMPORT
+    // =========================================================================
+    
+	@Override
+	public void syncUIWithParams() {
+		methodComboBox.setSelectedItem(ldc.getThresholdMethod());
+		darkBackgroundCheckbox.setSelected(ldc.thresholdDarkBackgroundEnabled());
+
+		minSlider.setValue(ldc.getThresholdMinValue());
+		minSpinner.setValue(ldc.getThresholdMinValue());
+		maxSlider.setValue(ldc.getThresholdMaxValue());
+		maxSpinner.setValue(ldc.getThresholdMaxValue());
+		
+		refreshHistogramData();
+		configureRanges();
+		updateThresholdLogic();
+	}
+
+	@Override
+	public void applyUIWithParams() {
+		applyThreshold();
+	}
 }

@@ -14,7 +14,7 @@ public class AnalysisSettings implements Cloneable {
     @Override
     public AnalysisSettings clone() {
         try {
-            return (AnalysisSettings) super.clone(); // Shallow copy, enough in our case
+            return (AnalysisSettings) super.clone(); // Shallow copy
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(); // Cannot happen
         }
@@ -40,18 +40,12 @@ public class AnalysisSettings implements Cloneable {
 	public final static double DFL_MEDIAN_RADIUS = 2.0; // default radius (px)
 	private double medianRadius = DFL_MEDIAN_RADIUS;
 	
-	// Gaussian filter (gaussian blur) (not yet used)
-	private boolean gausianFilter = false;
-	
-	public final static double DFL_GAUSSIAN_RADIUS = 2.0; // default radius (px)
-	private double gaussianRadius = DFL_GAUSSIAN_RADIUS;
-	
     // ===========================
     // Segmentation / thresholding
     // ===========================
 	
 	// Possible threshold methods
-	private List<String> thresholdMethodsList = new ArrayList<>(Arrays.asList("Manual", "Otsu", "Moments", "Triangle", "Yen", "Li"));
+	private static final List<String> thresholdMethodsList = new ArrayList<>(Arrays.asList("Manual", "Otsu", "Moments", "Triangle", "Yen", "Li"));
 	
 	// The current threshold method
 	public final static String DFL_THRESHOLD_METHOD = "Manual";
@@ -73,8 +67,8 @@ public class AnalysisSettings implements Cloneable {
     // Binary mask morphological operations
     // ====================================
 
-	// Possible threshold methods
-	private List<String> morphologicalOperationsList = new ArrayList<>(Arrays.asList("None", "Erode", "Dilate", "Open", "Close"));
+	// Possible morphological operations
+	private static final List<String> morphologicalOperationsList = new ArrayList<>(Arrays.asList("None", "Erode", "Dilate", "Open", "Close"));
 	
 	// The current threshold method
 	public final static String DFL_MORPHO_OPERATION = "None";
@@ -160,16 +154,6 @@ public class AnalysisSettings implements Cloneable {
 	public void setMedianRadius(double medianRadius) { 
 		if (medianRadius < 0) throw new IllegalArgumentException(Double.toString(medianRadius)+" must be positive");
 		this.medianRadius = medianRadius; 
-	}
-
-	// Gaussian filter (gaussian blur) (not yet used)
-	public boolean gausianFilterEnabled() { return gausianFilter; }
-	public void setGausianFilter(boolean gausianFilter) { this.gausianFilter = gausianFilter; }
-	
-	public double getGaussianRadius() { return gaussianRadius; }
-	public void setGaussianRadius(double gaussianRadius) {
-		if (gaussianRadius < 0) throw new IllegalArgumentException(Double.toString(gaussianRadius)+" must be positive");
-		this.gaussianRadius = gaussianRadius; 
 	}
 	
     // ===========================

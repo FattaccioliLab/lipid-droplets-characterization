@@ -1,6 +1,7 @@
 package fr.sorbonne_universite.ldc.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import javax.swing.SwingWorker;
@@ -12,6 +13,7 @@ import org.scijava.service.Service;
 import fr.sorbonne_universite.ldc.model.leftpanel.MorphologyManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.PreprocessingManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.ThresholdingManager;
+import fr.sorbonne_universite.ldc.model.rightpanel.JSONManager;
 import fr.sorbonne_universite.ldc.model.rightpanel.MeasurementsManager;
 import fr.sorbonne_universite.ldc.model.workers.PreprocessingPreviewMedianWorker;
 import fr.sorbonne_universite.ldc.ui.rightpanel.BatchWindow;
@@ -38,23 +40,25 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
   
 	// For the RightPanel's sub-panels operations.
 	private MeasurementsManager measurementsManager;
+	private JSONManager jsonManager;
 	
 	@Override
 	public void initialize() { 
 		settings = new AnalysisSettings(); 
 		preprocessingManager = new PreprocessingManager();
-		thresholdingManager = new ThresholdingManager(this);
+		thresholdingManager = new ThresholdingManager();
 		measurementsManager = new MeasurementsManager();
 		morphologyManager = new MorphologyManager();
+		jsonManager = new JSONManager();
 	}
 	
     // =========================================================================
     // GETTERS / SETTERS for the LDC state management.
     // =========================================================================
 
-	// =================
+	// =============================================
     // Preprocessing
-    // =================
+    // =============================================
 
     @Override public boolean enhanceContrastEnabled() { return settings.enhanceContrastEnabled(); }
     @Override public void setEnhanceContrast(boolean enhanceContrast) { settings.setEnhanceContrast(enhanceContrast); }
@@ -68,15 +72,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public double getMedianRadius() { return settings.getMedianRadius(); }
     @Override public void setMedianRadius(double medianRadius) { settings.setMedianRadius(medianRadius); }
 
-    @Override public boolean gausianFilterEnabled() { return settings.gausianFilterEnabled(); }
-    @Override public void setGausianFilter(boolean gausianFilter) { settings.setGausianFilter(gausianFilter); }
-
-    @Override public double getGaussianRadius() { return settings.getGaussianRadius(); }
-    @Override public void setGaussianRadius(double gaussianRadius) { settings.setGaussianRadius(gaussianRadius); }
-
-    // ===========================
+    // =============================================
     // Segmentation / thresholding
-    // ===========================
+    // =============================================
 
     @Override public List<String> getThresholdMethodsList() { return settings.getThresholdMethodsList(); }
     @Override public String getThresholdMethod() { return settings.getThresholdMethod(); }
@@ -92,9 +90,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 
 
 
-    // ====================================
+    // =============================================
     // Binary mask morphological operations
-    // ====================================
+    // =============================================
 
     public List<String> getMorphologicalOperationsList(){return settings.getMorphologicalOperationsList();}
     public String getMorphologicalOperation() {return settings.getMorphologicalOperation();}
@@ -103,9 +101,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public boolean watershedEnabled() { return settings.watershedEnabled(); }
     @Override public void setWathershed(boolean watershed) { settings.setWathershed(watershed); }
 
-    // =================
+    // =============================================
     // Analyse particles
-    // =================
+    // =============================================
 
     @Override public double getAnalyseMinSize() { return settings.getAnalyseMinSize(); }
     @Override public void setAnalyseMinSize(double analyseMinSize) { settings.setAnalyseMinSize(analyseMinSize); }
@@ -131,9 +129,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 	@Override public Calibration getCalibration() { return settings.getCalibration(); }
 	@Override public void setCalibration(Calibration calibration) { settings.setCalibration(calibration); }
     
-    // ============================
+    // =============================================
     // Measurements showing options
-    // ============================
+    // =============================================
     
 	@Override public boolean showAreaEnabled() { return settings.showAreaEnabled(); }
 	@Override public void setShowArea(boolean showArea) { settings.setShowArea(showArea); }
@@ -161,9 +159,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // OPERATIONS
     // =========================================================================
 	
-	// =================
+	// =============================================
     // Preprocessing
-    // =================
+    // =============================================
 	
 	/** @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, double) */
 	@Override public void applyEnhanceContrast(ImageProcessor ip) { preprocessingManager.applyEnhanceContrast(ip, enhanceContrastEnabled(), getEnhanceSaturatedPercent()); }
@@ -178,9 +176,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 		return preprocessingManager.createApplyMedianWorker(medianFilterEnabled(), getMedianRadius(), stack);
 	}
 	
-    // ===========================
+    // =============================================
     // Segmentation / thresholding
-    // ===========================
+    // =============================================
 	
     @Override public void previewManualThreshold(ImagePlus imp) {
         thresholdingManager.setManualThreshold(imp, settings.getThresholdMinValue(), settings.getThresholdMaxValue());
@@ -194,9 +192,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     
     @Override public boolean resetThreshold(ImagePlus imp) { return thresholdingManager.resetThreshold(imp); } 
     
-    // ====================================
+    // =============================================
     // Morphology
-    // ====================================
+    // =============================================
     
 
     @Override public void captureMorphologySnapshot(ImagePlus imp) {
@@ -213,9 +211,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     	return morphologyManager.applyMorphology(imp, settings.getMorphologicalOperation());
     }
 	
-    // ============================
+    // =============================================
     // Measures
-    // ============================
+    // =============================================
 
 	/** @see MeasuresPreviewWorker */
     @Override public SwingWorker<Void, Void> createMeasuresPreviewWorker(ImagePlus img){
@@ -239,12 +237,25 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 		return measurementsManager.generateHistograms(rt);
 	}
 	
-	// ============
+	// =============================================
     // Batch mode
-    // ============
+    // =============================================
 	
 	@Override public SwingWorker<Void,Void> createBatchWorker(File inputDirectory, File outputFile, BatchWindow bw){
 		return new BatchWorker(this, inputDirectory, outputFile, bw);
+	}
+	
+    // =============================================
+    // Saving / loading analysis parameters, as JSON
+    // =============================================
+    
+
+	@Override public void saveAnalysis(String outputPath) throws IOException {
+		jsonManager.saveAnalysis(outputPath, settings);
+	}
+    
+	@Override public void loadAnalysis(String inputPath) throws IOException {
+		settings = jsonManager.loadAnalysis(inputPath); // Replace current analysis settings by the new ones
 	}
 
 }

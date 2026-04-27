@@ -20,6 +20,7 @@ The following versions are automatically resolved by Maven via the `pom-scijava 
 - imagej-legacy 2.0.2
 - slf4j-simple 1.7.36
 - junit-jupiter 5.10.2
+- gson 2.10.1
 
 We have also used either Java 11 or Java 8. Both are compatible with our plugin development.  
 (Once in a production environment (Fiji), there are no compatibility problems with more recent Java versions)
@@ -261,3 +262,8 @@ Through ImageJ :
 -> resulting image : `.../expected/test_pipeline/test4_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test4_mask.tif`  
 -> resulting csv : `.../expected/test_pipeline/test4_table.csv`  
+
+## SPECIAL CASE : TestJSON.java
+
+Those tests are mainly here for veryfing that JSON export / import for analysis parameters are correct.  
+Thus they don't follow the methodology used for previous tests, and correspond to a more classical use of unitary tests applied to Java code.  

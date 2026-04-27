@@ -1,6 +1,5 @@
 package fr.sorbonne_universite.ldc.model.leftpanel;
 
-import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.ThresholdingPanel;
 import ij.IJ;
 import ij.ImagePlus;
@@ -13,9 +12,7 @@ import ij.process.ImageProcessor;
  */
 public class ThresholdingManager {
 
-	private LDCService service;
-	public ThresholdingManager(LDCService ldcService) {
-		this.service = ldcService;
+	public ThresholdingManager() {
 	}
 	
     /**
