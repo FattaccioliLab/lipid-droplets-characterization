@@ -29,7 +29,9 @@ import org.scijava.plugin.Parameter;
 
 import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.LDCService;
+import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
+import fr.sorbonne_universite.ldc.ui.leftpanel.UIOnParamsImport;
 import fr.sorbonne_universite.ldc.utils.InputUtils;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
@@ -37,24 +39,21 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.GenericDialog;
 import ij.process.ImageProcessor;
-import net.imagej.display.ImageDisplayService;
 
 /**
  * Creates the middle panel of the {@link LeftPanel}, containing preprocessing controls (Contrast, Median Filter).<br>
  * Includes logic for initializing the loading GIF and Cancel button.
  */
 @SuppressWarnings("serial")
-public class PreprocessingPanel extends JPanel{
+public class PreprocessingPanel extends JPanel implements UIOnParamsImport {
 	
 	// The parent panel
 	private LeftPanel leftPanel;
 	
     // --- Services ---
     @Parameter
-    private ImageDisplayService imageDisplayService;
-    @Parameter
-	private LDCService selectedSettings;
-	
+	private LDCService ldc;
+    
     // Contrast
     private JCheckBox enhanceCheckbox;
     private JSpinner enhanceSaturatedSpinner;
@@ -92,13 +91,13 @@ public class PreprocessingPanel extends JPanel{
 	    // --- Contrast Section ---
 	    enhanceCheckbox = new JCheckBox("Enhance contrast");
 	    enhanceCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-	    enhanceCheckbox.setSelected(selectedSettings.enhanceContrastEnabled());
+	    enhanceCheckbox.setSelected(ldc.enhanceContrastEnabled());
 	    enhanceCheckbox.addActionListener(e -> toggleContrast());
 
-	    enhanceSaturatedSpinner = new JSpinner(new SpinnerNumberModel(selectedSettings.getEnhanceSaturatedPercent(), 0.0, 100.0, 0.1));
-	    enhanceSaturatedSpinner.setEnabled(selectedSettings.enhanceContrastEnabled());
+	    enhanceSaturatedSpinner = new JSpinner(new SpinnerNumberModel(ldc.getEnhanceSaturatedPercent(), 0.0, 100.0, 0.1));
+	    enhanceSaturatedSpinner.setEnabled(ldc.enhanceContrastEnabled());
 	    enhanceSaturatedSpinner.addChangeListener(e -> {
-	        selectedSettings.setEnhanceSaturatedPercent(((Number) enhanceSaturatedSpinner.getValue()).doubleValue());
+	    	ldc.setEnhanceSaturatedPercent(((Number) enhanceSaturatedSpinner.getValue()).doubleValue());
 	        if (enhanceCheckbox.isSelected() && !leftPanel.isProcessing()) enhanceContrast();
 	    });
 	    
@@ -124,13 +123,13 @@ public class PreprocessingPanel extends JPanel{
 	    medianRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
 	    medianCheckbox = new JCheckBox("Median filter");
-	    medianCheckbox.setSelected(selectedSettings.medianFilterEnabled());
+	    medianCheckbox.setSelected(ldc.medianFilterEnabled());
 	    medianCheckbox.addActionListener(e -> {
 	        if (!leftPanel.isProcessing()) toggleMedian();
 	    });
 	    
 	    medianPreviewCheckbox = new JCheckBox("Preview");
-	    medianPreviewCheckbox.setEnabled(selectedSettings.medianFilterEnabled());
+	    medianPreviewCheckbox.setEnabled(ldc.medianFilterEnabled());
 	    medianPreviewCheckbox.addActionListener(e -> {
 	        if (leftPanel.isProcessing()) return; 
 	        performMedianPreviewAsync();
@@ -162,9 +161,9 @@ public class PreprocessingPanel extends JPanel{
 	    medianRow.add(cancelButton); 
 
 	    // Radius Field
-	    medianRadiusField = new JTextField(String.valueOf(selectedSettings.getMedianRadius()));
+	    medianRadiusField = new JTextField(String.valueOf(ldc.getMedianRadius()));
 	    medianRadiusField.setHorizontalAlignment(SwingConstants.RIGHT); 
-	    medianRadiusField.setEnabled(selectedSettings.medianFilterEnabled());
+	    medianRadiusField.setEnabled(ldc.medianFilterEnabled());
 	    medianRadiusField.addActionListener(e-> {
 	    	if (!leftPanel.isProcessing()) updateMedianRadiusFromField();
 	    });
@@ -279,7 +278,7 @@ public class PreprocessingPanel extends JPanel{
         // If median filter is enabled : 
         // Start from the original image's copy : applies eventually enhance contrast + applies median filter + locks preprocessing UI at the end
         // (all of that is done in the 'launchApplyWorker' method)
-        if (selectedSettings.medianFilterEnabled()) {
+        if (ldc.medianFilterEnabled()) {
 	
 	        // If applying to stack while preview is active, undo preview first
 	        if (medianPreviewCheckbox.isSelected()) {
@@ -288,7 +287,7 @@ public class PreprocessingPanel extends JPanel{
 	        }
 	
 	        // The new stack range will be considered inside the called method
-	        launchApplyWorker(slices);
+	        launchApplyWorker(slices, false);
         
 	    // Else :
 	    // Start from the original image's copy : applies eventually enhance contrast + locks preprocessing UI here
@@ -297,15 +296,15 @@ public class PreprocessingPanel extends JPanel{
         	ImagePlus copy = leftPanel.getOriginalImage().duplicate();
         	ImageProcessor ipCopy = copy.getProcessor();
         	
-        	if (selectedSettings.enhanceContrastEnabled()) selectedSettings.applyEnhanceContrast(ipCopy);
+        	if (ldc.enhanceContrastEnabled()) ldc.applyEnhanceContrast(ipCopy);
         	img.setProcessor(ipCopy);
         	
         	// The new stack range considered (if we must)
         	if (slices != null) img.setStack(InputUtils.buildStackFromSlices(slices, copy.getImageStack()));
         	
         	leftPanel.updateUIInfosNbSlices();
-        	leftPanel.setPreprocessingDone(true);
-        	leftPanel.updateWorkflowIndex(1);
+        	leftPanel.setProcessing(false);
+        	leftPanel.updateWorkflowIndex(MainGUI_LDC.THRESHOLDING_STEP);
         }
     }
     
@@ -320,7 +319,7 @@ public class PreprocessingPanel extends JPanel{
      */
     private void toggleContrast() {
         boolean enabled = enhanceCheckbox.isSelected();
-        selectedSettings.setEnhanceContrast(enabled);
+        ldc.setEnhanceContrast(enabled);
         enhanceSaturatedSpinner.setEnabled(enabled);
         enhanceSaturatedResetButton.setEnabled(enabled);
         
@@ -335,7 +334,7 @@ public class PreprocessingPanel extends JPanel{
         	img.updateAndDraw();
         	
         	// And we apply the median filter preview, if selected
-        	if (selectedSettings.medianFilterEnabled() && medianPreviewCheckbox.isSelected()) {
+        	if (ldc.medianFilterEnabled() && medianPreviewCheckbox.isSelected()) {
         		performMedianPreviewAsync();
         	}
         }
@@ -346,7 +345,7 @@ public class PreprocessingPanel extends JPanel{
      * Resets contrast enhancement to its default value.
      */
     private void resetSaturatedContrast() {
-    	selectedSettings.setEnhanceSaturatedPercent(AnalysisSettings.DFL_EC_SATURATED);
+    	ldc.setEnhanceSaturatedPercent(AnalysisSettings.DFL_EC_SATURATED);
     	enhanceSaturatedSpinner.setValue(AnalysisSettings.DFL_EC_SATURATED);
     	toggleContrast();
     }
@@ -359,7 +358,7 @@ public class PreprocessingPanel extends JPanel{
      */
     private void toggleMedian() {
         boolean enabled = medianCheckbox.isSelected();
-        selectedSettings.setMedianFilter(enabled);
+        ldc.setMedianFilter(enabled);
         
         medianRadiusField.setEnabled(enabled);
         medianPreviewCheckbox.setEnabled(enabled);
@@ -379,10 +378,10 @@ public class PreprocessingPanel extends JPanel{
             double val = Double.parseDouble(medianRadiusField.getText());
             if (val < 0) val = 0; 
             
-            selectedSettings.setMedianRadius(val);
+            ldc.setMedianRadius(val);
             
             // If median filter preview is enabled
-            if (selectedSettings.medianFilterEnabled() && medianPreviewCheckbox.isSelected()) {
+            if (ldc.medianFilterEnabled() && medianPreviewCheckbox.isSelected()) {
             	// reset median preview first
             	lastImageStackBeforeMedian = null;
             	medianPreviewCheckbox.setSelected(false);
@@ -393,7 +392,7 @@ public class PreprocessingPanel extends JPanel{
             	performMedianPreviewAsync();
             }
         } catch (NumberFormatException ex) {
-            medianRadiusField.setText(String.valueOf(selectedSettings.getMedianRadius()));
+            medianRadiusField.setText(String.valueOf(ldc.getMedianRadius()));
         }
     }
     
@@ -401,10 +400,10 @@ public class PreprocessingPanel extends JPanel{
      * Resets median radius to its default value.
      */
     private void resetMedianRadius() {
-        selectedSettings.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
+    	ldc.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
         medianRadiusField.setText(String.valueOf(AnalysisSettings.DFL_MEDIAN_RADIUS));
 
-        if (selectedSettings.medianFilterEnabled()) {
+        if (ldc.medianFilterEnabled()) {
         	updateMedianRadiusFromField();
         }
     }
@@ -421,40 +420,6 @@ public class PreprocessingPanel extends JPanel{
         }
     }
     
-    // =========================================================================
-    // ENABLING/DISABLING UI COMPONENTS
-    // =========================================================================
-
-    /**
-     * Locks or unlocks the UI elements during processing to prevent race conditions.
-     * Shows/hides the loading GIF and Cancel button appropriately.
-     * @param enabled If false, inputs are disabled and loading/cancel controls are shown.
-     */
-    private void setPreprocessingEnabled(boolean enabled) {
-        leftPanel.setProcessing(!enabled);
-
-        // Toggle Loading/Cancel visibility
-        loadingLabel.setVisible(!enabled);
-        cancelButton.setVisible(!enabled); 
-
-        // Lock inputs
-        medianCheckbox.setEnabled(enabled);
-        medianPreviewCheckbox.setEnabled(enabled);
-        medianRadiusField.setEnabled(enabled);
-        medianRadiusResetButton.setEnabled(enabled);
-        applyRangeField.setEnabled(enabled);
-        applyButton.setEnabled(enabled && medianCheckbox.isSelected());
-        
-        enhanceCheckbox.setEnabled(enabled);
-        enhanceSaturatedSpinner.setEnabled(enabled && enhanceCheckbox.isSelected());
-        enhanceSaturatedResetButton.setEnabled(enabled && enhanceCheckbox.isSelected());
-        
-        // Disables "Next" button during preprocessing (enabled = false)
-        // Enables "Next" button once preprocessing is done (enabled = true)
-        ImagePlus img = leftPanel.getCurrentImage();
-        leftPanel.getFooterLeftPanel().setNextButtonEnabled(enabled && img != null && !this.isVisible() == false);
-    }
-    
     /**
      * Enables, or disables, UI components (inputs) of this preprocessing panel.<br>
      * If it disables, inputs can be reseted to their default value.
@@ -463,7 +428,7 @@ public class PreprocessingPanel extends JPanel{
      */
     public void enableUIComponents(boolean enable, boolean resetParameters) {
     	
-    	if (leftPanel.isPreprocessingDone()) enable = false;
+    	if (leftPanel.isProcessing()) enable = false;
     	
     	// If components are disabled
     	if (enable == false) {
@@ -484,17 +449,17 @@ public class PreprocessingPanel extends JPanel{
     		// Inputs take their original values
     		
     		if (resetParameters) {
-    			selectedSettings.setEnhanceContrast(enable);
-        		selectedSettings.setEnhanceSaturatedPercent(AnalysisSettings.DFL_EC_SATURATED);
+    			ldc.setEnhanceContrast(false);
+    			ldc.setEnhanceSaturatedPercent(AnalysisSettings.DFL_EC_SATURATED);
         		
-        		enhanceCheckbox.setSelected(enable);
+        		enhanceCheckbox.setSelected(false);
         		enhanceSaturatedSpinner.setValue(AnalysisSettings.DFL_EC_SATURATED);
         		
-        		selectedSettings.setMedianFilter(enable);
-        		selectedSettings.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
+        		ldc.setMedianFilter(false);
+        		ldc.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
         		
-        		medianCheckbox.setSelected(enable);
-        		medianPreviewCheckbox.setSelected(enable);
+        		medianCheckbox.setSelected(false);
+        		medianPreviewCheckbox.setSelected(false);
         		medianRadiusField.setText(Double.toString(AnalysisSettings.DFL_MEDIAN_RADIUS));
         		applyRangeField.setText("");
     		}
@@ -503,6 +468,12 @@ public class PreprocessingPanel extends JPanel{
     	} else {
     		enhanceCheckbox.setEnabled(enable);
     		medianCheckbox.setEnabled(enable);
+    		
+    		// median preview checkbox, radius field and reset button enabled if median filter checkbox is selected
+    		medianPreviewCheckbox.setEnabled(enable && medianCheckbox.isSelected());
+    		medianRadiusResetButton.setEnabled(enable && medianCheckbox.isSelected());
+    		medianRadiusField.setEnabled(enable && medianCheckbox.isSelected());
+            
     		applyRangeField.setEnabled(enable);
     		if (!leftPanel.isProcessing()) applyButton.setEnabled(enable);
     	}
@@ -512,7 +483,6 @@ public class PreprocessingPanel extends JPanel{
      * Reset the pre-processing panel UI components, for when the image is reseted.
      * */
     public void resetUIComponents() {
-    	leftPanel.setPreprocessingDone(false);
     	enableUIComponents(false, true); // disables UI components
     	enableUIComponents(true, true); // enable ONLY enhance contrast and median filter checkboxes
     }
@@ -528,7 +498,7 @@ public class PreprocessingPanel extends JPanel{
     private void enhanceContrast() {
         ImagePlus img = leftPanel.getCurrentImage();
         if (img == null) return;
-        selectedSettings.applyEnhanceContrast(img.getProcessor()); // If the option is not enabled, does nothing.
+        ldc.applyEnhanceContrast(img.getProcessor()); // If the option is not enabled, does nothing.
         img.updateAndDraw();
     }
     
@@ -574,11 +544,9 @@ public class PreprocessingPanel extends JPanel{
         // 'toProcess' is the ImageProcessor corresponding in the original ImageStack.
         ImageProcessor toProcess = leftPanel.getOriginalImage().getStack().getProcessor(img.getCurrentSlice()).duplicate();
         // There is no enhance contrast on the original ImageProcessor, so we apply it if needed.
-        if (selectedSettings.enhanceContrastEnabled()) selectedSettings.applyEnhanceContrast(toProcess);
+        if (ldc.enhanceContrastEnabled()) ldc.applyEnhanceContrast(toProcess);
 
-        setPreprocessingEnabled(false);
-        
-        SwingWorker<Void,Void> previewWorker = selectedSettings.createPreviewMedianWorker(toProcess);
+        SwingWorker<Void,Void> previewWorker = ldc.createPreviewMedianWorker(toProcess);
         currentWorker = previewWorker;
         previewWorker.addPropertyChangeListener(evt -> {
         	
@@ -609,21 +577,27 @@ public class PreprocessingPanel extends JPanel{
 	                e.printStackTrace();
                     medianPreviewCheckbox.setSelected(false);
 	            } finally {
-	                setPreprocessingEnabled(true);
+	            	loadingLabel.setVisible(false);
+	                cancelButton.setVisible(false); 
 	                currentWorker = null;
+	                leftPanel.setProcessing(false); // enables UI components, once preview is processed
 	            }
             }
         });
+        loadingLabel.setVisible(true);
+        cancelButton.setVisible(true); 
+        leftPanel.setProcessing(true); // disables UI components during preview processing
         previewWorker.execute();
     }
     
     /**
      * Launches a dedicated background worker to apply the filter to the image (= stack).<br>
      * If a set of {@code slices} is given, it considers them for the current image.
-     * @param slices    		Slices associated to a sub-stack of the current image's stack to consider. If {@code null}, the original stack is considered.
+     * @param slices    		Slices associated to a sub-stack of the current image's stack to consider. 
+     * 							If {@code null}, the original stack is considered.
+     * @param blocking			true if the current thread must wait the worker. It is the case on new parameters import.
      */
-    private void launchApplyWorker(Set<Integer> slices) {
-        setPreprocessingEnabled(false);
+    private void launchApplyWorker(Set<Integer> slices, boolean blocking) {
         ImagePlus img = leftPanel.getCurrentImage();
         
         // save
@@ -638,46 +612,95 @@ public class PreprocessingPanel extends JPanel{
     	}
         
         // There is no enhance contrast on the original ImageProcessor, so we apply it if needed.
-        if (selectedSettings.enhanceContrastEnabled()) selectedSettings.applyEnhanceContrast(toProcess.getProcessor());
+        if (ldc.enhanceContrastEnabled()) ldc.applyEnhanceContrast(toProcess.getProcessor());
         
-        SwingWorker<Void,Void> applyWorker = selectedSettings.createApplyMedianWorker(toProcess.getImageStack());
-        currentWorker = applyWorker;
-        applyWorker.addPropertyChangeListener(evt -> {
-        	
-        	// When the worker is done
-        	// i.e. when the worker "state" property becomes DONE
-            if ("state".equals(evt.getPropertyName())
-                && SwingWorker.StateValue.DONE == evt.getNewValue()) {
+        if (!blocking) {
+        	SwingWorker<Void,Void> applyWorker = ldc.createApplyMedianWorker(toProcess.getImageStack());
+            currentWorker = applyWorker;
+            applyWorker.addPropertyChangeListener(evt -> {
+            	
+            	// When the worker is done
+            	// i.e. when the worker "state" property becomes DONE
+                if ("state".equals(evt.getPropertyName())
+                    && SwingWorker.StateValue.DONE == evt.getNewValue()) {
 
-                try {
-                	// Check if CANCELLED
-                    if (applyWorker.isCancelled()) {
+                    try {
+                    	// Check if CANCELLED
+                        if (applyWorker.isCancelled()) {
+                        	IJ.showStatus("Median filter cancelled.");
+                        // if it went OK
+                        } else {
+                        	applyWorker.get(); // exceptions
+    	                	img.setStack(toProcess.getImageStack()); // Applies changes to the current image
+    	                	img.updateAndDraw();
+    	                	leftPanel.updateUIInfosNbSlices();
+                            IJ.showStatus("Median filter preprocessing done.");
+                            leftPanel.updateWorkflowIndex(MainGUI_LDC.THRESHOLDING_STEP);
+                        }
+
+                    } catch (CancellationException ce) {
+                        IJ.showStatus("Median filter cancelled.");
+                    } catch (Exception e) {
                     	IJ.showStatus("Median filter cancelled.");
-                    	setPreprocessingEnabled(true);
-                    // if it went OK
-                    } else {
-                    	applyWorker.get(); // exceptions
-	                	img.setStack(toProcess.getImageStack()); // Applies changes to the current image
-	                	img.updateAndDraw();
-	                	leftPanel.updateUIInfosNbSlices();
-                        IJ.showStatus("Median filter preprocessing done.");
-                        setPreprocessingEnabled(true);
-                        leftPanel.setPreprocessingDone(true);
-                        leftPanel.updateWorkflowIndex(1);
+    	                IJ.log("Preview Error: " + e.getMessage());
+    	                e.printStackTrace();
+                    } finally {
+    	                loadingLabel.setVisible(false);
+    	                cancelButton.setVisible(false); 
+    	                leftPanel.setProcessing(false); // enables UI components, once processing is done
+                        currentWorker = null;
                     }
-
-                } catch (CancellationException ce) {
-                    IJ.showStatus("Median filter cancelled.");
-                } catch (Exception e) {
-                	IJ.showStatus("Median filter cancelled.");
-	                IJ.log("Preview Error: " + e.getMessage());
-	                e.printStackTrace();
-                } finally {
-                    currentWorker = null;
                 }
-            }
-        });
-        applyWorker.execute();
+            });
+            loadingLabel.setVisible(true);
+            cancelButton.setVisible(true); 
+            leftPanel.setProcessing(true); // disables UI components during processing
+            applyWorker.execute();
+            
+        } else { // In that case, the current thread waits the worker, and does BY ITSELF the modifications once it has been completed
+        	
+        	SwingWorker<Void,Void> applyWorker = ldc.createApplyMedianWorker(toProcess.getImageStack());
+            currentWorker = applyWorker;
+            leftPanel.setProcessing(true); // disables UI components during processing
+            applyWorker.execute();
+            try {
+				applyWorker.get();
+				img.setStack(toProcess.getImageStack()); // Applies changes to the current image
+            	img.updateAndDraw();
+            	leftPanel.updateUIInfosNbSlices();
+            	leftPanel.updateWorkflowIndex(MainGUI_LDC.THRESHOLDING_STEP);
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				loadingLabel.setVisible(false);
+                cancelButton.setVisible(false); 
+                leftPanel.setProcessing(false); // enables UI components, once processing is done
+				currentWorker = null;
+			}
+        }
+        
     }
+    
+    
+    
+    // =========================================================================
+    // ON NEW PARAMETERS IMPORT
+    // =========================================================================
+
+	@Override
+	public void syncUIWithParams() {
+	    // Contrast
+		enhanceCheckbox.setSelected(ldc.enhanceContrastEnabled());
+		enhanceSaturatedSpinner.setValue(ldc.getEnhanceSaturatedPercent());
+		
+	    // Median
+		medianCheckbox.setSelected(ldc.medianFilterEnabled());
+		medianRadiusField.setText(String.valueOf(ldc.getMedianRadius()));
+	}
+
+	@Override
+	public void applyUIWithParams() {
+		launchApplyWorker(null, true);
+	}
 
 }

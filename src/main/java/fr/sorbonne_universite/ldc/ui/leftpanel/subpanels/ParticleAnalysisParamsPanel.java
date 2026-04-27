@@ -24,6 +24,7 @@ import org.scijava.plugin.Parameter;
 
 import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.LDCService;
+import fr.sorbonne_universite.ldc.ui.leftpanel.UIOnParamsImport;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.measure.Calibration;
@@ -44,10 +45,10 @@ import ij.measure.Calibration;
  * </p>
  */
 @SuppressWarnings("serial")
-public class ParticleAnalysisParamsPanel extends JPanel {
+public class ParticleAnalysisParamsPanel extends JPanel implements UIOnParamsImport {
 	
     @Parameter
-    private LDCService selectedSettings;
+    private LDCService ldc;
     
     // Components
     
@@ -99,7 +100,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         
         // initialize the isCalibrated check box
         isCalibratedCheckbox = new JCheckBox("Calibrate the image");
-        isCalibratedCheckbox.setSelected(selectedSettings.isCalibrated());
+        isCalibratedCheckbox.setSelected(ldc.isCalibrated());
         isCalibratedCheckbox.setFocusPainted(false);
         isCalibratedCheckbox.addActionListener(e -> toggleIsCalibrated());
         
@@ -206,7 +207,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         // 1st line, 'Particles size' label
         cSize.gridy = 0; cSize.gridx = 0;
         cSize.gridwidth = 3;
-        String unit = selectedSettings.isCalibrated() ? "μm" : "px";
+        String unit = ldc.isCalibrated() ? "μm" : "px";
         sizeLabel = new JLabel("Particle size (" + unit + "²)", JLabel.CENTER);
         sizePanel.add(sizeLabel, cSize);
         cSize.gridwidth = 1;
@@ -315,7 +316,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         
         excludeOnEdgesCheckbox = new JCheckBox("Exclude on edges");
         excludeOnEdgesCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        excludeOnEdgesCheckbox.setSelected(selectedSettings.showAreaEnabled());
+        excludeOnEdgesCheckbox.setSelected(ldc.showAreaEnabled());
         excludeOnEdgesCheckbox.setFocusPainted(false);
         excludeOnEdgesCheckbox.addActionListener(e -> toggleExcludeOnEdges());
         
@@ -361,49 +362,49 @@ public class ParticleAnalysisParamsPanel extends JPanel {
 	    // --- Show area section ---
         areaCheckbox = new JCheckBox("Show area measures");
         areaCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        areaCheckbox.setSelected(selectedSettings.showAreaEnabled());
+        areaCheckbox.setSelected(ldc.showAreaEnabled());
         areaCheckbox.setFocusPainted(false);
         areaCheckbox.addActionListener(e -> toggleArea());
         
 	    // --- Show diameter section ---
         diameterCheckbox = new JCheckBox("Show diameter measures");
         diameterCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        diameterCheckbox.setSelected(selectedSettings.showAreaEnabled());
+        diameterCheckbox.setSelected(ldc.showAreaEnabled());
         diameterCheckbox.setFocusPainted(false);
         diameterCheckbox.addActionListener(e -> toggleDiameter());
 
 	    // --- Show equivalent diameter section ---
         medianCheckbox = new JCheckBox("Show median measures");
         medianCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        medianCheckbox.setSelected(selectedSettings.showMedianEnabled());
+        medianCheckbox.setSelected(ldc.showMedianEnabled());
         medianCheckbox.setFocusPainted(false);
         medianCheckbox.addActionListener(e -> toggleMedian());
 
 	    // --- Show mean section ---
         meanCheckbox = new JCheckBox("Show mean measures");
         meanCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        meanCheckbox.setSelected(selectedSettings.showMeanEnabled());
+        meanCheckbox.setSelected(ldc.showMeanEnabled());
         meanCheckbox.setFocusPainted(false);
         meanCheckbox.addActionListener(e -> toggleMean());
 
 	    // --- Show integrated density section ---
 	    integratedDensityCheckbox = new JCheckBox("Show integrated density measures");
 	    integratedDensityCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-	    integratedDensityCheckbox.setSelected(selectedSettings.showIntegratedDensityEnabled());
+	    integratedDensityCheckbox.setSelected(ldc.showIntegratedDensityEnabled());
 	    integratedDensityCheckbox.setFocusPainted(false);
 	    integratedDensityCheckbox.addActionListener(e -> toggleIntegratedDensity());
 
 	    // --- Show circularity section ---
 	    circularityCheckbox = new JCheckBox("Show circularity measures");
 	    circularityCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-	    circularityCheckbox.setSelected(selectedSettings.showCircularityEnabled());
+	    circularityCheckbox.setSelected(ldc.showCircularityEnabled());
 	    circularityCheckbox.setFocusPainted(false);
 	    circularityCheckbox.addActionListener(e -> toggleCircularity());
 
 	    // --- Default calibration section ---
 	    defaultCalibrationCheckbox = new JCheckBox("Show results with default calibration unit");
 	    defaultCalibrationCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-	    defaultCalibrationCheckbox.setSelected(selectedSettings.showDefaultCalibrationEnabled());
+	    defaultCalibrationCheckbox.setSelected(ldc.showDefaultCalibrationEnabled());
 	    defaultCalibrationCheckbox.setFocusPainted(false);
 	    defaultCalibrationCheckbox.addActionListener(e -> toggleDefaultCalibration());
 	    defaultCalibrationCheckbox.setEnabled(!isCalibratedCheckbox.isSelected());
@@ -487,7 +488,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	defaultCalibrationCheckbox.setSelected(false);
     	toggleDefaultCalibration();
     	
-    	selectedSettings.setIsCalibrated(isSelected);
+    	ldc.setIsCalibrated(isSelected);
         
     	String unit = "px";
     	if (isSelected) {
@@ -510,7 +511,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         double pixelSize = (double) manualCalibrationSpinner.getValue();
         String currentUnit = unitField.getText().trim();
         
-        Calibration cal = selectedSettings.getCalibration();
+        Calibration cal = ldc.getCalibration();
         if (cal == null) {
             cal = new Calibration();
         }
@@ -522,7 +523,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         }
         cal.setUnit(currentUnit);
         
-        selectedSettings.setCalibration(cal);
+        ldc.setCalibration(cal);
         
         // update the unit in sizeLabel
         String displayUnit = currentUnit.equals("pixel") ? "px" : currentUnit;
@@ -535,7 +536,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      */
     private void updateDefaultCalibration() {
     	// get the default pixel size if the image is already calibrated
-        Calibration cal = selectedSettings.getCalibration();
+        Calibration cal = ldc.getCalibration();
         if (cal != null && cal.scaled()) {
         	defaultUnit = cal.getUnit();
             defaultPixelSize = cal.pixelWidth;
@@ -570,7 +571,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         maxSizeField.setEnabled(!noMax);
         if (noMax) {
             maxSizeField.setText("∞");
-            selectedSettings.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
+            ldc.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
         } else {
         	double minValue = Double.valueOf(minSizeField.getText());
         	double maxValue = 10;
@@ -578,7 +579,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         		maxValue = minValue;
         	}
             maxSizeField.setText(Double.toString(maxValue));
-            selectedSettings.setAnalyseMaxSize(maxValue);
+            ldc.setAnalyseMaxSize(maxValue);
         }
     }
     
@@ -604,7 +605,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
             	maxValue = Double.valueOf(maxSizeField.getText());
         	} catch (NumberFormatException ex) {
         		IJ.showMessage("Invalid maximum size input format.");
-        		maxValue = selectedSettings.getAnalyseMaxSize();
+        		maxValue = ldc.getAnalyseMaxSize();
         		maxSizeField.setText(Double.toString(maxValue));
         	}
     	}
@@ -613,22 +614,22 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     		double val = Double.parseDouble(minSizeField.getText());
             if (val < AnalysisSettings.DFL_ANALYSE_MIN_SIZE) {
             	minSizeField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MIN_SIZE));
-            	selectedSettings.setAnalyseMinSize(AnalysisSettings.DFL_ANALYSE_MIN_SIZE);
+            	ldc.setAnalyseMinSize(AnalysisSettings.DFL_ANALYSE_MIN_SIZE);
             } else if (val > maxValue) {
                 minSizeField.setText(Double.toString(maxValue));
-                selectedSettings.setAnalyseMinSize(maxValue);
+                ldc.setAnalyseMinSize(maxValue);
             } else {
                 minSizeField.setText(Double.toString(val));
-                selectedSettings.setAnalyseMinSize(val);
+                ldc.setAnalyseMinSize(val);
             }
     	} catch (NumberFormatException ex) {
     		IJ.showMessage("Invalid minimum size input format.");
             if (AnalysisSettings.DFL_ANALYSE_MIN_SIZE <= maxValue) {
                 minSizeField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MIN_SIZE));
-    			selectedSettings.setAnalyseMinSize(AnalysisSettings.DFL_ANALYSE_MIN_SIZE);
+                ldc.setAnalyseMinSize(AnalysisSettings.DFL_ANALYSE_MIN_SIZE);
             } else {
                 minSizeField.setText(Double.toString(maxValue));
-                selectedSettings.setAnalyseMinSize(maxValue);
+                ldc.setAnalyseMinSize(maxValue);
             }
     	}
     }
@@ -651,7 +652,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     		minValue = Double.valueOf(minSizeField.getText());
     	} catch (NumberFormatException ex) {
     		IJ.showMessage("Invalid minimum size input format.");
-    		minValue = selectedSettings.getAnalyseMinSize();
+    		minValue = ldc.getAnalyseMinSize();
     		minSizeField.setText(Double.toString(minValue));
     	}
     	
@@ -659,20 +660,20 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     		double val = Double.parseDouble(maxSizeField.getText());
             if (val < minValue) {
             	maxSizeField.setText(Double.toString(minValue));
-            	selectedSettings.setAnalyseMaxSize(minValue);
+            	ldc.setAnalyseMaxSize(minValue);
             } else {
             	maxSizeField.setText(Double.toString(val));
-                selectedSettings.setAnalyseMaxSize(val);
+            	ldc.setAnalyseMaxSize(val);
             }
     	} catch (NumberFormatException ex) {
     		if (!maxSizeField.getText().equals("∞")) {
         		IJ.showMessage("Invalid maximum size input format.");
                 if (AnalysisSettings.DFL_ANALYSE_MAX_SIZE >= minValue) {
                 	maxSizeField.setText("∞");
-        			selectedSettings.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
+                	ldc.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
                 } else {
                 	maxSizeField.setText(Double.toString(minValue));
-                    selectedSettings.setAnalyseMaxSize(minValue);
+                	ldc.setAnalyseMaxSize(minValue);
                 }
     		}
     	}
@@ -697,7 +698,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     		maxValue = Double.valueOf(maxCircularityField.getText());
     	} catch (NumberFormatException ex) {
     		IJ.showMessage("Invalid maximum circularity input format.");
-    		maxValue = selectedSettings.getAnalyseMaxCircularity();
+    		maxValue = ldc.getAnalyseMaxCircularity();
     		maxCircularityField.setText(Double.toString(maxValue));
     	}
     	
@@ -705,22 +706,22 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     		double val = Double.parseDouble(minCircularityField.getText());
             if (val < AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY) {
             	minCircularityField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY));
-            	selectedSettings.setAnalyseMinCircularity(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY);
+            	ldc.setAnalyseMinCircularity(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY);
             } else if (val > maxValue) {
             	minCircularityField.setText(Double.toString(maxValue));
-                selectedSettings.setAnalyseMinCircularity(maxValue);
+            	ldc.setAnalyseMinCircularity(maxValue);
             } else {
             	minCircularityField.setText(Double.toString(val));
-                selectedSettings.setAnalyseMinCircularity(val);
+            	ldc.setAnalyseMinCircularity(val);
             }
     	} catch (NumberFormatException ex) {
     		IJ.showMessage("Invalid minimum circularity input format.");
             if (AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY <= maxValue) {
             	minCircularityField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY));
-    			selectedSettings.setAnalyseMinCircularity(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY);
+            	ldc.setAnalyseMinCircularity(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY);
             } else {
             	minCircularityField.setText(Double.toString(maxValue));
-                selectedSettings.setAnalyseMinCircularity(maxValue);
+            	ldc.setAnalyseMinCircularity(maxValue);
             }
     	}
     }
@@ -743,7 +744,7 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     		minValue = Double.valueOf(minCircularityField.getText());
     	} catch (NumberFormatException ex) {
     		IJ.showMessage("Invalid minimum circularity input format.");
-    		minValue = selectedSettings.getAnalyseMinCircularity();
+    		minValue = ldc.getAnalyseMinCircularity();
     		minCircularityField.setText(Double.toString(minValue));
     	}
     	
@@ -751,19 +752,19 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     		double val = Double.parseDouble(maxCircularityField.getText());
             if (val < minValue) {
             	maxCircularityField.setText(Double.toString(minValue));
-            	selectedSettings.setAnalyseMaxCircularity(minValue);
+            	ldc.setAnalyseMaxCircularity(minValue);
             } else {
             	maxCircularityField.setText(Double.toString(val));
-                selectedSettings.setAnalyseMaxCircularity(val);
+            	ldc.setAnalyseMaxCircularity(val);
             }
     	} catch (NumberFormatException ex) {
     		IJ.showMessage("Invalid maximum circularity input format.");
             if (AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY >= minValue) {
             	maxCircularityField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY));
-    			selectedSettings.setAnalyseMaxCircularity(AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY);
+            	ldc.setAnalyseMaxCircularity(AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY);
             } else {
             	maxCircularityField.setText(Double.toString(minValue));
-                selectedSettings.setAnalyseMaxCircularity(minValue);
+            	ldc.setAnalyseMaxCircularity(minValue);
             }
     	}
     }
@@ -773,14 +774,14 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      * are excluded from analysis, based on the checkbox state.
      */
     private void toggleExcludeOnEdges() {
-    	selectedSettings.setAnalyseExcludeOnEdges(excludeOnEdgesCheckbox.isSelected());
+    	ldc.setAnalyseExcludeOnEdges(excludeOnEdgesCheckbox.isSelected());
     }
     
     /**
      * Update the circularity threshold with the value of the circularity threshold spinner.
      */
     private void enterCircularityThresholdSpinner() {
-    	selectedSettings.setAnalyseCircularityThreshold((double)circularityThresholdSpinner.getValue());
+    	ldc.setAnalyseCircularityThreshold((double)circularityThresholdSpinner.getValue());
     }
     
     // MEASUREMENTS
@@ -789,49 +790,49 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      * Toggles area measurements based on the checkbox state.
      */
     private void toggleArea() {
-    	selectedSettings.setShowArea(areaCheckbox.isSelected());
+    	ldc.setShowArea(areaCheckbox.isSelected());
     }
     
     /**
      * Toggles diameter measurements based on the checkbox state.
      */
     private void toggleDiameter() {
-    	selectedSettings.setShowDiameter(diameterCheckbox.isSelected());
+    	ldc.setShowDiameter(diameterCheckbox.isSelected());
     }
     
     /**
      * Toggles median measurements based on the checkbox state.
      */
     private void toggleMedian() {
-    	selectedSettings.setShowMedian(medianCheckbox.isSelected());
+    	ldc.setShowMedian(medianCheckbox.isSelected());
     }
     
     /**
      * Toggles mean measurements based on the checkbox state.
      */
     private void toggleMean() {
-    	selectedSettings.setShowMean(meanCheckbox.isSelected());
+    	ldc.setShowMean(meanCheckbox.isSelected());
     }
     
     /**
      * Toggles integrated density measurements based on the checkbox state.
      */
     private void toggleIntegratedDensity() {
-    	selectedSettings.setShowIntegratedDensity(integratedDensityCheckbox.isSelected());
+    	ldc.setShowIntegratedDensity(integratedDensityCheckbox.isSelected());
     }
     
     /**
      * Toggles circularity measurements based on the checkbox state.
      */
     private void toggleCircularity() {
-    	selectedSettings.setShowCircularity(circularityCheckbox.isSelected());
+    	ldc.setShowCircularity(circularityCheckbox.isSelected());
     }
     
     /**
      * Toggle default calibration measurements based on the checkbox state.
      */
     private void toggleDefaultCalibration() {
-    	selectedSettings.setShowDefaultCalibration(defaultCalibrationCheckbox.isSelected());
+    	ldc.setShowDefaultCalibration(defaultCalibrationCheckbox.isSelected());
     }
     
     // =========================================================================
@@ -873,19 +874,19 @@ public class ParticleAnalysisParamsPanel extends JPanel {
      */
     public void resetUIComponents() {
     	// CALIBRATION SETTINGS
-    	isCalibratedCheckbox.setSelected(selectedSettings.isCalibrated());
+    	isCalibratedCheckbox.setSelected(ldc.isCalibrated());
     	updateDefaultCalibration();
     	unitField.setText(defaultUnit);
 		manualCalibrationSpinner.setValue(defaultPixelSize);
     	manualCalibrationSpinner.setEnabled(isCalibratedCheckbox.isSelected());
     	
     	// PARTICLE SETTINGS
-    	selectedSettings.setAnalyseMinSize(AnalysisSettings.DFL_ANALYSE_MIN_SIZE);
-    	selectedSettings.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
-    	selectedSettings.setAnalyseMinCircularity(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY);
-    	selectedSettings.setAnalyseMaxCircularity(AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY);
-    	selectedSettings.setAnalyseExcludeOnEdges(AnalysisSettings.DFL_ANALYSE_EXCL_EDGES);
-    	selectedSettings.setAnalyseCircularityThreshold(AnalysisSettings.DFL_ANALYSE_CIRC_THRESHOLD);
+    	ldc.setAnalyseMinSize(AnalysisSettings.DFL_ANALYSE_MIN_SIZE);
+    	ldc.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE);
+    	ldc.setAnalyseMinCircularity(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY);
+    	ldc.setAnalyseMaxCircularity(AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY);
+    	ldc.setAnalyseExcludeOnEdges(AnalysisSettings.DFL_ANALYSE_EXCL_EDGES);
+    	ldc.setAnalyseCircularityThreshold(AnalysisSettings.DFL_ANALYSE_CIRC_THRESHOLD);
     	
         noMaxCheckbox.setSelected(true);
         minSizeField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MIN_SIZE));
@@ -896,13 +897,13 @@ public class ParticleAnalysisParamsPanel extends JPanel {
         circularityThresholdSpinner.setValue(AnalysisSettings.DFL_ANALYSE_CIRC_THRESHOLD);
     	
     	// MEASUREMENTS
-    	selectedSettings.setShowArea(AnalysisSettings.DFL_SHOWING_OPT);
-    	selectedSettings.setShowDiameter(AnalysisSettings.DFL_SHOWING_OPT);
-    	selectedSettings.setShowMedian(AnalysisSettings.DFL_SHOWING_OPT);
-    	selectedSettings.setShowMean(AnalysisSettings.DFL_SHOWING_OPT);
-    	selectedSettings.setShowIntegratedDensity(AnalysisSettings.DFL_SHOWING_OPT);
-    	selectedSettings.setShowCircularity(AnalysisSettings.DFL_SHOWING_OPT);
-    	selectedSettings.setShowDefaultCalibration(AnalysisSettings.DFL_SHOWING_OPT);
+        ldc.setShowArea(AnalysisSettings.DFL_SHOWING_OPT);
+        ldc.setShowDiameter(AnalysisSettings.DFL_SHOWING_OPT);
+        ldc.setShowMedian(AnalysisSettings.DFL_SHOWING_OPT);
+        ldc.setShowMean(AnalysisSettings.DFL_SHOWING_OPT);
+        ldc.setShowIntegratedDensity(AnalysisSettings.DFL_SHOWING_OPT);
+        ldc.setShowCircularity(AnalysisSettings.DFL_SHOWING_OPT);
+        ldc.setShowDefaultCalibration(AnalysisSettings.DFL_SHOWING_OPT);
     	
         areaCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
         diameterCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
@@ -929,4 +930,50 @@ public class ParticleAnalysisParamsPanel extends JPanel {
     	enterMaxCircularityField();
     	enterCircularityThresholdSpinner();
     }
+    
+    // =========================================================================
+    // ON NEW PARAMETERS IMPORT
+    // =========================================================================
+    
+	@Override
+	public void syncUIWithParams() { // Here it synchronizes input values with the current LDC parameters
+
+		// particle size
+	    double minSize = ldc.getAnalyseMinSize();
+	    double maxSize = ldc.getAnalyseMaxSize();
+
+	    minSizeField.setText(Double.toString(minSize));
+
+	    if (maxSize == AnalysisSettings.DFL_ANALYSE_MAX_SIZE) {
+	        noMaxCheckbox.setSelected(true);
+	        maxSizeField.setText("∞");
+	        maxSizeField.setEnabled(false);
+	    } else {
+	        noMaxCheckbox.setSelected(false);
+	        maxSizeField.setText(Double.toString(maxSize));
+	        maxSizeField.setEnabled(true);
+	    }
+
+	    // particle circularity
+	    minCircularityField.setText(Double.toString(ldc.getAnalyseMinCircularity()));
+	    maxCircularityField.setText(Double.toString(ldc.getAnalyseMaxCircularity()));
+
+	    // other particle params
+	    excludeOnEdgesCheckbox.setSelected(ldc.analyseExcludeOnEdgesEnabled());
+	    circularityThresholdSpinner.setValue(ldc.getAnalyseCircularityThreshold());
+
+	    // measurements
+	    areaCheckbox.setSelected(ldc.showAreaEnabled());
+	    diameterCheckbox.setSelected(ldc.showDiameterEnabled());
+	    medianCheckbox.setSelected(ldc.showMedianEnabled());
+	    meanCheckbox.setSelected(ldc.showMeanEnabled());
+	    integratedDensityCheckbox.setSelected(ldc.showIntegratedDensityEnabled());
+	    circularityCheckbox.setSelected(ldc.showCircularityEnabled());
+	    defaultCalibrationCheckbox.setSelected(ldc.showDefaultCalibrationEnabled());
+	}
+
+	@Override
+	public void applyUIWithParams() {
+		// Nothing
+	}
 }

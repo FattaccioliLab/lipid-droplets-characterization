@@ -20,8 +20,13 @@ import ij.ImagePlus;
 @SuppressWarnings("serial")
 public class MainGUI_LDC extends JFrame {
     
-    private static final int WINDOW_WIDTH = 1000;
-    private static final int WINDOW_HEIGHT = 750;
+	public static final int WINDOW_WIDTH = 1000;
+	public static final int WINDOW_HEIGHT = 750;
+    
+    public static final int PREPROCESSING_STEP = 0;
+    public static final int THRESHOLDING_STEP = 1;
+    public static final int MORPHOLOGICAL_STEP = 2;
+    public static final int ANALYSIS_PARAMETERS_STEP = 3;
     
     @Parameter
     private LDCService selectedSettings;

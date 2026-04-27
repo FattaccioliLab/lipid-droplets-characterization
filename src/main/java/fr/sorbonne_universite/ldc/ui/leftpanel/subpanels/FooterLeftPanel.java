@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 
 import org.scijava.Context;
 
+import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
 
 /**
@@ -50,14 +51,13 @@ public class FooterLeftPanel extends JPanel{
 	}
 	
     /**
-     * Enables (or disables) the footer's 'Next' button.
-     * @param enabled true : enables, false : disables
+     * Enables, or disables, UI components (navigation buttons) of this footer panel. 
+     * Also depends on the current {@code navigationIndex}.
+     * @param enable 			true : enables inputs, false : disables inputs.
+     * @param navigationIndex	The current navigation index.
      */
-    public void setNextButtonEnabled(boolean enabled) { nextButton.setEnabled(enabled); }
-    
-    /**
-     * Enables (or disables) the footer's 'Prev' button.
-     * @param enabled true : enables, false : disables
-     */
-    public void setPrevButtonEnabled(boolean enabled) { prevButton.setEnabled(enabled); }
+    public void enableUIComponents(boolean enable, int navigationIndex) {
+    	prevButton.setEnabled(enable && navigationIndex > MainGUI_LDC.PREPROCESSING_STEP);
+    	nextButton.setEnabled(enable && navigationIndex < MainGUI_LDC.ANALYSIS_PARAMETERS_STEP);
+    }
 }

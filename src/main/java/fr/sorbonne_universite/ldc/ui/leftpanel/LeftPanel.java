@@ -9,7 +9,9 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
 import org.scijava.Context;
+import org.scijava.plugin.Parameter;
 
+import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.FooterLeftPanel;
 import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.ImageSourcePanel;
@@ -32,6 +34,9 @@ import ij.ImagePlus;
  */
 @SuppressWarnings("serial")
 public class LeftPanel extends JPanel {
+	
+    @Parameter
+    private LDCService ldc;
     
     // Parent container
     private MainGUI_LDC mainGUI;
@@ -43,10 +48,12 @@ public class LeftPanel extends JPanel {
     private MorphologyPanel morphologyPanel;
     private ParticleAnalysisParamsPanel particleAnalysisParamsPanel;
     private FooterLeftPanel footerLeftPanel;
+    
+    /** Contains previous layout containers that need to take into account new imported parameters. */
+	private UIOnParamsImport[] panelsOnParamsImport;
 
     // State Flags
     private volatile boolean isProcessing = false; 	//it's false when no img is selected or a task is running to partially disable the interface
-    private boolean preprocessingDone = false;  
   
     // Sub-panels display indexes
     // 0 = Preprocessing, 1 = Thresholding, 2 = MorphologyPanel, 3 = Particle analysis parameters
@@ -74,33 +81,35 @@ public class LeftPanel extends JPanel {
         ));
         JPanel mainContainer = new JPanel();
         mainContainer.setLayout(new BoxLayout(mainContainer, BoxLayout.Y_AXIS));
-
-        // ImageSourcePanel (Always visible)
-        imageSourcePanel = new ImageSourcePanel(ctx, this);
-        mainContainer.add(imageSourcePanel);
-        mainContainer.add(Box.createVerticalStrut(10));
         
         // PreprocessingPanel
         preprocessingPanel = new PreprocessingPanel(ctx, this);
-        mainContainer.add(preprocessingPanel);
         
         // ThresholdingPanel - Initially Hidden
         thresholdingPanel = new ThresholdingPanel(ctx, this);
         thresholdingPanel.setVisible(false);
-        mainContainer.add(thresholdingPanel);
         
-        //MorphologyPanel
-        this.morphologyPanel = new MorphologyPanel(ctx, this);
+        //MorphologyPanel - Initially Hidden
+        morphologyPanel = new MorphologyPanel(ctx, this);
         morphologyPanel.setVisible(false);
-        mainContainer.add(morphologyPanel);
         
         // ParticleAnalysisParamsPanel - Initially Hidden
         particleAnalysisParamsPanel = new ParticleAnalysisParamsPanel(ctx);
         particleAnalysisParamsPanel.setVisible(false);
-        mainContainer.add(particleAnalysisParamsPanel);
+        
+        // ImageSourcePanel (Always visible)
+        imageSourcePanel = new ImageSourcePanel(ctx, this);
         
         // FooterLeftPanel (Always visible)
         footerLeftPanel = new FooterLeftPanel(ctx, this);
+        
+        mainContainer.add(imageSourcePanel);
+        mainContainer.add(Box.createVerticalStrut(10));
+        mainContainer.add(preprocessingPanel);
+        mainContainer.add(thresholdingPanel);
+        mainContainer.add(morphologyPanel);
+        mainContainer.add(particleAnalysisParamsPanel);
+        
         add(footerLeftPanel, BorderLayout.SOUTH);
 
         add(mainContainer, BorderLayout.NORTH);
@@ -108,29 +117,12 @@ public class LeftPanel extends JPanel {
         // Disables all sub-panels at the start.
         enablePanels(false);
         
+        panelsOnParamsImport = new UIOnParamsImport[] {preprocessingPanel, thresholdingPanel, 
+        		morphologyPanel, particleAnalysisParamsPanel};
     }
     
     /** @return The {@link MainGUI_LDC} JFrame */
     public MainGUI_LDC getMainGUI() { return mainGUI; }
-    
-    // =========================================================================
-    // Sub-panel getters
-    // =========================================================================
-    
-    /** @return The {@link ImageSourceControl} JPanel (the top sub-panel) */
-    public ImageSourcePanel getImageSourcePanel() { return imageSourcePanel; }
-    
-    /** @return The {@link PreprocessingPanel} JPanel (the 1st center sub-panel) */
-    public PreprocessingPanel getPreprocessingPanel() { return preprocessingPanel; }
-    
-    /** @return The {@link ThresholdingPanel} JPanel (the 2nd center sub-panel) */
-    public ThresholdingPanel getThresholdingPanel() {return thresholdingPanel;}
-    
-    /** @return The {@link ParticleAnalysisParamsPanel} JPanel (the 3rd center sub-panel) */
-    public ParticleAnalysisParamsPanel getParticleAnalysisParamsPanel() { return particleAnalysisParamsPanel; }
-    
-    /** @return The {@link FooterLeftPanel} JPanel (the bottom sub-panel) */
-    public FooterLeftPanel getFooterLeftPanel() { return footerLeftPanel; }
     
     // =========================================================================
     // State getters / setters
@@ -139,17 +131,15 @@ public class LeftPanel extends JPanel {
     /** @return boolean value indicating if the plugin is currently processing a preprocessing operation. */
     public boolean isProcessing() { return isProcessing; }
     
-    /** @param isProcessing The new value of the {@code isProcessing} boolean. */
-    public void setProcessing(boolean isProcessing) { this.isProcessing = isProcessing; }
-    
-    /** @return boolean value indicating if a preprocessing workflow has been done. */
-    public boolean isPreprocessingDone() { return preprocessingDone; }
-    
     /** 
-     * If true, locks PreprocessingPanel's UI components. Called when a preprocessing workflow has been done.
-     * @param preprocessingDone The new value of the {@code preprocessingDone} boolean. 
+     * Modifies the state of the whole left panel, by disabling UI components of the sub-panels
+     * if one of them is currently processing. Otherwise it allows enabling sub-panels.
+     * @param isProcessing The new value of the {@code isProcessing} boolean. 
      */
-    public void setPreprocessingDone(boolean preprocessingDone) { this.preprocessingDone = preprocessingDone; }
+    public void setProcessing(boolean isProcessing) {
+    	this.isProcessing = isProcessing; 
+    	enablePanels(true); // even if true is given as parameter, the method itself will consider the new 'isProcessing' flag
+    }
     
     /** @return index giving the current workflow step considered. 0 = Preprocessing, 1 = Thresholding, 2 = Particle analysis parameters.  */
     public int getWorkflowIndex() { return workflowIndex; }
@@ -169,6 +159,13 @@ public class LeftPanel extends JPanel {
     
     /** @return The currently considered {@link ImagePlus}. Can be {@code null} if no image currently considered. */
     public ImagePlus getCurrentImage() { return mainGUI.getCurrentImage(); }
+    
+    // =========================================================================
+    // Sub-panels needed on new parameters import
+    // =========================================================================
+    
+    /** @return Sub-panels needed on new parameters import. */
+    public UIOnParamsImport[] getPanelsOnParamsImport() { return panelsOnParamsImport; }
     
     // =========================================================================
     // Enabling / Disabling and reseting panels
@@ -193,66 +190,120 @@ public class LeftPanel extends JPanel {
     /**
      * <ul>
      * 	Either :
-     * 	<li>Enables UI components of ONLY the current workflow's step sub-panel.</li>
+     * 	<li>Enables UI components of ONLY the current workflow's step sub-panel, if not processing.</li>
      * 	<li>Disables UI components of ALL sub panels.</li>
      * </ul>
      * @param enable true : enable, false : disable
      */
     public void enablePanels(boolean enable) {
     	
+    	// ImageSourcePanel
+    	imageSourcePanel.enableUIComponents(enable);
+    	
     	// PreprocessingPanel
-    	if (enable && workflowIndex == 0) {
+    	if (enable && workflowIndex == MainGUI_LDC.PREPROCESSING_STEP && !isProcessing) {
     		preprocessingPanel.enableUIComponents(true, false);
     	} else {
     		preprocessingPanel.enableUIComponents(false, false);
     	}
     	
     	// ThresholdingPanel
-    	if (enable && workflowIndex == 1) {
+    	if (enable && workflowIndex == MainGUI_LDC.THRESHOLDING_STEP && !isProcessing) {
     		thresholdingPanel.enableUIComponents(true);
     	} else {
     		thresholdingPanel.enableUIComponents(false);
     	}
     	
     	// MorphologyPanel
-    	if (enable && workflowIndex == 2) {
+    	if (enable && workflowIndex == MainGUI_LDC.MORPHOLOGICAL_STEP && !isProcessing) {
     		morphologyPanel.enableUIComponents(true);
     	} else {
     		morphologyPanel.enableUIComponents(false);
     	}
     	
     	// ParticleAnalysisParamsPanel
-    	if (enable && workflowIndex == 3) {
+    	if (enable && workflowIndex == MainGUI_LDC.ANALYSIS_PARAMETERS_STEP && !isProcessing) {
     		particleAnalysisParamsPanel.enableUIComponents(true);
     	} else {
     		particleAnalysisParamsPanel.enableUIComponents(false);
+    	}
+    	
+    	// Disable navigation while processing
+    	if (isProcessing) {
+    		footerLeftPanel.enableUIComponents(false, navigationIndex);
+    	} else {
+    		footerLeftPanel.enableUIComponents(true, navigationIndex);
     	}
     }
     
     /**
      * Reset all sub panels, for when the image is reseted.
-     * */
+     * ALSO set the preprocessing panel as the current sub-panel shown.
+     */
     public void resetPanels() {
+    	isProcessing = false;
+    	
     	preprocessingPanel.resetUIComponents();
     	thresholdingPanel.resetUIComponents();
     	morphologyPanel.resetUIComponents();
     	particleAnalysisParamsPanel.resetUIComponents();
     	
     	// Workflow and navigation back to preprocessing
-    	workflowIndex = 0;
-    	navigationIndex = 0;
-    	preprocessingPanel.setVisible(true);
-    	thresholdingPanel.setVisible(false);
-    	morphologyPanel.setVisible(false);
-    	particleAnalysisParamsPanel.setVisible(false);
-
-        footerLeftPanel.setPrevButtonEnabled(false);
-    	footerLeftPanel.setNextButtonEnabled(true);
+    	workflowIndex = MainGUI_LDC.PREPROCESSING_STEP;
+    	navigationIndex = MainGUI_LDC.PREPROCESSING_STEP;
+    	goToStep(MainGUI_LDC.PREPROCESSING_STEP);
+    	enablePanels(true);
     }
     
     // =========================================================================
     // Navigation Logic
     // =========================================================================
+    
+    
+    /**
+     * Updates LeftPanel UI to show the given sub-panel, and manage allowing/disallowing interaction with Prev/Next footer buttons
+     * depending on the new current sub panel.<br>
+     * Does not manage enabling/disabling UI components of sub-panels.
+     * @param 			The new navigation index.
+     */
+    private void goToStep(int newNavigationIndex) {
+    	
+    	switch (newNavigationIndex) {
+    		case MainGUI_LDC.PREPROCESSING_STEP:
+                preprocessingPanel.setVisible(true);
+                thresholdingPanel.setVisible(false);
+                morphologyPanel.setVisible(false);
+                particleAnalysisParamsPanel.setVisible(false);
+    			navigationIndex = MainGUI_LDC.PREPROCESSING_STEP;
+    			break;
+    		case MainGUI_LDC.THRESHOLDING_STEP:
+                preprocessingPanel.setVisible(false);
+                thresholdingPanel.setVisible(true);
+                morphologyPanel.setVisible(false);
+                particleAnalysisParamsPanel.setVisible(false);
+    			navigationIndex = MainGUI_LDC.THRESHOLDING_STEP;
+    			break;
+    		case MainGUI_LDC.MORPHOLOGICAL_STEP:
+                preprocessingPanel.setVisible(false);
+                thresholdingPanel.setVisible(false);
+                morphologyPanel.setVisible(true);
+                particleAnalysisParamsPanel.setVisible(false);
+    			navigationIndex = MainGUI_LDC.MORPHOLOGICAL_STEP;
+    			break;
+    		case MainGUI_LDC.ANALYSIS_PARAMETERS_STEP:
+                preprocessingPanel.setVisible(false);
+                thresholdingPanel.setVisible(false);
+                morphologyPanel.setVisible(false);
+                particleAnalysisParamsPanel.setVisible(true);
+    			navigationIndex = MainGUI_LDC.ANALYSIS_PARAMETERS_STEP;
+    			break;
+    		default:
+    			System.err.println("Unkown navigation index");
+    	}
+    	
+    	// Update Footer Buttons
+        footerLeftPanel.enableUIComponents(true, navigationIndex);
+    }
     
     /**
      * Updates LeftPanel UI to show the next sub-panel, and manage allowing/disallowing interaction with Prev/Next footer buttons
@@ -260,34 +311,30 @@ public class LeftPanel extends JPanel {
      * Does not manage enabling/disabling UI components of sub-panels.
      */
     public void goToNextStep() {
-        if (navigationIndex == 0) {
+        if (navigationIndex == MainGUI_LDC.PREPROCESSING_STEP) {
             // Switch: Preprocessing -> Thresholding
             preprocessingPanel.setVisible(false);
             thresholdingPanel.setVisible(true);
-            navigationIndex = 1;
+            navigationIndex = MainGUI_LDC.THRESHOLDING_STEP;
             
-            // Update Footer Buttons
-            footerLeftPanel.setPrevButtonEnabled(true);
-            //footerLeftPanel.setNextButtonEnabled(true);
-            
-        }else if (navigationIndex == 1) {
+        } else if (navigationIndex == MainGUI_LDC.THRESHOLDING_STEP) {
         	// Switch: Thresholding -> Morphology
         	thresholdingPanel.setVisible(false);
         	morphologyPanel.setVisible(true);
-            navigationIndex = 2;
-            
-            // Update Footer Buttons
-            //footerLeftPanel.setNextButtonEnabled(t); // Nothing after
-        } 
-        else if (navigationIndex == 2) {
+            navigationIndex = MainGUI_LDC.MORPHOLOGICAL_STEP;
+
+        } else if (navigationIndex == MainGUI_LDC.MORPHOLOGICAL_STEP) {
         	// Switch: Morphology -> Particle analysis parameters
         	morphologyPanel.setVisible(false);
             particleAnalysisParamsPanel.setVisible(true);
-            navigationIndex = 3;
-            
-            // Update Footer Buttons
-            footerLeftPanel.setNextButtonEnabled(false); // Nothing after
+            navigationIndex = MainGUI_LDC.ANALYSIS_PARAMETERS_STEP;
+
+        } else {
+        	System.err.println("Unkown next step reached");
         }
+        
+        // Update Footer Buttons
+        footerLeftPanel.enableUIComponents(true, navigationIndex);
     }
 	
     /**
@@ -296,34 +343,41 @@ public class LeftPanel extends JPanel {
      * Does not manage enabling/disabling UI components of sub-panels.
      */
 	public void goToPrevStep() {
-        if (navigationIndex == 1) {
+        if (navigationIndex == MainGUI_LDC.THRESHOLDING_STEP) {
             // Switch: Thresholding -> Preprocessing
             thresholdingPanel.setVisible(false);
             preprocessingPanel.setVisible(true);
-            navigationIndex = 0;
+            navigationIndex = MainGUI_LDC.PREPROCESSING_STEP;
             
-            // Update Footer Buttons
-            footerLeftPanel.setPrevButtonEnabled(false);
-            
-        } else if (navigationIndex == 2) {
-        	// Switch: Particle analysis parameters -> Thresholding
+        } else if (navigationIndex == MainGUI_LDC.MORPHOLOGICAL_STEP) {
+        	// Switch: Morphological operations -> Thresholding
         	morphologyPanel.setVisible(false);
         	thresholdingPanel.setVisible(true);
-        	navigationIndex = 1;
-        	
-        	// Update Footer Buttons
-            footerLeftPanel.setPrevButtonEnabled(true);
-        	footerLeftPanel.setNextButtonEnabled(true);
-        } else if (navigationIndex == 3) {
-        	// Switch: Particle analysis parameters -> Thresholding
+        	navigationIndex = MainGUI_LDC.THRESHOLDING_STEP;
+
+        } else if (navigationIndex == MainGUI_LDC.ANALYSIS_PARAMETERS_STEP) {
+        	// Switch: Particle analysis parameters -> Morphological operations
         	particleAnalysisParamsPanel.setVisible(false);
         	morphologyPanel.setVisible(true);
-        	navigationIndex = 2;
-        	
-        	// Update Footer Buttons
-            footerLeftPanel.setPrevButtonEnabled(true);
-        	footerLeftPanel.setNextButtonEnabled(true);
+        	navigationIndex = MainGUI_LDC.MORPHOLOGICAL_STEP;
+
+        } else {
+        	System.err.println("Unkown previous step reached");
         }
+        
+        // Update Footer Buttons
+        footerLeftPanel.enableUIComponents(true, navigationIndex);
     }
 	
+    // =========================================================================
+    // UPDATING CURRENT INPUT VALUES (PARTICLE ANALYSIS PANEL)
+    // =========================================================================
+	
+    /**
+     * Synchronize the {@link LDCService} with current particle analysis input values.
+     * Delegates this synchronization to the {@link ParticleAnalysisParamsPanel}.
+     */
+    public void updateAnalysisParametersInputValues() {
+    	particleAnalysisParamsPanel.updateInputValues();
+    }
 }

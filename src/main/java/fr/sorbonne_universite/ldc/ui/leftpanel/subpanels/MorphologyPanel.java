@@ -15,19 +15,21 @@ import org.scijava.Context;
 import org.scijava.plugin.Parameter;
 
 import fr.sorbonne_universite.ldc.model.LDCService;
+import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
+import fr.sorbonne_universite.ldc.ui.leftpanel.UIOnParamsImport;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 
 @SuppressWarnings("serial")
-public class MorphologyPanel extends JPanel {
+public class MorphologyPanel extends JPanel implements UIOnParamsImport {
 
     private LeftPanel leftPanel;
 
     @Parameter
-    private LDCService service;
+    private LDCService ldc;
     
     private boolean isApplied = false;
 
@@ -48,8 +50,6 @@ public class MorphologyPanel extends JPanel {
         PanelUtils.createVerticalPanel(this, "Morphological Operations", 500);
 
         add(Box.createVerticalStrut(10));
-        
-
 
         // Preview Checkbox
         previewCheck = new JCheckBox("Preview on binary slice");
@@ -115,7 +115,7 @@ public class MorphologyPanel extends JPanel {
         boolean close = closingRadio.isSelected();
 
         String morphologicalOperation = erode? "Erode" : dilate ? "Dilate" : open? "Open" :  close? "Close" : "None";
-        service.setMorphologicalOperation(morphologicalOperation);
+        ldc.setMorphologicalOperation(morphologicalOperation);
 
     }
 
@@ -130,7 +130,7 @@ public class MorphologyPanel extends JPanel {
                 ImagePlus binaryImp = WindowManager.getImage(binaryTitle);
                 
                 if (binaryImp != null) {
-                    service.captureMorphologySnapshot(binaryImp);
+                	ldc.captureMorphologySnapshot(binaryImp);
                 }
             }
         } else {
@@ -153,9 +153,9 @@ public class MorphologyPanel extends JPanel {
         if (binaryImp == null) return;
 
         if (previewCheck.isSelected()) {
-            service.previewMorphology(binaryImp);
+        	ldc.previewMorphology(binaryImp);
         } else {
-            service.resetMorphologyPreview(binaryImp);
+        	ldc.resetMorphologyPreview(binaryImp);
         }
     }
 
@@ -171,18 +171,16 @@ public class MorphologyPanel extends JPanel {
         previewCheck.setSelected(false);
         
         //we apply changes on the fresh binary mask,
-        service.resetMorphologyPreview(binaryImp);
-        isApplied = service.applyMorphology(binaryImp);
+        ldc.resetMorphologyPreview(binaryImp);
+        isApplied = ldc.applyMorphology(binaryImp);
         
         if (isApplied) {
             IJ.showStatus("Morphology applied.");
-            enableUIComponents(true);
-            leftPanel.updateWorkflowIndex(3); 
+            leftPanel.updateWorkflowIndex(MainGUI_LDC.ANALYSIS_PARAMETERS_STEP);
         }
     }
 
     public void enableUIComponents(boolean enabled) {
-        //blackBackgroundCheck.setEnabled(enabled);
         noneRadio.setEnabled(enabled);
         erosionRadio.setEnabled(enabled);
         dilationRadio.setEnabled(enabled);
@@ -193,9 +191,40 @@ public class MorphologyPanel extends JPanel {
     }
     
     public void resetUIComponents() {
-        //blackBackgroundCheck.setSelected(false); // Reset to default
         noneRadio.setSelected(true);            // Reset radio group to 'None'
         previewCheck.setSelected(false);
         updateServiceState();                   // Ensure service knows everything is false
     }
+    
+    // =========================================================================
+    // ON NEW PARAMETERS IMPORT
+    // =========================================================================
+    
+	@Override
+	public void syncUIWithParams() {
+		switch (ldc.getMorphologicalOperation()) {
+			case "None":
+				optGroup.setSelected(noneRadio.getModel(), true);
+				break;
+			case "Erode":
+				optGroup.setSelected(erosionRadio.getModel(), true);
+				break;
+			case "Dilate":
+				optGroup.setSelected(dilationRadio.getModel(), true);
+				break;
+			case "Open":
+				optGroup.setSelected(openingRadio.getModel(), true);
+				break;
+			case "Close":
+				optGroup.setSelected(closingRadio.getModel(), true);
+				break;
+			default:
+				System.err.println("Unknown binary mask operation "+ldc.getMorphologicalOperation());
+		}
+	}
+
+	@Override
+	public void applyUIWithParams() {
+		applyMorphology();
+	}
 }

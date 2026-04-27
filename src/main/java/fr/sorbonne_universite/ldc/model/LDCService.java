@@ -1,6 +1,7 @@
 package fr.sorbonne_universite.ldc.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import javax.swing.SwingWorker;
@@ -28,9 +29,9 @@ public interface LDCService extends SciJavaService {
     // GETTERS / SETTERS for the LDC state management.
     // =========================================================================
 	
-    // =============
+    // =============================================
     // Preprocessing
-    // =============
+    // =============================================
 	
 	// Enhance contrast
 	public boolean enhanceContrastEnabled();
@@ -45,17 +46,10 @@ public interface LDCService extends SciJavaService {
 
 	public double getMedianRadius();
 	public void setMedianRadius(double medianRadius);
-
-	// Gaussian filter (gaussian blur) (not yet used)
-	public boolean gausianFilterEnabled();
-	public void setGausianFilter(boolean gausianFilter);
 	
-	public double getGaussianRadius();
-	public void setGaussianRadius(double gaussianRadius);
-	
-    // ===========================
+    // =============================================
     // Segmentation / thresholding
-    // ===========================
+    // =============================================
 	
 	// Threshold methods
 	public List<String> getThresholdMethodsList();
@@ -75,9 +69,9 @@ public interface LDCService extends SciJavaService {
 	public void setThresholdDarkBackground(boolean thresholdDarkBackground);
 	
 	
-    // ====================================
+    // =============================================
     // Binary mask morphological operations
-    // ====================================
+    // =============================================
 	
     public List<String> getMorphologicalOperationsList();
     public String getMorphologicalOperation();
@@ -86,9 +80,9 @@ public interface LDCService extends SciJavaService {
 	public boolean watershedEnabled();
 	public void setWathershed(boolean watershed);
     
-    // =================
+    // =============================================
     // Analyse particles
-    // =================
+    // =============================================
 
 	// Particles sizes
 	public double getAnalyseMinSize();
@@ -118,9 +112,9 @@ public interface LDCService extends SciJavaService {
 	public Calibration getCalibration();
 	public void setCalibration(Calibration calibration);
 	
-    // ============================
+    // =============================================
     // Measurements showing options
-    // ============================
+    // =============================================
 	
 	public boolean showAreaEnabled();
 	public void setShowArea(boolean showArea);
@@ -147,9 +141,9 @@ public interface LDCService extends SciJavaService {
     // OPERATIONS
     // =========================================================================
 	
-    // =============
+    // =============================================
     // Preprocessing
-    // =============
+    // =============================================
 	
 	/**
 	 * Applies contrast enhancement to the given {@link ImageProcessor}.
@@ -172,9 +166,9 @@ public interface LDCService extends SciJavaService {
      */
 	public SwingWorker<Void,Void> createApplyMedianWorker(ImageStack stack);
 	
-    // ===========================
+    // =============================================
     // Segmentation / thresholding
-    // ===========================
+    // =============================================
 	
 	/**
 	 * Preview manual threshold on the image.
@@ -203,9 +197,9 @@ public interface LDCService extends SciJavaService {
      */
     public boolean resetThreshold(ImagePlus imp);
     
-    // ====================================
+    // =============================================
     // Morphology
-    // ====================================
+    // =============================================
     
     public void captureMorphologySnapshot(ImagePlus imp);
     
@@ -215,9 +209,9 @@ public interface LDCService extends SciJavaService {
     
     public boolean applyMorphology(ImagePlus imp);
 	
-    // ============
+    // =============================================
     // Measurements
-    // ============
+    // =============================================
     
     /**
      * Create a {@link SwingWorker}, that take care of processing the preview of the selected measured parameters,
@@ -257,9 +251,9 @@ public interface LDCService extends SciJavaService {
      */
     public List<ImagePlus> generateHistograms(ResultsTable rt);
     
-    // ============
+    // =============================================
     // Batch mode
-    // ============
+    // =============================================
     
     /**
      * Create a {@link SwingWorker}, that has the goal of applying particle analysis on a whole given {@code directory}.
@@ -269,4 +263,22 @@ public interface LDCService extends SciJavaService {
      * @see BatchWorker
      */
     public SwingWorker<Void,Void> createBatchWorker(File inputDirectory, File outputFile, BatchWindow bw);
+    
+    // =============================================
+    // Saving / loading analysis parameters, as JSON
+    // =============================================
+    
+    /**
+     * Save current plug-in general state into a file (.json) specified by the {@code outputPath}.
+     * @param outputPath 	The path where the current plug-in state needs to be saved.
+     * @throws IOException	If an error occurs while attempting to save the file.
+     */
+    public void saveAnalysis(String outputPath) throws IOException;
+    
+    /**
+     * Load a plug-in general state from a file (.json) specified by the {@code inputPath}, and the current state by it.
+     * @param inputPath 	The path from where the new current plug-in state needs to be loaded.
+     * @throws IOException	If an error occurs while attempting to load the file.
+     */
+    public void loadAnalysis(String inputPath) throws IOException;
 }
