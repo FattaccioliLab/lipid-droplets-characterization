@@ -157,8 +157,14 @@ public class LeftPanel extends JPanel {
     /** @param currentImg The currently considered {@link ImagePlus}. */
     public void setCurrentImage(ImagePlus currentImg) { mainGUI.setCurrentImage(currentImg); }
     
-    /** @return The currently considered {@link ImagePlus}. Can be {@code null} if no image currently considered. */
+    /** @return The currently considered {@link ImagePlus}. May be {@code null} if no image currently considered. */
     public ImagePlus getCurrentImage() { return mainGUI.getCurrentImage(); }
+    
+    /** @param mask The mask attached to the currently considered image. */
+    public void setMask(ImagePlus mask) { mainGUI.setMask(mask); }
+    
+    /** @return The mask attached to the currently considered image. May be {@code null} if no mask has been generated yet. */
+    public ImagePlus getMask() { return mainGUI.getMask(); }
     
     // =========================================================================
     // Sub-panels needed on new parameters import

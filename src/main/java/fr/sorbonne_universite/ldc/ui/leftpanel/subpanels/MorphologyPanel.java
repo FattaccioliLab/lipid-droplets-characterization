@@ -21,7 +21,6 @@ import fr.sorbonne_universite.ldc.ui.leftpanel.UIOnParamsImport;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.WindowManager;
 
 @SuppressWarnings("serial")
 public class MorphologyPanel extends JPanel implements UIOnParamsImport {
@@ -126,8 +125,7 @@ public class MorphologyPanel extends JPanel implements UIOnParamsImport {
             ImagePlus img = leftPanel.getCurrentImage();
             if (img != null) {
                 // FIX: We must take the snapshot of the BINARY image, not the original image!
-                String binaryTitle = img.getShortTitle() + "_Binary";
-                ImagePlus binaryImp = WindowManager.getImage(binaryTitle);
+            	ImagePlus binaryImp = leftPanel.getMask();
                 
                 if (binaryImp != null) {
                 	ldc.captureMorphologySnapshot(binaryImp);
@@ -146,9 +144,7 @@ public class MorphologyPanel extends JPanel implements UIOnParamsImport {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
         
-        String binaryTitle = img.getShortTitle() + "_Binary";
-        ImagePlus binaryImp = WindowManager.getImage(binaryTitle);
-        
+        ImagePlus binaryImp = leftPanel.getMask();
         
         if (binaryImp == null) return;
 
@@ -163,8 +159,7 @@ public class MorphologyPanel extends JPanel implements UIOnParamsImport {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
 
-        String binaryTitle = img.getShortTitle() + "_Binary";
-        ImagePlus binaryImp = WindowManager.getImage(binaryTitle);
+        ImagePlus binaryImp = leftPanel.getMask();
         
         if (binaryImp == null) return;
 

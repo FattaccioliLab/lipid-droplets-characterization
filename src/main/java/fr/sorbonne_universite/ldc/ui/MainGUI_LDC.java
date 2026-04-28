@@ -34,10 +34,12 @@ public class MainGUI_LDC extends JFrame {
     private final LeftPanel leftContent;
     private final RightPanel rightContent;
     
-    // The current ImagePlus considered
-    private ImagePlus currentImage = null;
-    // Reference to the original ImagePlus considered
+    /** Reference to the original ImagePlus considered. */
     private ImagePlus originalImage = null;
+    /** The current ImagePlus considered. */
+    private ImagePlus currentImage = null;
+    /** The mask attached to the currently considered image. */
+    private ImagePlus mask = null;
     
     public MainGUI_LDC(final Context ctx) {
         ctx.inject(this);
@@ -90,6 +92,12 @@ public class MainGUI_LDC extends JFrame {
     /** @param currentImg The currently considered {@link ImagePlus}. */
     public void setCurrentImage(ImagePlus currentImg) { this.currentImage = currentImg; }
     
-    /** @return The currently considered {@link ImagePlus}. Can be {@code null} if no image currently considered. */
+    /** @return The currently considered {@link ImagePlus}. May be {@code null} if no image currently considered. */
     public ImagePlus getCurrentImage() { return this.currentImage; }
+    
+    /** @param mask The mask attached to the currently considered image. */
+    public void setMask(ImagePlus mask) { this.mask = mask; }
+    
+    /** @return The mask attached to the currently considered image. May be {@code null} if no mask has been generated yet. */
+    public ImagePlus getMask() { return this.mask; }
 }

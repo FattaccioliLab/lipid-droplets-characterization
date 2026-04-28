@@ -234,7 +234,7 @@ public class ImageSourcePanel extends JPanel {
 
         ImagePlus currentImg = leftPanel.getCurrentImage();
 
-        closeBinaryWindow(currentImg);
+        closeBinaryWindow();
         
 		int oldWorkflowIndex = leftPanel.getWorkflowIndex(); 
         
@@ -314,30 +314,23 @@ public class ImageSourcePanel extends JPanel {
         // update the calibration with the default one
         updateCalibrationState(currentImg);
         
-        closeBinaryWindow(currentImg);
+        closeBinaryWindow();
     }
 
     
     /**
-     * Finds and closes the generated binary mask window associated with the given original image.
+     * Closes the generated binary mask window associated with the given original image.
      * This ensures the workspace is cleaned up when the user resets the workflow.
-     * @param originalImp The original source image. The method uses its short title 
-     * to locate the corresponding "[Title]_Binary" window.
      */
-    public void closeBinaryWindow(ImagePlus originalImp) {
-        if (originalImp == null) return;
-
-        // Reconstruct the exact title given to the generated binary image
-        String binaryTitle = originalImp.getShortTitle() + "_Binary";
+    public void closeBinaryWindow() {
+        ImagePlus binaryImp = leftPanel.getMask();
         
-        // Ask ImageJ if an image with this title is currently open
-        ImagePlus binaryImp = WindowManager.getImage(binaryTitle);
-        
-        // If it exists, safely close it
+        // If the mask exists, safely close it
         if (binaryImp != null) {
             // Tell ImageJ no changes were made to bypass the "Save changes?" dialog
             binaryImp.changes = false; 
             binaryImp.close();
+            leftPanel.setMask(null);
         }
     }
     

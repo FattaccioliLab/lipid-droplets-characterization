@@ -324,6 +324,7 @@ public class ThresholdingPanel extends JPanel implements UIOnParamsImport {
         if(mask != null) {
         	isApplied = true;
         	mask.show();
+        	leftPanel.setMask(mask);
             IJ.showStatus("Threshold applied.");
             leftPanel.updateWorkflowIndex(MainGUI_LDC.MORPHOLOGICAL_STEP);
         }

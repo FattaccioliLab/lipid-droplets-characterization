@@ -113,10 +113,8 @@ public class RightPanel extends JPanel {
         	
         	this.leftPanel.updateAnalysisParametersInputValues(); // consider updated analysis input values, if not updated
             
-        	// --- Fetch the current img's binary mask ---
-            String binaryTitle = img.getShortTitle() + "_Binary";
-            ImagePlus binaryImg = ij.WindowManager.getImage(binaryTitle);
-            
+        	// --- Get the current img's binary mask ---
+            ImagePlus binaryImg = leftPanel.getMask();
             if (binaryImg == null) {
                 IJ.showMessage("Please complete the thresholding step first to generate a mask.");
                 return;
@@ -141,10 +139,8 @@ public class RightPanel extends JPanel {
         		return ;
         	}
         	
-        	// --- Fetch the current img's binary mask ---
-            String binaryTitle = img.getShortTitle() + "_Binary";
-            ImagePlus binaryImg = ij.WindowManager.getImage(binaryTitle);
-            
+        	// --- Get the current img's binary mask ---
+            ImagePlus binaryImg = leftPanel.getMask();
             if (binaryImg == null) {
                 IJ.showMessage("Please complete the thresholding step first to generate a mask.");
                 return;
@@ -204,10 +200,8 @@ public class RightPanel extends JPanel {
         		return ;
         	}
         	
-        	// --- Fetch the current img's binary mask ---
-            String binaryTitle = img.getShortTitle() + "_Binary";
-            ImagePlus binaryImg = ij.WindowManager.getImage(binaryTitle);
-            
+        	// --- Get the current img's binary mask ---
+            ImagePlus binaryImg = leftPanel.getMask();
             if (binaryImg == null) {
                 IJ.showMessage("Please complete the thresholding step first to generate a mask.");
                 return;
