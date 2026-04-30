@@ -17,13 +17,13 @@ import org.scijava.plugin.Parameter;
 import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
-import fr.sorbonne_universite.ldc.ui.leftpanel.UIOnParamsImport;
+import fr.sorbonne_universite.ldc.ui.leftpanel.PipelineSubPanel;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
 
 @SuppressWarnings("serial")
-public class MorphologyPanel extends JPanel implements UIOnParamsImport {
+public class MorphologyPanel extends JPanel implements PipelineSubPanel {
 
     private LeftPanel leftPanel;
 
@@ -174,7 +174,12 @@ public class MorphologyPanel extends JPanel implements UIOnParamsImport {
             leftPanel.updateWorkflowIndex(MainGUI_LDC.ANALYSIS_PARAMETERS_STEP);
         }
     }
-
+    
+    // =========================================================================
+    // ENABLING / DISABLING UI COMPONENTS
+    // =========================================================================
+    
+    @Override
     public void enableUIComponents(boolean enabled) {
         noneRadio.setEnabled(enabled);
         erosionRadio.setEnabled(enabled);
@@ -185,6 +190,11 @@ public class MorphologyPanel extends JPanel implements UIOnParamsImport {
         applyButton.setEnabled(enabled);
     }
     
+    // =========================================================================
+    // ON IMAGE RESET
+    // =========================================================================
+    
+    @Override
     public void resetUIComponents() {
         noneRadio.setSelected(true);            // Reset radio group to 'None'
         previewCheck.setSelected(false);

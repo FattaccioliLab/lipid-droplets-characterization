@@ -31,7 +31,7 @@ import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
-import fr.sorbonne_universite.ldc.ui.leftpanel.UIOnParamsImport;
+import fr.sorbonne_universite.ldc.ui.leftpanel.PipelineSubPanel;
 import fr.sorbonne_universite.ldc.utils.InputUtils;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
@@ -45,7 +45,7 @@ import ij.process.ImageProcessor;
  * Includes logic for initializing the loading GIF and Cancel button.
  */
 @SuppressWarnings("serial")
-public class PreprocessingPanel extends JPanel implements UIOnParamsImport {
+public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
 	
 	// The parent panel
 	private LeftPanel leftPanel;
@@ -224,7 +224,7 @@ public class PreprocessingPanel extends JPanel implements UIOnParamsImport {
 	    add(Box.createVerticalStrut(10));
 	    
 	    // UI components disabled at start
-	    enableUIComponents(false, false);
+	    enableOrResetUIComponents(false, false);
 	}
 	
     /**
@@ -419,73 +419,7 @@ public class PreprocessingPanel extends JPanel implements UIOnParamsImport {
             currentWorker.cancel(true);
         }
     }
-    
-    /**
-     * Enables, or disables, UI components (inputs) of this preprocessing panel.<br>
-     * If it disables, inputs can be reseted to their default value.
-     * @param enable true : enables inputs, false : disables inputs
-     * @param resetParameters true : reset parameters. Taken into account ONLY if {@code enable} == {@code false}.
-     */
-    public void enableUIComponents(boolean enable, boolean resetParameters) {
-    	
-    	if (leftPanel.isProcessing()) enable = false;
-    	
-    	// If components are disabled
-    	if (enable == false) {
-    		
-    		// Components become impossible to interact with
-    		
-    		enhanceCheckbox.setEnabled(enable);
-    		enhanceSaturatedSpinner.setEnabled(enable);
-    		enhanceSaturatedResetButton.setEnabled(enable);
-    		
-    		medianCheckbox.setEnabled(enable);
-    		medianPreviewCheckbox.setEnabled(enable);
-    		medianRadiusResetButton.setEnabled(enable);
-    		medianRadiusField.setEnabled(enable);
-    		applyRangeField.setEnabled(enable);
-    		applyButton.setEnabled(enable);
-    		
-    		// Inputs take their original values
-    		
-    		if (resetParameters) {
-    			ldc.setEnhanceContrast(false);
-    			ldc.setEnhanceSaturatedPercent(AnalysisSettings.DFL_EC_SATURATED);
-        		
-        		enhanceCheckbox.setSelected(false);
-        		enhanceSaturatedSpinner.setValue(AnalysisSettings.DFL_EC_SATURATED);
-        		
-        		ldc.setMedianFilter(false);
-        		ldc.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
-        		
-        		medianCheckbox.setSelected(false);
-        		medianPreviewCheckbox.setSelected(false);
-        		medianRadiusField.setText(Double.toString(AnalysisSettings.DFL_MEDIAN_RADIUS));
-        		applyRangeField.setText("");
-    		}
-    		
-    	// If components are enabled
-    	} else {
-    		enhanceCheckbox.setEnabled(enable);
-    		medianCheckbox.setEnabled(enable);
-    		
-    		// median preview checkbox, radius field and reset button enabled if median filter checkbox is selected
-    		medianPreviewCheckbox.setEnabled(enable && medianCheckbox.isSelected());
-    		medianRadiusResetButton.setEnabled(enable && medianCheckbox.isSelected());
-    		medianRadiusField.setEnabled(enable && medianCheckbox.isSelected());
-            
-    		applyRangeField.setEnabled(enable);
-    		if (!leftPanel.isProcessing()) applyButton.setEnabled(enable);
-    	}
-    }
-    
-    /**
-     * Reset the pre-processing panel UI components, for when the image is reseted.
-     * */
-    public void resetUIComponents() {
-    	enableUIComponents(false, true); // disables UI components
-    	enableUIComponents(true, true); // enable ONLY enhance contrast and median filter checkboxes
-    }
+
     
     // =========================================================================
     // ENHANCE CONTRAST OPERATION
@@ -681,7 +615,87 @@ public class PreprocessingPanel extends JPanel implements UIOnParamsImport {
         
     }
     
+    // =========================================================================
+    // ENABLING / DISABLING UI COMPONENTS OR ON IMAGE RESET
+    // =========================================================================
     
+    /**
+     * Enables, or disables, UI components (inputs) of this preprocessing panel.<br>
+     * If it disables, inputs can be reseted to their default value.
+     * @param enable true : enables inputs, false : disables inputs
+     * @param resetParameters true : reset parameters. Taken into account ONLY if {@code enable} == {@code false}.
+     */
+    public void enableOrResetUIComponents(boolean enable, boolean resetParameters) {
+    	
+    	if (leftPanel.isProcessing()) enable = false;
+    	
+    	// If components are disabled
+    	if (enable == false) {
+    		
+    		// Components become impossible to interact with
+    		
+    		enhanceCheckbox.setEnabled(enable);
+    		enhanceSaturatedSpinner.setEnabled(enable);
+    		enhanceSaturatedResetButton.setEnabled(enable);
+    		
+    		medianCheckbox.setEnabled(enable);
+    		medianPreviewCheckbox.setEnabled(enable);
+    		medianRadiusResetButton.setEnabled(enable);
+    		medianRadiusField.setEnabled(enable);
+    		applyRangeField.setEnabled(enable);
+    		applyButton.setEnabled(enable);
+    		
+    		// Inputs take their original values
+    		
+    		if (resetParameters) {
+    			ldc.setEnhanceContrast(false);
+    			ldc.setEnhanceSaturatedPercent(AnalysisSettings.DFL_EC_SATURATED);
+        		
+        		enhanceCheckbox.setSelected(false);
+        		enhanceSaturatedSpinner.setValue(AnalysisSettings.DFL_EC_SATURATED);
+        		
+        		ldc.setMedianFilter(false);
+        		ldc.setMedianRadius(AnalysisSettings.DFL_MEDIAN_RADIUS);
+        		
+        		medianCheckbox.setSelected(false);
+        		medianPreviewCheckbox.setSelected(false);
+        		medianRadiusField.setText(Double.toString(AnalysisSettings.DFL_MEDIAN_RADIUS));
+        		applyRangeField.setText("");
+    		}
+    		
+    	// If components are enabled
+    	} else {
+    		enhanceCheckbox.setEnabled(enable);
+    		medianCheckbox.setEnabled(enable);
+    		
+    		// median preview checkbox, radius field and reset button enabled if median filter checkbox is selected
+    		medianPreviewCheckbox.setEnabled(enable && medianCheckbox.isSelected());
+    		medianRadiusResetButton.setEnabled(enable && medianCheckbox.isSelected());
+    		medianRadiusField.setEnabled(enable && medianCheckbox.isSelected());
+            
+    		applyRangeField.setEnabled(enable);
+    		if (!leftPanel.isProcessing()) applyButton.setEnabled(enable);
+    	}
+    }
+    
+    // =========================================================================
+    // ENABLING / DISABLING UI COMPONENTS
+    // =========================================================================
+    
+    @Override
+    public void enableUIComponents(boolean enable) {
+    	enableOrResetUIComponents(enable, false);
+    }
+    
+    // =========================================================================
+    // ON IMAGE RESET
+    // =========================================================================
+    
+    @Override
+    public void resetUIComponents() {
+    	enableOrResetUIComponents(false, true); // disables UI components
+    	enableOrResetUIComponents(true, true); // enable ONLY enhance contrast and median filter checkboxes
+    }
     
     // =========================================================================
     // ON NEW PARAMETERS IMPORT

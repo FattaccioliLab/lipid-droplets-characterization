@@ -24,7 +24,7 @@ import org.scijava.plugin.Parameter;
 
 import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.LDCService;
-import fr.sorbonne_universite.ldc.ui.leftpanel.UIOnParamsImport;
+import fr.sorbonne_universite.ldc.ui.leftpanel.PipelineSubPanel;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.measure.Calibration;
@@ -45,7 +45,7 @@ import ij.measure.Calibration;
  * </p>
  */
 @SuppressWarnings("serial")
-public class ParticleAnalysisParamsPanel extends JPanel implements UIOnParamsImport {
+public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPanel {
 	
     @Parameter
     private LDCService ldc;
@@ -834,15 +834,30 @@ public class ParticleAnalysisParamsPanel extends JPanel implements UIOnParamsImp
     private void toggleDefaultCalibration() {
     	ldc.setShowDefaultCalibration(defaultCalibrationCheckbox.isSelected());
     }
+
     
     // =========================================================================
-    // ENABLING/DISABLING UI COMPONENTS
+    // UPDATING CURRENT INPUT VALUES
     // =========================================================================
     
     /**
-     * Enables, or disables, UI components (inputs) of this particle analysis parameters panel.
-     * @param enable true : enables inputs, false : disables inputs.
+     * Synchronize the {@link LDCService} with current particle analysis input values.<br>
+     * It considers only min/max size and circularity inputs, as measures checkboxes are always kept synchronized with the service.
      */
+    public void syncInputValues() {
+    	enterManualCalibrationSpinner();
+    	enterMinSizeField();
+    	enterMaxSizeField();
+    	enterMinCircularityField();
+    	enterMaxCircularityField();
+    	enterCircularityThresholdSpinner();
+    }
+    
+    // =========================================================================
+    // ENABLING / DISABLING UI COMPONENTS
+    // =========================================================================
+    
+    @Override
     public void enableUIComponents(boolean enable) {
     	// CALIBRATION SETTINGS
     	isCalibratedCheckbox.setEnabled(enable);
@@ -869,9 +884,11 @@ public class ParticleAnalysisParamsPanel extends JPanel implements UIOnParamsImp
         defaultCalibrationCheckbox.setEnabled(enable && !isCalibratedCheckbox.isSelected());
     }
     
-    /**
-     * Reset the particle analysis parameters panel UI components, for when the image is reseted.
-     */
+    // =========================================================================
+    // ON IMAGE RESET
+    // =========================================================================
+    
+    @Override
     public void resetUIComponents() {
     	// CALIBRATION SETTINGS
     	isCalibratedCheckbox.setSelected(ldc.isCalibrated());
@@ -912,23 +929,6 @@ public class ParticleAnalysisParamsPanel extends JPanel implements UIOnParamsImp
         integratedDensityCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
         circularityCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
         defaultCalibrationCheckbox.setSelected(AnalysisSettings.DFL_SHOWING_OPT);
-    }
-    
-    // =========================================================================
-    // UPDATING CURRENT INPUT VALUES
-    // =========================================================================
-    
-    /**
-     * Synchronize the {@link LDCService} with current particle analysis input values.<br>
-     * It considers only min/max size and circularity inputs, as measures checkboxes are always kept synchronized with the service.
-     */
-    public void updateInputValues() {
-    	enterManualCalibrationSpinner();
-    	enterMinSizeField();
-    	enterMaxSizeField();
-    	enterMinCircularityField();
-    	enterMaxCircularityField();
-    	enterCircularityThresholdSpinner();
     }
     
     // =========================================================================

@@ -49,15 +49,15 @@ public class LeftPanel extends JPanel {
     private ParticleAnalysisParamsPanel particleAnalysisParamsPanel;
     private FooterLeftPanel footerLeftPanel;
     
-    /** Contains previous layout containers that need to take into account new imported parameters. */
-	private UIOnParamsImport[] panelsOnParamsImport;
+    /** Sub-panels part of the workflow pipeline. */
+	private PipelineSubPanel[] pipelineSubPanels;
 
     // State Flags
     private volatile boolean isProcessing = false; 	//it's false when no img is selected or a task is running to partially disable the interface
   
     // Sub-panels display indexes
     // 0 = Preprocessing, 1 = Thresholding, 2 = MorphologyPanel, 3 = Particle analysis parameters
-    private int navigationIndex = 0; // Which sub-panel is currently showed
+    private int navigationIndex = 0; // Which pipeline sub-panel is currently showed
     private int workflowIndex = 0; // Which workflow step is currently considered (other sub-panels are locked)
 
     /**
@@ -117,7 +117,7 @@ public class LeftPanel extends JPanel {
         // Disables all sub-panels at the start.
         enablePanels(false);
         
-        panelsOnParamsImport = new UIOnParamsImport[] {preprocessingPanel, thresholdingPanel, 
+        pipelineSubPanels = new PipelineSubPanel[] {preprocessingPanel, thresholdingPanel, 
         		morphologyPanel, particleAnalysisParamsPanel};
     }
     
@@ -141,8 +141,14 @@ public class LeftPanel extends JPanel {
     	enablePanels(true); // even if true is given as parameter, the method itself will consider the new 'isProcessing' flag
     }
     
-    /** @return index giving the current workflow step considered. 0 = Preprocessing, 1 = Thresholding, 2 = Particle analysis parameters.  */
+    /** @return index giving the current pipeline sub-panel showed. */
+    public int getNavigationIndex() { return navigationIndex; }
+    
+    /** @return index giving the current workflow step considered. */
     public int getWorkflowIndex() { return workflowIndex; }
+    
+    /** @return Sub-panels part of the workflow pipeline. */
+    public PipelineSubPanel[] getPipelineSubPanels() { return pipelineSubPanels; }
     
     // =========================================================================
     // Image management getters / setters
@@ -167,32 +173,9 @@ public class LeftPanel extends JPanel {
     public ImagePlus getMask() { return mainGUI.getMask(); }
     
     // =========================================================================
-    // Sub-panels needed on new parameters import
+    // Enabling / Disabling UI components of sub-panels
     // =========================================================================
-    
-    /** @return Sub-panels needed on new parameters import. */
-    public UIOnParamsImport[] getPanelsOnParamsImport() { return panelsOnParamsImport; }
-    
-    // =========================================================================
-    // Enabling / Disabling and reseting panels
-    // =========================================================================
-    
-    /**
-     * Updates the current workflow step index and updates UI by enabling only the current workflow sub-panel, disabling others.
-     * @param workflowIndex The new current workflow step index.
-     */
-    public void updateWorkflowIndex(int workflowIndex) {
-    	this.workflowIndex = workflowIndex;
-    	enablePanels(true);
-    }
-    
-    /**
-     * Updates the {@link ImageSourcePanel} with the current number of slices considered / number of original slices.
-     */
-    public void updateUIInfosNbSlices() {
-    	imageSourcePanel.updateUIInfosNbSlices();
-    }
-    
+
     /**
      * <ul>
      * 	Either :
@@ -208,9 +191,9 @@ public class LeftPanel extends JPanel {
     	
     	// PreprocessingPanel
     	if (enable && workflowIndex == MainGUI_LDC.PREPROCESSING_STEP && !isProcessing) {
-    		preprocessingPanel.enableUIComponents(true, false);
+    		preprocessingPanel.enableUIComponents(true);
     	} else {
-    		preprocessingPanel.enableUIComponents(false, false);
+    		preprocessingPanel.enableUIComponents(false);
     	}
     	
     	// ThresholdingPanel
@@ -236,23 +219,26 @@ public class LeftPanel extends JPanel {
     	
     	// Disable navigation while processing
     	if (isProcessing) {
-    		footerLeftPanel.enableUIComponents(false, navigationIndex);
+    		footerLeftPanel.enableUIComponents(false);
     	} else {
-    		footerLeftPanel.enableUIComponents(true, navigationIndex);
+    		footerLeftPanel.enableUIComponents(true);
     	}
     }
     
+    // =========================================================================
+    // Reseting UI components of sub-panels
+    // =========================================================================
+    
     /**
-     * Reset all sub panels, for when the image is reseted.
+     * Reset all pipeline sub panels, for when the image is reseted.<br>
      * ALSO set the preprocessing panel as the current sub-panel shown.
      */
     public void resetPanels() {
     	isProcessing = false;
     	
-    	preprocessingPanel.resetUIComponents();
-    	thresholdingPanel.resetUIComponents();
-    	morphologyPanel.resetUIComponents();
-    	particleAnalysisParamsPanel.resetUIComponents();
+    	for (PipelineSubPanel subPanel : pipelineSubPanels) {
+    		subPanel.resetUIComponents();
+    	}
     	
     	// Workflow and navigation back to preprocessing
     	workflowIndex = MainGUI_LDC.PREPROCESSING_STEP;
@@ -308,7 +294,7 @@ public class LeftPanel extends JPanel {
     	}
     	
     	// Update Footer Buttons
-        footerLeftPanel.enableUIComponents(true, navigationIndex);
+        footerLeftPanel.enableUIComponents(true);
     }
     
     /**
@@ -340,7 +326,7 @@ public class LeftPanel extends JPanel {
         }
         
         // Update Footer Buttons
-        footerLeftPanel.enableUIComponents(true, navigationIndex);
+        footerLeftPanel.enableUIComponents(true);
     }
 	
     /**
@@ -372,18 +358,34 @@ public class LeftPanel extends JPanel {
         }
         
         // Update Footer Buttons
-        footerLeftPanel.enableUIComponents(true, navigationIndex);
+        footerLeftPanel.enableUIComponents(true);
     }
 	
     // =========================================================================
-    // UPDATING CURRENT INPUT VALUES (PARTICLE ANALYSIS PANEL)
+    // Update / Synchronization methods
     // =========================================================================
+	
+    /**
+     * Updates the current workflow step index and updates UI by enabling only the current workflow sub-panel, disabling others.
+     * @param workflowIndex The new current workflow step index.
+     */
+    public void updateWorkflowIndex(int workflowIndex) {
+    	this.workflowIndex = workflowIndex;
+    	enablePanels(true);
+    }
+    
+    /**
+     * Updates the {@link ImageSourcePanel} with the current number of slices considered / number of original slices.
+     */
+    public void updateUIInfosNbSlices() {
+    	imageSourcePanel.updateUIInfosNbSlices();
+    }
 	
     /**
      * Synchronize the {@link LDCService} with current particle analysis input values.
      * Delegates this synchronization to the {@link ParticleAnalysisParamsPanel}.
      */
-    public void updateAnalysisParametersInputValues() {
-    	particleAnalysisParamsPanel.updateInputValues();
+    public void syncAnalysisParametersInputValues() {
+    	particleAnalysisParamsPanel.syncInputValues();
     }
 }

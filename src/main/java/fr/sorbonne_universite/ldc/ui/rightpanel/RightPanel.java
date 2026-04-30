@@ -111,7 +111,8 @@ public class RightPanel extends JPanel {
         		return ;
         	}
         	
-        	this.leftPanel.updateAnalysisParametersInputValues(); // consider updated analysis input values, if not updated
+            // consider updated analysis input values, if the plugin is not synchronized with them
+        	this.leftPanel.syncAnalysisParametersInputValues();
             
         	// --- Get the current img's binary mask ---
             ImagePlus binaryImg = leftPanel.getMask();
@@ -146,8 +147,9 @@ public class RightPanel extends JPanel {
                 return;
             }
             // ----------------------------------------------
-        	
-        	this.leftPanel.updateAnalysisParametersInputValues(); // consider updated analysis input values, if not updated
+            
+            // consider updated analysis input values, if the plugin is not synchronized with them
+        	this.leftPanel.syncAnalysisParametersInputValues();
           
         	SwingWorker<ResultsTable,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(img, binaryImg);
         	
@@ -172,7 +174,8 @@ public class RightPanel extends JPanel {
         JButton histogramsButton = new JButton("Histograms");
         histogramsButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
         histogramsButton.addActionListener(e -> {
-        	this.leftPanel.updateAnalysisParametersInputValues(); // consider updated analysis input values, if not updated
+            // consider updated analysis input values, if the plugin is not synchronized with them
+        	this.leftPanel.syncAnalysisParametersInputValues();
           
         	// check if the table is null or empty
         	if (currentTable == null || currentTable.getCounter() == 0) {
@@ -208,7 +211,8 @@ public class RightPanel extends JPanel {
             }
             // ----------------------------------------------
         	
-        	this.leftPanel.updateAnalysisParametersInputValues(); // consider updated analysis input values, if not updated
+            // consider updated analysis input values, if the plugin is not synchronized with them
+        	this.leftPanel.syncAnalysisParametersInputValues();
           
         	SwingWorker<ResultsTable,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(img, binaryImg);
         	ImagePlus currentImg = leftPanel.getCurrentImage();

@@ -24,7 +24,8 @@ import org.scijava.plugin.Parameter;
 import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
-import fr.sorbonne_universite.ldc.ui.leftpanel.UIOnParamsImport;
+import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanelSubPanel;
+import fr.sorbonne_universite.ldc.ui.leftpanel.PipelineSubPanel;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
@@ -37,7 +38,7 @@ import ij.measure.Calibration;
  * and current parameters management buttons.
  */
 @SuppressWarnings("serial")
-public class ImageSourcePanel extends JPanel {
+public class ImageSourcePanel extends JPanel implements LeftPanelSubPanel {
 	
 	// The parent panel
 	private LeftPanel leftPanel;
@@ -188,13 +189,6 @@ public class ImageSourcePanel extends JPanel {
         });
         imageWatcher.start();
     }
-    
-    public void enableUIComponents(boolean enable) {
-    	
-    	importParametersButton.setEnabled(enable);
-    	exportParametersButton.setEnabled(enable);
-    }
-    
     
     /**
      * Updates the {@link JLabel} containing the number of current considered slices / original slices.
@@ -417,7 +411,7 @@ public class ImageSourcePanel extends JPanel {
                         int currentStep = MainGUI_LDC.PREPROCESSING_STEP;
                         int i = 0;
 
-                        for (UIOnParamsImport ui : leftPanel.getPanelsOnParamsImport()) {
+                        for (PipelineSubPanel ui : leftPanel.getPipelineSubPanels()) {
 
                             // Always import new parameters with the UI, for each sub-panel
                             ui.syncUIWithParams();
@@ -497,5 +491,15 @@ public class ImageSourcePanel extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+    
+    // =========================================================================
+    // ENABLING / DISABLING UI COMPONENTS
+    // =========================================================================
+    
+    @Override
+    public void enableUIComponents(boolean enable) {
+    	importParametersButton.setEnabled(enable);
+    	exportParametersButton.setEnabled(enable);
     }
 }

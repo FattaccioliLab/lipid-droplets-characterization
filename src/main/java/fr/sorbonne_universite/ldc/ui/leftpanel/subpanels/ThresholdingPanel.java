@@ -22,7 +22,7 @@ import org.scijava.plugin.Parameter;
 import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
-import fr.sorbonne_universite.ldc.ui.leftpanel.UIOnParamsImport;
+import fr.sorbonne_universite.ldc.ui.leftpanel.PipelineSubPanel;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
@@ -33,7 +33,7 @@ import net.imagej.display.ImageDisplayService;
  * Replicates the native ImageJ Threshold Adjuster workflow.
  */
 @SuppressWarnings("serial")
-public class ThresholdingPanel extends JPanel implements UIOnParamsImport {
+public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
 
     private LeftPanel leftPanel;
 
@@ -381,7 +381,39 @@ public class ThresholdingPanel extends JPanel implements UIOnParamsImport {
         slider.setValue(current);
     }
     
+    /**
+     * Checks if the user has scrolled to a new slice in the ImageJ window.
+     * If they have, it refreshes the histogram and re-applies the preview overlay.
+     */
+    private void checkSliceChange() {
+        // Don't do anything if the panel is hidden or if we already applied the threshold
+        if (!isVisible() || isApplied) return;
+        
+        ImagePlus img = leftPanel.getCurrentImage();
+        if (img == null) return;
+        
+        int currentSlice = img.getCurrentSlice();
+        
+        // If the slice has changed since the last time we checked...
+        if (currentSlice != lastSlice) {
+            lastSlice = currentSlice;
+            
+            // Get the new histogram data
+            refreshHistogramData();
+            
+            // Adjust slider limits if this slice is significantly brighter/darker
+            configureRanges(); 
+            
+            // Re-apply the red overlay to the new slice (and recalculate Auto if needed)
+            updateThresholdLogic();
+        }
+    }
     
+    // =========================================================================
+    // ENABLING / DISABLING UI COMPONENTS
+    // =========================================================================
+    
+    @Override
     public void enableUIComponents(boolean enabled) {
     	resetButton.setEnabled(enabled);
     	
@@ -412,11 +444,11 @@ public class ThresholdingPanel extends JPanel implements UIOnParamsImport {
         }
     }
     
-    
-    
-    /**
-     * Reset the Thresholding panel UI components, when the image is reset.
-     * */
+    // =========================================================================
+    // ON IMAGE RESET
+    // =========================================================================
+
+    @Override
     public void resetUIComponents() {
     	isApplied = false;
     	
@@ -437,36 +469,6 @@ public class ThresholdingPanel extends JPanel implements UIOnParamsImport {
         if(img == null) return;
         isReset = ldc.resetThreshold(img);
     }
-    
-    
-    /**
-     * Checks if the user has scrolled to a new slice in the ImageJ window.
-     * If they have, it refreshes the histogram and re-applies the preview overlay.
-     */
-    private void checkSliceChange() {
-        // Don't do anything if the panel is hidden or if we already applied the threshold
-        if (!isVisible() || isApplied) return;
-        
-        ImagePlus img = leftPanel.getCurrentImage();
-        if (img == null) return;
-        
-        int currentSlice = img.getCurrentSlice();
-        
-        // If the slice has changed since the last time we checked...
-        if (currentSlice != lastSlice) {
-            lastSlice = currentSlice;
-            
-            // Get the new histogram data
-            refreshHistogramData();
-            
-            // Adjust slider limits if this slice is significantly brighter/darker
-            configureRanges(); 
-            
-            // Re-apply the red overlay to the new slice (and recalculate Auto if needed)
-            updateThresholdLogic();
-        }
-    }
-
 
     // =========================================================================
     // ON NEW PARAMETERS IMPORT

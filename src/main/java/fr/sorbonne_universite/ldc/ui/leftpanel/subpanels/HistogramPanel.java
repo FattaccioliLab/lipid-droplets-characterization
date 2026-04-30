@@ -6,9 +6,13 @@ import java.awt.Graphics;
 
 import javax.swing.JPanel;
 
+import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanelSubPanel;
+
 /**
  * A custom Swing component that draws an image histogram.
  * Supports both 8-bit (256 bins) and 16-bit (65536 bins) histograms.
+ * 
+ * <p>Does not have to follow the contracts needed by a {@link LeftPanelSubPanel}.</p>
  */
 @SuppressWarnings("serial")
 public class HistogramPanel extends JPanel {

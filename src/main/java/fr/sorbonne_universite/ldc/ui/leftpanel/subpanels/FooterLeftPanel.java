@@ -9,16 +9,19 @@ import org.scijava.Context;
 
 import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
+import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanelSubPanel;
 
 /**
  * Creates the bottom panel of the {@link LeftPanel}, containing navigation buttons (Prev/Next).
  * * @return The constructed JPanel.
  */
 @SuppressWarnings("serial")
-public class FooterLeftPanel extends JPanel{
+public class FooterLeftPanel extends JPanel implements LeftPanelSubPanel{
 
     private JButton nextButton;
     private JButton prevButton;
+    
+    private LeftPanel leftPanel;
 	
 	public FooterLeftPanel(Context ctx, LeftPanel leftPanel) {
 		
@@ -27,6 +30,8 @@ public class FooterLeftPanel extends JPanel{
         //setAlignmentX(Component.LEFT_ALIGNMENT);
         
         ctx.inject(this);
+        
+        this.leftPanel = leftPanel;
 
         prevButton = new JButton("Prev");
         prevButton.setEnabled(false);
@@ -50,14 +55,23 @@ public class FooterLeftPanel extends JPanel{
         add(nextButton);
 	}
 	
+    // =========================================================================
+    // ENABLING / DISABLING UI COMPONENTS
+    // =========================================================================
+	
     /**
-     * Enables, or disables, UI components (navigation buttons) of this footer panel. 
-     * Also depends on the current {@code navigationIndex}.
+     * Enables, or disables, UI components (navigation buttons) of this footer panel.<br>
+     * 
+     * <p>
+     * 	If the {@link LeftPanel} navigation index is currently at preprocessing, the prev button is necessarily disabled.<br>
+     * 	If the {@link LeftPanel} navigation index is currently at particle analysis, the next button is necessarily disabled.
+     * </p>
+     * 
      * @param enable 			true : enables inputs, false : disables inputs.
-     * @param navigationIndex	The current navigation index.
      */
-    public void enableUIComponents(boolean enable, int navigationIndex) {
-    	prevButton.setEnabled(enable && navigationIndex > MainGUI_LDC.PREPROCESSING_STEP);
-    	nextButton.setEnabled(enable && navigationIndex < MainGUI_LDC.ANALYSIS_PARAMETERS_STEP);
+	@Override
+    public void enableUIComponents(boolean enable) {
+    	prevButton.setEnabled(enable && leftPanel.getNavigationIndex() > MainGUI_LDC.PREPROCESSING_STEP);
+    	nextButton.setEnabled(enable && leftPanel.getNavigationIndex() < MainGUI_LDC.ANALYSIS_PARAMETERS_STEP);
     }
 }
