@@ -127,7 +127,7 @@ public class ImageSourcePanel extends JPanel implements LeftPanelSubPanel {
 	    add(parametersButtonsPanel);
 	    add(Box.createVerticalStrut(10));
  
-	    int fixedHeight = 150;
+	    int fixedHeight = 200;
 	    Dimension fixedSize = new Dimension(Integer.MAX_VALUE, fixedHeight);
  
 	    this.setMinimumSize(fixedSize);

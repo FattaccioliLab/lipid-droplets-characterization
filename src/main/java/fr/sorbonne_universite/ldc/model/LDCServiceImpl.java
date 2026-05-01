@@ -229,8 +229,8 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
 		measurementsManager.exportResultsTable(rt, path);
 	}
 	
-	@Override public ResultsTable calculateSummaryTable(ResultsTable rt, double imgWidth, double imgHeight) {
-		return measurementsManager.calculateSummaryTable(rt, imgWidth, imgHeight);
+	@Override public ResultsTable calculateSummaryTable(ResultsTable rt) {
+		return measurementsManager.calculateSummaryTable(rt);
 	}
 	
 	@Override public List<ImagePlus> generateHistograms(ResultsTable rt) {
