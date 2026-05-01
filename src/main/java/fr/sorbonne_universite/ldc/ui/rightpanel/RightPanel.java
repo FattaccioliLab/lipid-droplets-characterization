@@ -69,7 +69,9 @@ public class RightPanel extends JPanel {
 
     private JPanel viewPanel; // container panel for the data table
     
+    private ResultsTable currentResults; // reference to the last generated results
     private ResultsTable currentTable; // reference for the table currently shown 
+    
     private int nb_particle = 0; // total number of particle in the current table
     private int nb_isolated = 0;	// save the number of isolated particle showed with the given measures parameters
     
@@ -102,7 +104,6 @@ public class RightPanel extends JPanel {
         // preview overlay button
         JButton previewButton = new JButton("Preview");
         previewButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
-//        previewButton.setPreferredSize(new Dimension(80, 25));
         previewButton.addActionListener(e -> {
         	ImagePlus img = leftPanel.getCurrentImage();
         	// check if there is an image
@@ -116,8 +117,15 @@ public class RightPanel extends JPanel {
             
         	// --- Get the current img's binary mask ---
             ImagePlus binaryImg = leftPanel.getMask();
+            
+            // check if the user has closed the binary mask window
+            if (binaryImg != null && binaryImg.getWindow() == null) {
+            	leftPanel.setMask(null);
+            	binaryImg = null;
+            }
+            
             if (binaryImg == null) {
-                IJ.showMessage("Please complete the thresholding step first to generate a mask.");
+        		IJ.showMessage("A mask is required to show the preview.");
                 return;
             }
             // ----------------------------------------------
@@ -130,7 +138,7 @@ public class RightPanel extends JPanel {
         headerPanel.add(previewButton);
 
         // show measures button
-        JButton resultsButton = new JButton("Show results");
+        JButton resultsButton = new JButton("Generate results");
         resultsButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
         resultsButton.addActionListener(e -> {
         	ImagePlus img = leftPanel.getCurrentImage();
@@ -140,14 +148,30 @@ public class RightPanel extends JPanel {
         		return ;
         	}
         	
+        	
         	// --- Get the current img's binary mask ---
             ImagePlus binaryImg = leftPanel.getMask();
+            
+            // check if the use has closed the binary mask window
+            if (binaryImg != null && binaryImg.getWindow() == null) {
+            	leftPanel.setMask(null);
+            	binaryImg = null;
+            }
+            
             if (binaryImg == null) {
-                IJ.showMessage("Please complete the thresholding step first to generate a mask.");
+            	// if there is no binary mask try to show the last generated results
+            	
+            	if (currentResults != null && currentResults.getCounter() != 0) {
+            		showTable(currentResults);
+            		IJ.showMessage("A mask is required to update the results.");
+            	} else {
+            		IJ.showMessage("Please complete the thresholding step first to generate a mask.");            		
+            	}
+            	
                 return;
             }
             // ----------------------------------------------
-            
+
             // consider updated analysis input values, if the plugin is not synchronized with them
         	this.leftPanel.syncAnalysisParametersInputValues();
           
@@ -159,7 +183,8 @@ public class RightPanel extends JPanel {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if ("state".equals(evt.getPropertyName()) && SwingWorker.StateValue.DONE == evt.getNewValue()) {
                     	try {
-                    		showTable(measuresWorker.get());
+                    		currentResults = measuresWorker.get();
+                    		showTable(currentResults);
                     	} catch (InterruptedException | ExecutionException e) {
 							e.printStackTrace();
 						}
@@ -174,16 +199,14 @@ public class RightPanel extends JPanel {
         JButton histogramsButton = new JButton("Histograms");
         histogramsButton.setMargin(new java.awt.Insets(2, 5, 2, 5));
         histogramsButton.addActionListener(e -> {
-            // consider updated analysis input values, if the plugin is not synchronized with them
-        	this.leftPanel.syncAnalysisParametersInputValues();
-          
-        	// check if the table is null or empty
-        	if (currentTable == null || currentTable.getCounter() == 0) {
-        		IJ.showMessage("No data to plot");
-        		return ;
+        	
+        	// check if results are generated
+        	if (currentResults == null || currentResults.getCounter() == 0) {
+        		IJ.showMessage("No data available for histograms.");
+        		return;
         	}
         	
-        	List<ImagePlus> plots = selectedSettings.generateHistograms(currentTable);
+        	List<ImagePlus> plots = selectedSettings.generateHistograms(currentResults);
         	showHistograms(plots);
         });
         headerPanel.add(histogramsButton);
@@ -196,46 +219,18 @@ public class RightPanel extends JPanel {
         // generate statistics button
         JButton statisticButton = new JButton("Statistics");
         statisticButton.addActionListener(e -> {
-        	ImagePlus img = leftPanel.getCurrentImage();
-        	// check if there is an image
-        	if (leftPanel.getCurrentImage() == null) {
-        		IJ.showMessage("Please open an image first (File > Open)");
-        		return ;
+        	
+        	// check if results are generated
+        	if (currentResults == null || currentResults.getCounter() == 0) {
+        		IJ.showMessage("No data available for statistics.");
+        		return;
         	}
         	
-        	// --- Get the current img's binary mask ---
-            ImagePlus binaryImg = leftPanel.getMask();
-            if (binaryImg == null) {
-                IJ.showMessage("Please complete the thresholding step first to generate a mask.");
-                return;
-            }
-            // ----------------------------------------------
+        	// compute the statistics of the current results
+        	ResultsTable statistics = selectedSettings.calculateSummaryTable(currentResults);
         	
-            // consider updated analysis input values, if the plugin is not synchronized with them
-        	this.leftPanel.syncAnalysisParametersInputValues();
-          
-        	SwingWorker<ResultsTable,Void> measuresWorker = selectedSettings.createMeasuresProcessingWorker(img, binaryImg);
-        	ImagePlus currentImg = leftPanel.getCurrentImage();
-        	
-        	// adding property change listener to the worker to show the table when the asynchronous task is completed
-        	measuresWorker.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if ("state".equals(evt.getPropertyName()) && SwingWorker.StateValue.DONE == evt.getNewValue()) {
-                        try {
-							showTable(
-									selectedSettings.calculateSummaryTable(
-											measuresWorker.get(),
-											currentImg.getWidth(),
-											currentImg.getHeight()));
-						} catch (InterruptedException | ExecutionException e) {
-							e.printStackTrace();
-						}
-                    }
-                }
-            });
-        	measuresWorker.execute();
-
+        	// show the statistics
+        	showTable(statistics);
         });
     	footerPanel.add(statisticButton);
     	
