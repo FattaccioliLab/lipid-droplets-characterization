@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import ij.measure.Calibration;
 import fr.sorbonne_universite.ldc.model.AnalysisSettings;
-import fr.sorbonne_universite.ldc.model.rightpanel.JSONManager;
+import fr.sorbonne_universite.ldc.model.leftpanel.JSONManager;
 
 /**
  * Unit tests for importing / exporting LDC plug-in parameters as JSON.

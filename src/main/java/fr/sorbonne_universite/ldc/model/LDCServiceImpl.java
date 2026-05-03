@@ -10,10 +10,10 @@ import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
 
+import fr.sorbonne_universite.ldc.model.leftpanel.JSONManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.MorphologyManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.PreprocessingManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.ThresholdingManager;
-import fr.sorbonne_universite.ldc.model.rightpanel.JSONManager;
 import fr.sorbonne_universite.ldc.model.rightpanel.MeasurementsManager;
 import fr.sorbonne_universite.ldc.model.workers.PreprocessingPreviewMedianWorker;
 import fr.sorbonne_universite.ldc.ui.rightpanel.BatchWindow;

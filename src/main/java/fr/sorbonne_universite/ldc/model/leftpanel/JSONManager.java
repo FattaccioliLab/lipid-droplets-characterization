@@ -1,4 +1,4 @@
-package fr.sorbonne_universite.ldc.model.rightpanel;
+package fr.sorbonne_universite.ldc.model.leftpanel;
  
 import java.io.FileReader;
 import java.io.FileWriter;
