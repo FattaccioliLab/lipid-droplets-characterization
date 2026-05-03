@@ -72,12 +72,14 @@ public class BatchWindow extends JFrame {
 		// Input directory selection
 		inputDirectoryField = new JTextField();
 		inputDirectoryField.setEditable(false);
+		inputDirectoryField.setFocusable(false);
 		JButton browseInputButton = new JButton("Browse...");
 		browseInputButton.addActionListener(e -> selectInputDirectory());
 
 		// Output file selection
 		outputFileField = new JTextField();
 		outputFileField.setEditable(false);
+		outputFileField.setFocusable(false);
 		JButton browseOutputButton = new JButton("Browse...");
 		browseOutputButton.addActionListener(e -> selectOutputFile());
 
@@ -107,15 +109,12 @@ public class BatchWindow extends JFrame {
 	private void layoutComponents() {
 		setLayout(new BorderLayout(10, 10));
 
-		JTextArea instructionText = new JTextArea("Batch mode uses all parameters entered during the whole workflow, "
-				+ "applies them to '.tif' and '.tiff' files in the selected source folder, "
-				+ "and produces a single global export containing all results for the files "
-				+ "into an output '.csv' file.");
-		instructionText.setEditable(false);
-		instructionText.setWrapStyleWord(true);
-		instructionText.setLineWrap(true);
-		instructionText.setOpaque(false);
-		instructionText.setFont(UIManager.getFont("Label.font"));
+		JLabel instructionText = new JLabel(
+			    "<html>Batch mode uses all parameters entered throughout the workflow, "
+			    + "applies them to '.tif' and '.tiff' files in the selected source folder, "
+			    + "and produces a single global export containing all results in an output '.csv' file.</html>"
+			);
+		instructionText.setFocusable(false);
 		instructionText.setBorder(BorderFactory.createEmptyBorder(5, 5, 10, 5));
 		add(instructionText, BorderLayout.NORTH);
 
