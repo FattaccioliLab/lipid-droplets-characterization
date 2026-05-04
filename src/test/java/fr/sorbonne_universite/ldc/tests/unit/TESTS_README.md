@@ -89,73 +89,85 @@ Here we test binary masks got by the segmentation / thresholding.
 ### test1
 
 Through ImageJ :  
-- Image > Adjust > Threshold ... : Default, min = 1048, max = 2576, no option selected  
+- Image > Adjust > Threshold ... : dark background + stack histogram selected, min = 1048, max = 2576, Default, Red  
+- in opened window >  method Default, Background Dark, Black background selected  
 -> resulting image : `.../expected/test_segmentation/test1.tif`  
 
 ### test2
 
 Through ImageJ :  
-- Image > Adjust > Threshold ... : Default, min = 430, max = 3731, no option selected  
+- Image > Adjust > Threshold ... : dark background + stack histogram selected, min = 430, max = 3731, Default, Red  
+- in opened window >  method Default, Background Dark, Black background selected  
 -> resulting image : `.../expected/test_segmentation/test2.tif`  
 
 ### test3
 
 Through ImageJ :  
-- Process > Binary > Make Binary : method Otsu, Background Light, Black background selected  
+- Image > Adjust > Threshold ... : stack histogram selected, Otsu, Red  
+- in opened window > method Otsu, Background Light, Black background selected 
 -> resulting image : `.../expected/test_segmentation/test3.tif`  
 
 ### test4
 
 Through ImageJ :  
-- Process > Binary > Make Binary : method Otsu, Background Dark, Black background selected  
+- Image > Adjust > Threshold ... : dark background + stack histogram selected, Otsu, Red  
+- in opened window > method Otsu, Background Dark, Black background selected  
 -> resulting image : `.../expected/test_segmentation/test4.tif`  
 
 ### test5
 
 Through ImageJ :  
-- Process > Binary > Make Binary : method Moments, Background Light, Black background selected  
+- Image > Adjust > Threshold ... : stack histogram selected, Moments, Red  
+- in opened window > method Moments, Background Light, Black background selected  
 -> resulting image : `.../expected/test_segmentation/test5.tif`  
 
 ### test6
 
 Through ImageJ :  
-- Process > Binary > Make Binary : method Moments, Background Dark, Black background selected  
+- Image > Adjust > Threshold ... : dark background + stack histogram selected, Moments, Red  
+- in opened window > method Moments, Background Dark, Black background selected  
 -> resulting image : `.../expected/test_segmentation/test6.tif`  
 
 ### test7
 
 Through ImageJ :  
-- Process > Binary > Make Binary : method Triangle, Background Light, Black background selected  
+- Image > Adjust > Threshold ... : stack histogram selected, Triangle, Red  
+- in opened window > method Triangle, Background Light, Black background selected  
 -> resulting image : `.../expected/test_segmentation/test7.tif`  
 
 ### test8
 
 Through ImageJ :  
-- Process > Binary > Make Binary : method Triangle, Background Dark, Black background selected  
+- Image > Adjust > Threshold ... : dark background + stack histogram selected, Triangle, Red  
+- in opened window > method Triangle, Background Dark, Black background selected  
 -> resulting image : `.../expected/test_segmentation/test8.tif`  
 
 ### test9
 
 Through ImageJ :  
-- Process > Binary > Make Binary : method Yen, Background Light, Black background selected  
+- Image > Adjust > Threshold ... : stack histogram selected, Yen, Red  
+- in opened window > method Yen, Background Light, Black background selected  
 -> resulting image : `.../expected/test_segmentation/test9.tif`  
 
 ### test10
 
 Through ImageJ :  
-- Process > Binary > Make Binary : method Yen, Background Dark, Black background selected  
+- Image > Adjust > Threshold ... : dark background + stack histogram selected, Yen, Red  
+- in opened window > method Yen, Background Dark, Black background selected  
 -> resulting image : `.../expected/test_segmentation/test10.tif`  
 
 ### test11
 
 Through ImageJ :  
-- Process > Binary > Make Binary : method Li, Background Light, Black background selected  
+- Image > Adjust > Threshold ... : stack histogram selected, Li, Red  
+- in opened window > method Li, Background Light, Black background selected  
 -> resulting image : `.../expected/test_segmentation/test11.tif`  
 
 ### test12
 
 Through ImageJ :  
-- Process > Binary > Make Binary : method Li, Background Dark, Black background selected  
+- Image > Adjust > Threshold ... : dark background + stack histogram selected, Li, Red  
+- in opened window > method Li, Background Dark, Black background selected  
 -> resulting image : `.../expected/test_segmentation/test12.tif`  
 
 ## TestBinaryMaskOperations.java
@@ -218,7 +230,8 @@ Original image used before applying the pipeline: `src/test/resources/TestSample
 
 Through ImageJ :
 - Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
-- Process > Binary > Make Binary : method Moments, Background Dark, Black background selected + Create new stack  
+- Image > Adjust > Threshold ... : dark background + stack histogram selected, Moments, Red  
+- in opened window > method Moments, Background Dark, Black background selected + Create new stack  
 - Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
 - (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test1_res.tif`  
@@ -230,7 +243,8 @@ Through ImageJ :
 Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 0,35%  
 - Process > Filters > Median... : Radius 4 pixels + process all 3 slices  
-- Process > Binary > Make Binary : method Triangle, Background Dark, Black background selected + Create new stack  
+- Image > Adjust > Threshold ... : dark background + stack histogram selected, Triangle, Red  
+- in opened window > method Triangle, Background Dark, Black background selected + Create new stack  
 - Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
 - (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 0.8. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test2_res.tif`  
@@ -242,7 +256,8 @@ Through ImageJ :
 Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 4%  
 - Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
-- Process > Binary > Make Binary : method Otsu, Background Dark, Black background selected + Create new stack  
+- Image > Adjust > Threshold ... : dark background + stack histogram selected, Otsu, Red  
+- in opened window > method Otsu, Background Dark, Black background selected + Create new stack  
 - Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
 - (focus on image window) Analyze > Analyze particles ... : Size : 1 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test3_res.tif`  
@@ -254,7 +269,8 @@ Through ImageJ :
 Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 4%  
 - Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
-- Process > Binary > Make Binary : method Otsu, Background Dark, Black background selected + Create new stack  
+- Image > Adjust > Threshold ... : dark background + stack histogram selected, Otsu, Red  
+- in opened window > method Otsu, Background Dark, Black background selected + Create new stack  
 - Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
 - Process > Binary > Erode (on all slices)  
 - Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : TestSample.tif, decimal places : 4  
