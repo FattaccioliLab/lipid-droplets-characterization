@@ -60,7 +60,7 @@ public class ImageSourcePanel extends JPanel implements LeftPanelSubPanel {
 		 
 		// Initialization of the panel layout
 		super();
-		PanelUtils.createVerticalPanel(this, "Image Source", 200);
+		PanelUtils.createVerticalPanel(this, "Image Source", 170);
  
 		ctx.inject(this);
 		this.leftPanel = leftPanel;
@@ -121,13 +121,13 @@ public class ImageSourcePanel extends JPanel implements LeftPanelSubPanel {
 	    add(imageStatusLabel);
 	    add(Box.createVerticalStrut(5));
 	    add(infosNbSlicesLabel);
-	    add(Box.createVerticalStrut(10));
+	    add(Box.createVerticalStrut(5));
 	    add(imageButtonsPanel);
-	    add(Box.createVerticalStrut(10));
+	    add(Box.createVerticalStrut(5));
 	    add(parametersButtonsPanel);
-	    add(Box.createVerticalStrut(10));
+	    add(Box.createVerticalStrut(5));
  
-	    int fixedHeight = 200;
+	    int fixedHeight = 170;
 	    Dimension fixedSize = new Dimension(Integer.MAX_VALUE, fixedHeight);
  
 	    this.setMinimumSize(fixedSize);

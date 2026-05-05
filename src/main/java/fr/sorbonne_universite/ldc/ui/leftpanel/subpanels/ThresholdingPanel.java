@@ -26,6 +26,8 @@ import fr.sorbonne_universite.ldc.ui.leftpanel.PipelineSubPanel;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.process.ImageStatistics;
+import ij.process.StackStatistics;
 import net.imagej.display.ImageDisplayService;
 
 /**
@@ -42,22 +44,21 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
     @Parameter
     private ImageDisplayService imageDisplayService;
 
-    // Components
-    private HistogramPanel histogramPanel; 
-    private Integer effectiveMaxBin = 255;	//Store the calculated max bin from the histogram
+    // UI Components
+    private HistogramPanel histogramPanel;       // Global 3D
+    private HistogramPanel localHistogramPanel;  // Local 2D (Current Slice)
+    
     private JComboBox<String> methodComboBox;
     private JCheckBox darkBackgroundCheckbox;
-    
-    // Sliders & Spinners
     private JSlider minSlider, maxSlider;
     private JSpinner minSpinner, maxSpinner;
+    private JButton applyButton, resetButton;
     
-    private JButton applyButton;
-    private JButton resetButton;
+    // State Variables
+    private int maxPixelIntensity = 255;
     private boolean isApplied = false;
-    private boolean isReset = false;
-    
-    //Slice Watcher variables
+
+    // Slice Watcher variables
     private Timer sliceWatcher;
     private int lastSlice = -1;
 
@@ -65,20 +66,27 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
         super();
         this.leftPanel = leftPanel;
         ctx.inject(this);
-
-        //Initialize the slice watcher
-        sliceWatcher = new Timer(100, e -> checkSliceChange());
         
-        PanelUtils.createVerticalPanel(this, "Segmentation / Thresholding", 450); // Increased height
+        PanelUtils.createVerticalPanel(this, "Segmentation / Thresholding", 550); // Increased height to fit 2nd graph
 
-        // 1. Histogram Visualization (Top)
+        // 1. GLOBAL Histogram Visualization
         histogramPanel = new HistogramPanel();
-        // Wrap in a panel to manage margins/alignment
-        JPanel histContainer = new JPanel(new BorderLayout());
-        histContainer.add(histogramPanel, BorderLayout.CENTER);
-        histContainer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100)); // Fixed height for graph
-        add(histContainer);
-        
+        JPanel globalContainer = new JPanel(new BorderLayout());
+        globalContainer.add(new JLabel(" Global Stack Histogram:"), BorderLayout.NORTH);
+        globalContainer.add(histogramPanel, BorderLayout.CENTER);
+        globalContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
+        globalContainer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 110));
+        add(globalContainer);
+        add(Box.createVerticalStrut(5));
+
+        // 1b. LOCAL Histogram Visualization
+        localHistogramPanel = new HistogramPanel();
+        JPanel localContainer = new JPanel(new BorderLayout());
+        localContainer.add(new JLabel(" Current Slice Histogram:"), BorderLayout.NORTH);
+        localContainer.add(localHistogramPanel, BorderLayout.CENTER);
+        localContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
+        localContainer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 110));
+        add(localContainer);
         add(Box.createVerticalStrut(10));
 
         // 2. Method Selection
@@ -90,89 +98,67 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
         String[] methods = ldc.getThresholdMethodsList().toArray(new String[0]);
         methodComboBox = new JComboBox<>(methods);
         methodComboBox.setSelectedItem(ldc.getThresholdMethod());
-        methodComboBox.addActionListener(e -> {
-        	updateThresholdMethod();
-        });
+        methodComboBox.addActionListener(e -> updateThresholdMethod());
         methodRow.add(methodComboBox, BorderLayout.CENTER);
         add(methodRow);
-        
         add(Box.createVerticalStrut(10));
 
-
-        // 3. Dark Background Option
+        // 3. Dark Background
         darkBackgroundCheckbox = new JCheckBox("Dark Background");
         darkBackgroundCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        darkBackgroundCheckbox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         darkBackgroundCheckbox.setSelected(ldc.thresholdDarkBackgroundEnabled());
-        darkBackgroundCheckbox.addActionListener(e -> {
-            updateDarkBackground();
-        });
+        darkBackgroundCheckbox.addActionListener(e -> updateDarkBackground());
         if ("Manual".equals(ldc.getThresholdMethod())) darkBackgroundCheckbox.setEnabled(false);
         add(darkBackgroundCheckbox);
-        
         add(Box.createVerticalStrut(10));
 
         // 4. Threshold Sliders
-        add(createThresholdControl("Min:", 0, 5000, true));	//5000 is just to initialize, this value will be replced by effectiveMaxBin, so that slider max value matchs with the histogram's X-axis value
+        add(createThresholdControl("Min:", 0, 5000, true));
         add(Box.createVerticalStrut(5));
-        add(createThresholdControl("Max:", 0, 5000, false));	//same as Min
-
+        add(createThresholdControl("Max:", 0, 5000, false));
         add(Box.createVerticalStrut(15));
 
-        // 5. Apply Button
+        // 5. Buttons
         JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         buttonRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buttonRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         applyButton = new JButton("Apply");
         applyButton.addActionListener(e -> applyThreshold());
         buttonRow.add(applyButton);
-        add(buttonRow);
         
-        //it would only reset the method and manual value before applying, doesnot work if we press apply then reset. 
-        //in that case we need a hard reset, like Yahya's Reset button inside the ImageSource
-        //having reset button only for method reset is not interesting to me. user can do so just by sliding the bar to 0, 0.
-        
-        // 6. Reset Button
         resetButton = new JButton("Reset Thresholding");
         resetButton.addActionListener(e -> resetThreshold());
         buttonRow.add(resetButton);
         
         add(buttonRow);
+        
+        // Initialize the Slice Watcher Timer
+        setupSliceWatcher();
     }
     
-    /**
-     * Called when this panel becomes visible (navigated to from Preprocessing).
-     * Needs to refresh the histogram based on the current image.
-     */
-    @Override
-    public void setVisible(boolean aFlag) {
-        super.setVisible(aFlag);
-        if (aFlag) {
+    // =========================================================================
+    // SLICE WATCHER (POLLS FOR IMAGE SCROLLING)
+    // =========================================================================
+    private void setupSliceWatcher() {
+        // Checks the active slice every 150ms. Fast enough to look real-time, slow enough to not lag Java.
+        sliceWatcher = new Timer(150, e -> {
+            if (!this.isVisible() || !applyButton.isEnabled() || isApplied) return;
+            
             ImagePlus img = leftPanel.getCurrentImage();
             if (img != null) {
-                lastSlice = img.getCurrentSlice(); // Remember where we started
+                int currentSlice = img.getCurrentSlice();
+                if (currentSlice != lastSlice) {
+                    lastSlice = currentSlice;
+                    refreshLocalHistogram(img);
+                }
             }
-            refreshHistogramData();
-            configureRanges();
-            updateThresholdLogic();
-            
-            // Start watching for slice changes
-            if (sliceWatcher != null) sliceWatcher.start(); 
-            
-        } else {
-            // Stop watching when we navigate to Preprocessing or Morphology
-            if (sliceWatcher != null) sliceWatcher.stop(); 
-        }
+        });
     }
 
-    private void refreshHistogramData() {
-        ImagePlus img = leftPanel.getCurrentImage();
-        if (img != null) {
-            // Get raw 8-bit histogram (256 bins)
-            int[] stats = img.getProcessor().getHistogram();
-             this.effectiveMaxBin = histogramPanel.setHistogram(stats);
-        } else {
-            histogramPanel.setHistogram(null);
-        }
-    }
+    // =========================================================================
+    // UI BUILDER HELPERS
+    // =========================================================================
 
     private JPanel createThresholdControl(String label, int min, int max, boolean isMinControl) {
         JPanel row = new JPanel(new BorderLayout());
@@ -188,33 +174,27 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
         JSpinner spinner = new JSpinner(new SpinnerNumberModel(initialVal, min, max, 1));
         JSlider slider = new JSlider(min, max, initialVal);
         
-        if(isMinControl) { minSlider = slider; minSpinner = spinner; }
-        else             { maxSlider = slider; maxSpinner = spinner; }
+        if (isMinControl) { minSlider = slider; minSpinner = spinner; }
+        else              { maxSlider = slider; maxSpinner = spinner; }
 
         slider.addChangeListener(e -> {
-            spinner.setValue(slider.getValue());
-      
-            updateManualValues(isMinControl, slider.getValue());
+            int val = slider.getValue();
+            spinner.setValue(val);
             
-            //with these two special cases, we force the minSlider value alws to be <= maxSlider value and vice-versa
-            
-            //Special case i : min slider is crossing the max slider, 
-            //we will make them move simultanously, so that min slider never cross max slider 
-            if(isMinControl && slider.getValue() > ldc.getThresholdMaxValue()) {
-                updateManualValues(!isMinControl, slider.getValue());
-                maxSpinner.setValue(slider.getValue());
+            if (isMinControl && val > maxSlider.getValue()) {
+                maxSlider.setValue(val);
+                maxSpinner.setValue(val);
+                ldc.setThresholdMaxValue(val);
+            } else if (!isMinControl && val < minSlider.getValue()) {
+                minSlider.setValue(val);
+                minSpinner.setValue(val);
+                ldc.setThresholdMinValue(val);
             }
-            
-            //Special case ii : max slider value is getting lesser than Min slider value, we will decrease also the min slider value
-            else if(!isMinControl && slider.getValue() < ldc.getThresholdMinValue()) {	 
-                updateManualValues(isMinControl, slider.getValue());
-                minSpinner.setValue(slider.getValue());
-            }
+            updateManualValues(isMinControl, val);
         });
 
         spinner.addChangeListener(e -> {
             slider.setValue((Integer) spinner.getValue());
-            updateManualValues(isMinControl, (Integer) spinner.getValue());
         });
 
         row.add(slider, BorderLayout.CENTER);
@@ -222,45 +202,39 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
         return row;
     }
 
+    // =========================================================================
+    // CORE LOGIC & EVENT HANDLERS
+    // =========================================================================
+
     private void updateManualValues(boolean isMin, int value) {
         if(isApplied) return;
         
         if(isMin) ldc.setThresholdMinValue(value);
         else      ldc.setThresholdMaxValue(value);
         
-        // Update the Red Graph Overlay immediately
         histogramPanel.setThresholdRange(ldc.getThresholdMinValue(), ldc.getThresholdMaxValue());
+        localHistogramPanel.setThresholdRange(ldc.getThresholdMinValue(), ldc.getThresholdMaxValue());
 
         if ("Manual".equals(methodComboBox.getSelectedItem())) {
-            updateThresholdLogic();
+            ImagePlus img = leftPanel.getCurrentImage();
+            if (img != null) {
+                ldc.previewManualThreshold(img);
+            }
         }
     }
-    
-    /**
-     * Called when the dark background checkbox is changed.
-     * Updates the LDC plug-in dark background info, and then updates the logic.
-     */
-    public void updateDarkBackground() {
-    	ldc.setThresholdDarkBackground(darkBackgroundCheckbox.isSelected());
+
+    public void updateThresholdMethod() {
+        String selectedMethod = (String) methodComboBox.getSelectedItem();
+        boolean isManual = "Manual".equals(selectedMethod);
+        
+        darkBackgroundCheckbox.setEnabled(!isManual);
+        ldc.setThresholdMethod(selectedMethod);
         updateThresholdLogic();
     }
-    
-    /**
-     * Called when the threshold input method is changed.
-     * Updates the LDC plug-in threshold method info, and then updates the logic.
-     */
-    public void updateThresholdMethod() {
-    	// added, using updateThresholdLogic with inside ldc.setThresholdMethod when you change the input method AND 
-    	// when you don't change it is an absolutely TERRIBLE choice.
-    	
-    	// if manual mode, disables dark BG check box, otherwise enables it
-    	if ("Manual".equals((String)methodComboBox.getSelectedItem())) {
-    		darkBackgroundCheckbox.setEnabled(false);
-    	} else {
-    		darkBackgroundCheckbox.setEnabled(true);
-    	}
-    	ldc.setThresholdMethod(((String)methodComboBox.getSelectedItem()));
-    	updateThresholdLogic();
+
+    public void updateDarkBackground() {
+        ldc.setThresholdDarkBackground(darkBackgroundCheckbox.isSelected());
+        updateThresholdLogic();
     }
 
     public void updateThresholdLogic() {
@@ -269,228 +243,215 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
         ImagePlus img = leftPanel.getCurrentImage();
         if (img == null) return;
 
-        String method = (String) methodComboBox.getSelectedItem();
-        boolean isManual = "Manual".equals(method);
+        boolean isManual = "Manual".equals(methodComboBox.getSelectedItem());
 
         if (isManual) {
-            enableSliders(methodComboBox.isEnabled()); // Sliders enabled if the method combo box with "Manual" is also enabled
+            enableSliders(methodComboBox.isEnabled());
             ldc.previewManualThreshold(img);
+            
+            histogramPanel.setThresholdRange(ldc.getThresholdMinValue(), ldc.getThresholdMaxValue());
+            localHistogramPanel.setThresholdRange(ldc.getThresholdMinValue(), ldc.getThresholdMaxValue());
+            
         } else {
             enableSliders(false);
             double[] computed = ldc.previewAutoThreshold(img);
             
-            // Update sliders to match what the algo found
-            int cMin = (int)computed[0];
-            int cMax = (int)computed[1];
+            int cMin = (int) computed[0];
+            int cMax = (int) computed[1];
             
-            // Suspend listeners if possible, or just set values (sliders will trigger updateManualValues -> loop safe)
+            ldc.setThresholdMinValue(cMin);
+            ldc.setThresholdMaxValue(cMax);
+            
             minSlider.setValue(cMin);
             maxSlider.setValue(cMax);
             minSpinner.setValue(cMin);
             maxSpinner.setValue(cMax);
+            
+            histogramPanel.setThresholdRange(cMin, cMax);
+            localHistogramPanel.setThresholdRange(cMin, cMax);
         }
-        
-        // Final sync of the graph visualization
-        histogramPanel.setThresholdRange(ldc.getThresholdMinValue(), ldc.getThresholdMaxValue());
     }
 
     private void applyThreshold() {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
         
-        //boolean calculateAllSlices = false;
-        //String currentMethod = (String) methodComboBox.getSelectedItem();
-
-        //these whole section is not in visible in merged main
-        // Only ask if they are using an Auto method
-        /*if (!"Manual".equals(currentMethod)) {
-            YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Threshold Stack", 
-                    "Do you want to calculate the threshold for each slice independently?\n \n"
-                    + "'Yes' : Calculates " + currentMethod + " for every slice.\n"
-                    + "'No' : Applies the current slice's range to the whole stack.");
-            
-            if (d.cancelPressed()) {
-                return; // Abort the apply process
-            }
-            calculateAllSlices = d.yesPressed();
-        }
-        
-        //updating the analysisSetting via l'api, we will be useful during testing
-        service.setIndependentThreshold(calculateAllSlices);
-        */
-        
         ImagePlus mask = ldc.applyThreshold(img);
         
         if(mask != null) {
-        	isApplied = true;
-        	mask.show();
-        	leftPanel.setMask(mask);
+            mask.show();
+            leftPanel.setMask(mask);
             IJ.showStatus("Threshold applied.");
             leftPanel.updateWorkflowIndex(MainGUI_LDC.MORPHOLOGICAL_STEP);
         }
+        isApplied = true;
+        sliceWatcher.stop(); // Save CPU when done
     }
     
     private void resetThreshold() {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
-        isReset = ldc.resetThreshold(img);
-        if(isReset) {
-            isApplied = false;
-            enableUIComponents(true);
-            IJ.showStatus("Threshold reset.");
-            //refreshHistogramData();
-            setVisible(true);
-            resetUIComponents();
-            methodComboBox.setSelectedIndex(0);  //putting back to the manual method
+        
+        ldc.resetThreshold(img);
+        IJ.showStatus("Threshold reset.");
+        setVisible(true);
+        resetUIComponents();
+        methodComboBox.setSelectedIndex(0);  
+        isApplied = false;
+        sliceWatcher.start();
+    }
+
+    // =========================================================================
+    // DATA & RANGE MANAGEMENT
+    // =========================================================================
+    
+    private void refreshHistogramData() {
+        ImagePlus imp = leftPanel.getCurrentImage();
+        if (imp != null) {
+            // 1. GLOBAL STATS
+            StackStatistics stats = new StackStatistics(imp);
+            maxPixelIntensity = (int) Math.ceil(stats.max);
+            if (maxPixelIntensity < 255) maxPixelIntensity = 255;
+            histogramPanel.setHistogram(stats.histogram, stats.histMin, stats.histMax); 
+            
+            // 2. LOCAL STATS
+            refreshLocalHistogram(imp);
+            
+        } else {
+            histogramPanel.setHistogram(null, 0, 0);
+            localHistogramPanel.setHistogram(null, 0, 0);
         }
     }
     
+    /**
+     * Calculates statistics purely for the currently visible 2D slice.
+     */
+    private void refreshLocalHistogram(ImagePlus imp) {
+        if (imp == null) return;
+        // ImageStatistics calculates based purely on the active ImageProcessor (the current slice)
+        ImageStatistics localStats = imp.getProcessor().getStatistics();
+        localHistogramPanel.setHistogram(localStats.histogram, localStats.histMin, localStats.histMax);
+        localHistogramPanel.setThresholdRange(ldc.getThresholdMinValue(), ldc.getThresholdMaxValue());
+    }
+
+    private void configureRanges() { 
+        updateControlModel(minSlider, minSpinner, 0, maxPixelIntensity, ldc.getThresholdMinValue());
+        updateControlModel(maxSlider, maxSpinner, 0, maxPixelIntensity, ldc.getThresholdMaxValue());
+    }
+
+    private void updateControlModel(JSlider slider, JSpinner spinner, int min, int max, int current) {
+        if (current > max) current = max;
+        
+        SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+        model.setMaximum(max);
+        model.setMinimum(min);
+        model.setValue(current);
+        
+        slider.setMaximum(max);
+        slider.setMinimum(min);
+        slider.setValue(current);
+    }
+
+    // =========================================================================
+    // PIPELINE IMPLEMENTATIONS (Enable, Disable, Sync, Reset)
+    // =========================================================================
+
+    @Override
+    public void setVisible(boolean aFlag) {
+        super.setVisible(aFlag);
+        if (aFlag) {            
+            refreshHistogramData();
+            configureRanges();
+            updateThresholdLogic();
+            if (!isApplied && applyButton.isEnabled()) {
+                sliceWatcher.start();
+            }
+        } else {
+            sliceWatcher.stop();
+        }
+    }
 
     private void enableSliders(boolean enabled) {
+        if(leftPanel.getWorkflowIndex() != MainGUI_LDC.MORPHOLOGICAL_STEP && !enabled) {
+            // Safety measure, but allow disabling
+        }
         minSlider.setEnabled(enabled);
         maxSlider.setEnabled(enabled);
         minSpinner.setEnabled(enabled);
         maxSpinner.setEnabled(enabled);
     }
     
-    /**
-     * Detects the image effective max value and updates the slider/spinner ranges.
-     * This ensures 16-bit sliders aren't 90% empty space.
-     */
-    private void configureRanges() { 
-    	if(this.effectiveMaxBin != null) {
-            // Update sliders to this new "Zoomed" range
-            updateControlModel(minSlider, minSpinner, 0, effectiveMaxBin, ldc.getThresholdMinValue());
-            updateControlModel(maxSlider, maxSpinner, 0, effectiveMaxBin, ldc.getThresholdMaxValue());
-    	}
-    }
-
-    private void updateControlModel(JSlider slider, JSpinner spinner, int min, int max, int current) {
-        // Ensure current value is valid in the new range
-        if (current > max) current = max;
-        
-        // Update Spinner Model
-        SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
-        model.setMaximum(max);
-        model.setMinimum(min);
-        model.setValue(current);
-        
-        // Update Slider Model
-        slider.setMaximum(max);
-        slider.setMinimum(min);
-        slider.setValue(current);
-    }
-    
-    /**
-     * Checks if the user has scrolled to a new slice in the ImageJ window.
-     * If they have, it refreshes the histogram and re-applies the preview overlay.
-     */
-    private void checkSliceChange() {
-        // Don't do anything if the panel is hidden or if we already applied the threshold
-        if (!isVisible() || isApplied) return;
-        
-        ImagePlus img = leftPanel.getCurrentImage();
-        if (img == null) return;
-        
-        int currentSlice = img.getCurrentSlice();
-        
-        // If the slice has changed since the last time we checked...
-        if (currentSlice != lastSlice) {
-            lastSlice = currentSlice;
-            
-            // Get the new histogram data
-            refreshHistogramData();
-            
-            // Adjust slider limits if this slice is significantly brighter/darker
-            configureRanges(); 
-            
-            // Re-apply the red overlay to the new slice (and recalculate Auto if needed)
-            updateThresholdLogic();
-        }
-    }
-    
-    // =========================================================================
-    // ENABLING / DISABLING UI COMPONENTS
-    // =========================================================================
-    
     @Override
     public void enableUIComponents(boolean enabled) {
-    	resetButton.setEnabled(enabled);
-    	
-        if (isApplied && enabled) return; 
-        
         boolean isManual = "Manual".equals(methodComboBox.getSelectedItem());
 
         methodComboBox.setEnabled(enabled);
         darkBackgroundCheckbox.setEnabled(enabled && !isManual);
         applyButton.setEnabled(enabled);
+        resetButton.setEnabled(enabled);
         
+        enableSliders(enabled ? isManual : false);
+
         if(enabled) {
-            enableSliders(isManual);
-            isApplied = false; 
-            refreshHistogramData(); // Refresh graph on re-enable
-            configureRanges();	
+            refreshHistogramData();
+            configureRanges();
+            if (!isApplied) sliceWatcher.start();
         } else {
-        	if(isManual) {
-            	minSlider.setValue(0);
-            	maxSlider.setValue(0);
-            	minSpinner.setValue(0);
-            	maxSpinner.setValue(0);
-        	}
-            enableSliders(false);
-            
-            ImagePlus imp = leftPanel.getCurrentImage();
-            if(imp == null)  histogramPanel.setHistogram(null);
+            sliceWatcher.stop();
+            if(leftPanel.getCurrentImage() == null) {
+                histogramPanel.setHistogram(null, 0.0, 0.0);
+                localHistogramPanel.setHistogram(null, 0.0, 0.0);
+            }
         }
     }
     
-    // =========================================================================
-    // ON IMAGE RESET
-    // =========================================================================
-
     @Override
     public void resetUIComponents() {
     	isApplied = false;
     	
-    	ldc.setThresholdMethod("Manual");
-    	methodComboBox.setSelectedItem(ldc.getThresholdMethod());
-    	
-    	darkBackgroundCheckbox.setSelected(false);
-    	ldc.setThresholdDarkBackground(darkBackgroundCheckbox.isSelected());
-    	
-    	minSlider.setValue(0);
-    	maxSlider.setValue(0);
-    	minSpinner.setValue(0);
-    	maxSpinner.setValue(0);
-    	ldc.setThresholdMinValue(0);
-    	ldc.setThresholdMaxValue(0);
-    	
+        ldc.setThresholdMethod("Manual");
+        methodComboBox.setSelectedItem(ldc.getThresholdMethod());
+        
+        darkBackgroundCheckbox.setSelected(false);
+        ldc.setThresholdDarkBackground(false);
+        
+        minSlider.setValue(0);
+        maxSlider.setValue(0);
+        minSpinner.setValue(0);
+        maxSpinner.setValue(0);
+        
+        ldc.setThresholdMinValue(0);
+        ldc.setThresholdMaxValue(0);
+        
+        
+        histogramPanel.setThresholdRange(-1, -1);
+        localHistogramPanel.setThresholdRange(-1, -1);
+        
         ImagePlus img = leftPanel.getCurrentImage();
-        if(img == null) return;
-        isReset = ldc.resetThreshold(img);
+        if(img != null) ldc.resetThreshold(img);
+        
+        if (this.isVisible()) {
+            sliceWatcher.start();
+        }
+    }
+    
+    @Override
+    public void syncUIWithParams() {
+        methodComboBox.setSelectedItem(ldc.getThresholdMethod());
+        darkBackgroundCheckbox.setSelected(ldc.thresholdDarkBackgroundEnabled());
+
+        minSlider.setValue(ldc.getThresholdMinValue());
+        minSpinner.setValue(ldc.getThresholdMinValue());
+        maxSlider.setValue(ldc.getThresholdMaxValue());
+        maxSpinner.setValue(ldc.getThresholdMaxValue());
+        
+        refreshHistogramData();
+        configureRanges();
+        updateThresholdLogic();
     }
 
-    // =========================================================================
-    // ON NEW PARAMETERS IMPORT
-    // =========================================================================
-    
-	@Override
-	public void syncUIWithParams() {
-		methodComboBox.setSelectedItem(ldc.getThresholdMethod());
-		darkBackgroundCheckbox.setSelected(ldc.thresholdDarkBackgroundEnabled());
-
-		minSlider.setValue(ldc.getThresholdMinValue());
-		minSpinner.setValue(ldc.getThresholdMinValue());
-		maxSlider.setValue(ldc.getThresholdMaxValue());
-		maxSpinner.setValue(ldc.getThresholdMaxValue());
-		
-		refreshHistogramData();
-		configureRanges();
-		updateThresholdLogic();
-	}
-
-	@Override
-	public void applyUIWithParams() {
-		applyThreshold();
-	}
+    @Override
+    public void applyUIWithParams() {
+        applyThreshold();
+    }
 }
