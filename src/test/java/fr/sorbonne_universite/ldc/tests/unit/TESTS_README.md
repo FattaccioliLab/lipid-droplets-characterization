@@ -230,7 +230,7 @@ Original image used before applying the pipeline: `src/test/resources/TestSample
 
 Through ImageJ :
 - Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
-- Image > Adjust > Threshold ... : dark background + stack histogram selected, Moments, Red  
+- Image > Adjust > Threshold ... : dark background + stack histogram + don't reset range selected, Moments, Red  
 - in opened window > method Moments, Background Dark, Black background selected + Create new stack  
 - Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
 - (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
@@ -243,7 +243,7 @@ Through ImageJ :
 Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 0,35%  
 - Process > Filters > Median... : Radius 4 pixels + process all 3 slices  
-- Image > Adjust > Threshold ... : dark background + stack histogram selected, Triangle, Red  
+- Image > Adjust > Threshold ... : dark background + stack histogram + don't reset range selected, Triangle, Red  
 - in opened window > method Triangle, Background Dark, Black background selected + Create new stack  
 - Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
 - (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 0.8. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
@@ -256,7 +256,7 @@ Through ImageJ :
 Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 4%  
 - Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
-- Image > Adjust > Threshold ... : dark background + stack histogram selected, Otsu, Red  
+- Image > Adjust > Threshold ... : dark background + stack histogram + don't reset range selected, Otsu, Red  
 - in opened window > method Otsu, Background Dark, Black background selected + Create new stack  
 - Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
 - (focus on image window) Analyze > Analyze particles ... : Size : 1 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results selected + process all 3 slices   
@@ -269,15 +269,27 @@ Through ImageJ :
 Through ImageJ :
 - Process > Enhance Contrast : Saturated pixels 4%  
 - Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
-- Image > Adjust > Threshold ... : dark background + stack histogram selected, Otsu, Red  
+- Image > Adjust > Threshold ... : dark background + stack histogram + don't reset range selected, Otsu, Red  
 - in opened window > method Otsu, Background Dark, Black background selected + Create new stack  
-- Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
+- Process > Binary > Options... : Iterations 1, Count 1, Black background selected + **Pad edges when eroding selected**, EDM output overwrite. (Do Nothing)  
 - Process > Binary > Erode (on all slices)  
-- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : TestSample.tif, decimal places : 4  
+- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. **Redirect to : TestSample.tif**, decimal places : 4  
 - (focus on binary mask window) Analyze > Analyze particles ... : Size : 1 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test4_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test4_mask.tif`  
 -> resulting csv : `.../expected/test_pipeline/test4_table.csv`  
+
+### test5
+
+Through ImageJ :
+- Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
+- Image > Adjust > Threshold ... : dark background + stack histogram + don't reset range selected, Moments, Red  
+- in opened window > method Moments, Background Dark, Black background selected + Create new stack  
+- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
+- (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results, Exclude on edges + include holes selected + process all 3 slices   
+-> resulting image : `.../expected/test_pipeline/test5_res.tif`  
+-> resulting mask : `.../expected/test_pipeline/test5_mask.tif`  
+-> resulting csv : `.../expected/test_pipeline/test5_table.csv`  
 
 ## SPECIAL CASE : TestJSON.java
 

@@ -88,6 +88,7 @@ public class TestPipeline {
 		ldcPlugin.setAnalyseMinCircularity(0); // Not mandatory
 		ldcPlugin.setAnalyseMaxCircularity(1); // Not mandatory
 		ldcPlugin.setAnalyseExcludeOnEdges(true);
+		ldcPlugin.setAnalyseIncludeHoles(false); // Not mandatory
 		ldcPlugin.setCalibration(image.getCalibration());
 		ldcPlugin.setIsCalibrated(true);
         SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image, mask);
@@ -155,6 +156,7 @@ public class TestPipeline {
 		ldcPlugin.setAnalyseMinCircularity(0); // Not mandatory
 		ldcPlugin.setAnalyseMaxCircularity(0.8);
 		ldcPlugin.setAnalyseExcludeOnEdges(true);
+		ldcPlugin.setAnalyseIncludeHoles(false); // Not mandatory
 		ldcPlugin.setCalibration(image.getCalibration());
 		ldcPlugin.setIsCalibrated(true);
         SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image, mask);
@@ -222,6 +224,7 @@ public class TestPipeline {
 		ldcPlugin.setAnalyseMinCircularity(0); // Not mandatory
 		ldcPlugin.setAnalyseMaxCircularity(1); // Not mandatory
 		ldcPlugin.setAnalyseExcludeOnEdges(false); // Not mandatory
+		ldcPlugin.setAnalyseIncludeHoles(false); // Not mandatory
 		ldcPlugin.setCalibration(image.getCalibration());
 		ldcPlugin.setIsCalibrated(true);
         SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image, mask);
@@ -293,6 +296,7 @@ public class TestPipeline {
 		ldcPlugin.setAnalyseMinCircularity(0); // Not mandatory
 		ldcPlugin.setAnalyseMaxCircularity(1); // Not mandatory
 		ldcPlugin.setAnalyseExcludeOnEdges(false); // Not mandatory
+		ldcPlugin.setAnalyseIncludeHoles(false); // Not mandatory
 		ldcPlugin.setCalibration(image.getCalibration());
 		ldcPlugin.setIsCalibrated(true);
         SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image, mask);
@@ -317,4 +321,67 @@ public class TestPipeline {
         Utils.cleanup(new ImagePlus[]{expectedImage, expectedMask, image, mask}, ldcPlugin);
 	}
 
+	@Test
+	public void test5() {
+		LDCService ldcPlugin = new LDCServiceImpl();
+		ldcPlugin.initialize();
+		
+		ImagePlus expectedImage = importImage("/expected/test_pipeline/test5_res.tif");
+		ImagePlus expectedMask = importImage("/expected/test_pipeline/test5_mask.tif");
+		ResultsTable expectedResults = importTable("/expected/test_pipeline/test5_table.csv");
+		
+		ImagePlus image = importImage("/TestSample.tif");
+		
+		// Preprocessing
+        ldcPlugin.setMedianFilter(true);
+        ldcPlugin.setMedianRadius(2);
+        SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack());
+        worker.execute();
+        try {
+			worker.get();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        
+        // Segmentation / Thresholding
+		ldcPlugin.setThresholdMethod("Moments");
+		ldcPlugin.setThresholdDarkBackground(true);
+		ldcPlugin.previewAutoThreshold(image);
+		ImagePlus mask = ldcPlugin.applyThreshold(image);
+		
+		// Particle Analysis
+		ldcPlugin.setShowArea(true);
+		ldcPlugin.setShowCircularity(true);
+		ldcPlugin.setShowIntegratedDensity(true);
+		ldcPlugin.setShowMean(true);
+		ldcPlugin.setShowMedian(true);
+		ldcPlugin.setAnalyseMinSize(0);
+		ldcPlugin.setAnalyseMaxSize(AnalysisSettings.DFL_ANALYSE_MAX_SIZE); // Not mandatory
+		ldcPlugin.setAnalyseMinCircularity(0); // Not mandatory
+		ldcPlugin.setAnalyseMaxCircularity(1); // Not mandatory
+		ldcPlugin.setAnalyseExcludeOnEdges(true);
+		ldcPlugin.setAnalyseIncludeHoles(true);
+		ldcPlugin.setCalibration(image.getCalibration());
+		ldcPlugin.setIsCalibrated(true);
+        SwingWorker<ResultsTable, Void> worker2 = ldcPlugin.createMeasuresProcessingWorker(image, mask);
+        worker2.execute();
+        ResultsTable results = null;
+        try {
+        	results = worker2.get();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+        Utils.checkSameDimensions(expectedImage, image);
+        Utils.checkSameDisplayRange(expectedImage, image);
+        Utils.checkSamePixels(expectedImage, image);
+        
+        Utils.checkSameDimensions(expectedMask, mask);
+        Utils.checkSameDisplayRange(expectedMask, mask);
+        Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.checkSameResultsTable(expectedResults, results, 0.0001);
+        
+        Utils.cleanup(new ImagePlus[]{expectedImage, expectedMask, image, mask}, ldcPlugin);
+	}
 }

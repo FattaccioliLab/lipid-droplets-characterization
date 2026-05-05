@@ -12,8 +12,7 @@ import ij.process.ImageProcessor;
  */
 public class ThresholdingManager {
 
-	public ThresholdingManager() {
-	}
+	public ThresholdingManager() {}
 	
     /**
      * Applies a manual threshold (preview) to the image.
@@ -24,32 +23,30 @@ public class ThresholdingManager {
         ip.setThreshold(min, max, ImageProcessor.RED_LUT);
         imp.updateAndDraw();
     }
-
     
     /**
-     * Calculates and applies an automatic threshold (Otsu, Moments, etc.).
+     * Calculates and applies an automatic threshold (Otsu, Moments, etc.).<br>
+     * Uses the stack histogram (all slices) to compute the threshold.<br>
+     * The display range (= contrast) is not reseted.
      */
     public double[] setAutoThreshold(ImagePlus imp, String method, boolean darkBackground) {
         if (imp == null) return new double[]{0, 0};
         
         ImageProcessor ip = imp.getProcessor();
 
-        // 1. Let ImageJ calculate the Auto-Threshold values
-        // We use NO_LUT_UPDATE because we don't care about the visuals yet
-        ip.setAutoThreshold(method, darkBackground, ImageProcessor.NO_LUT_UPDATE);
-
-        // 2. CAPTURE the calculated values before they get destroyed!
-        double computedMin = ip.getMinThreshold();
-        double computedMax = ip.getMaxThreshold();
-
-        // 3. RE-APPLY the captured threshold with the RED overlay
+		boolean stack = true;
+		String methodAndOptions = method+(darkBackground?" dark":"")+(stack?" stack":"");
+		imp.setAutoThreshold(methodAndOptions);
+		
+		double computedMin = ip.getMinThreshold();
+		double computedMax = ip.getMaxThreshold();
+		
         if (computedMin != ImageProcessor.NO_THRESHOLD) {
             ip.setThreshold(computedMin, computedMax, ImageProcessor.RED_LUT);
         }
-
-        imp.updateAndDraw();
         
-        // Return the captured values, NOT ip.getMinThreshold() (just to be safe)
+		imp.updateAndDraw();
+
         return new double[]{computedMin, computedMax};
     }
 
@@ -70,6 +67,7 @@ public class ThresholdingManager {
         if (originalImp == null) return null;
         
         try {
+        	
             // 1. Get threshold from the original image
             double min = originalImp.getProcessor().getMinThreshold();
             double max = originalImp.getProcessor().getMaxThreshold();
@@ -89,7 +87,7 @@ public class ThresholdingManager {
             
             // 3. Process each slice
             for (int i = 1; i <= nSlices; i++) {
-                ImageProcessor ip = originalStack.getProcessor(i);
+                ImageProcessor ip = originalStack.getProcessor(i).duplicate();;
                 
                 // Temporarily apply threshold to the slice mathematically
                 ip.setThreshold(min, max, ImageProcessor.NO_LUT_UPDATE);
@@ -99,9 +97,6 @@ public class ThresholdingManager {
                 
                 // Add the 8-bit mask to our new stack
                 binaryStack.addSlice(originalStack.getSliceLabel(i), maskIp);
-                
-                // Reset threshold on original slice to avoid messing up the original image
-                ip.resetThreshold();
             }
             
             // 4. Create a new ImagePlus with the 8-bit stack
@@ -114,9 +109,6 @@ public class ThresholdingManager {
             
             // Copy calibration (pixel size, mm/px, etc.)
             binaryImp.setCalibration(originalImp.getCalibration());
-            
-            originalImp.getProcessor().setThreshold(min, max, ImageProcessor.NO_LUT_UPDATE);
-            originalImp.updateAndDraw();
             
             return binaryImp;
             
