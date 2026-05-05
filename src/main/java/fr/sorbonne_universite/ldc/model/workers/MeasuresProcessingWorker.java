@@ -58,7 +58,8 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     	// set options for Particles Analyzer
     	int options = 0;
     	if (settings.analyseExcludeOnEdgesEnabled()) options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
-
+    	if (settings.analyseIncludeHolesEnabled()) options += ParticleAnalyzer.INCLUDE_HOLES;
+    	
     	// get current image
     	if (img == null || binaryImg == null) {
     		IJ.showMessage("Missing original image or binary mask.");

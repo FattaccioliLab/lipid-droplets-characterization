@@ -111,6 +111,10 @@ public class AnalysisSettings implements Cloneable {
 	public final static boolean DFL_ANALYSE_EXCL_EDGES = false;
 	private boolean analyseExcludeOnEdges = DFL_ANALYSE_EXCL_EDGES;
 	
+	// Include holes
+	public final static boolean DFL_ANALYSE_INCL_HOLES = false;
+	private boolean analyseIncludeHoles = DFL_ANALYSE_INCL_HOLES;
+	
 	// Circularity threshold for isolation definition
 	public final static double DFL_ANALYSE_CIRC_THRESHOLD = 0.5;
 	private double analyseCircularityThreshold = DFL_ANALYSE_CIRC_THRESHOLD;
@@ -252,6 +256,10 @@ public class AnalysisSettings implements Cloneable {
 	// Exclude on edges
 	public boolean analyseExcludeOnEdgesEnabled() { return analyseExcludeOnEdges; }
 	public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges) { this.analyseExcludeOnEdges = analyseExcludeOnEdges; }
+	
+	// Include holes
+	public boolean analyseIncludeHolesEnabled() { return analyseIncludeHoles; }
+	public void setAnalyseIncludeHoles(boolean analyseIncludeHoles) { this.analyseIncludeHoles = analyseIncludeHoles; }
 	
 	// Circularity threshold
 	public double getAnalyseCircularityThreshold() { return analyseCircularityThreshold; }

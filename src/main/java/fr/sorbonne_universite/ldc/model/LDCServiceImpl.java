@@ -120,6 +120,9 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public boolean analyseExcludeOnEdgesEnabled() { return settings.analyseExcludeOnEdgesEnabled(); }
     @Override public void setAnalyseExcludeOnEdges(boolean analyseExcludeOnEdges) { settings.setAnalyseExcludeOnEdges(analyseExcludeOnEdges); }
 
+	@Override public boolean analyseIncludeHolesEnabled() { return settings.analyseIncludeHolesEnabled(); }
+	@Override public void setAnalyseIncludeHoles(boolean analyseIncludeHoles) { settings.setAnalyseIncludeHoles(analyseIncludeHoles); }
+    
     @Override public double getAnalyseCircularityThreshold() { return settings.getAnalyseCircularityThreshold(); }
     @Override public void setAnalyseCircularityThreshold(double analyseCircularityThreshold) { settings.setAnalyseCircularityThreshold(analyseCircularityThreshold); }
     
