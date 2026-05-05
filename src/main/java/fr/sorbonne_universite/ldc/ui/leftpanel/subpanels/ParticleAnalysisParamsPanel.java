@@ -68,6 +68,7 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
     private JTextField minCircularityField;
     private JTextField maxCircularityField;
     private JCheckBox excludeOnEdgesCheckbox;
+    private JCheckBox includeHolesCheckbox;
     private JSpinner circularityThresholdSpinner;
     
     // Measurements
@@ -310,19 +311,26 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
         maxCircularityField.addActionListener(e -> enterMaxCircularityField());
         circularityPanel.add(maxCircularityField, cCircularity);
         
-	    // --- Exclude on edges section ---
+        // --- Options Panel section ---
+        JPanel analysisOptionsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         
-        JPanel excludePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        
+        // --- Exclude on edges section ---
         excludeOnEdgesCheckbox = new JCheckBox("Exclude on edges");
         excludeOnEdgesCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        excludeOnEdgesCheckbox.setSelected(ldc.showAreaEnabled());
+        excludeOnEdgesCheckbox.setSelected(ldc.analyseExcludeOnEdgesEnabled());
         excludeOnEdgesCheckbox.setFocusPainted(false);
         excludeOnEdgesCheckbox.addActionListener(e -> toggleExcludeOnEdges());
+        analysisOptionsPanel.add(excludeOnEdgesCheckbox);
         
-        excludePanel.add(excludeOnEdgesCheckbox);
-        excludePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // --- Include holes section ---
+        includeHolesCheckbox = new JCheckBox("Include holes");
+        includeHolesCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        includeHolesCheckbox.setSelected(ldc.analyseIncludeHolesEnabled());
+        includeHolesCheckbox.setFocusPainted(false);
+        includeHolesCheckbox.addActionListener(e -> toggleIncludeHoles());
+        analysisOptionsPanel.add(includeHolesCheckbox);
         
+        analysisOptionsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         // --- Circularity threshold section ---
         
@@ -369,7 +377,7 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
 	    // --- Show diameter section ---
         diameterCheckbox = new JCheckBox("Show diameter measures");
         diameterCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        diameterCheckbox.setSelected(ldc.showAreaEnabled());
+        diameterCheckbox.setSelected(ldc.showDiameterEnabled());
         diameterCheckbox.setFocusPainted(false);
         diameterCheckbox.addActionListener(e -> toggleDiameter());
 
@@ -420,7 +428,7 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
 	    particlesSettings.add(Box.createVerticalStrut(10));
 	    particlesSettings.add(circularityPanel);
 	    particlesSettings.add(Box.createVerticalStrut(10));
-	    particlesSettings.add(excludePanel);
+	    particlesSettings.add(analysisOptionsPanel);
 	    particlesSettings.add(Box.createVerticalStrut(10));
 	    particlesSettings.add(circularityThresholdPanel);
 	    add(particlesSettings);
@@ -776,6 +784,13 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
     private void toggleExcludeOnEdges() {
     	ldc.setAnalyseExcludeOnEdges(excludeOnEdgesCheckbox.isSelected());
     }
+
+    /**
+     * Toggles the include holes option, based on the checkbox state.
+     */
+    private void toggleIncludeHoles() {
+    	ldc.setAnalyseIncludeHoles(includeHolesCheckbox.isSelected());
+    }
     
     /**
      * Update the circularity threshold with the value of the circularity threshold spinner.
@@ -872,6 +887,7 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
         minCircularityField.setEnabled(enable);
         maxCircularityField.setEnabled(enable);
         excludeOnEdgesCheckbox.setEnabled(enable);
+        includeHolesCheckbox.setEnabled(enable);
         circularityThresholdSpinner.setEnabled(enable);
     	
     	// MEASUREMENTS
@@ -911,6 +927,7 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
         minCircularityField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MIN_CIRCULARITY));
         maxCircularityField.setText(Double.toString(AnalysisSettings.DFL_ANALYSE_MAX_CIRCULARITY));
         excludeOnEdgesCheckbox.setSelected(AnalysisSettings.DFL_ANALYSE_EXCL_EDGES);
+        includeHolesCheckbox.setSelected(AnalysisSettings.DFL_ANALYSE_INCL_HOLES);
         circularityThresholdSpinner.setValue(AnalysisSettings.DFL_ANALYSE_CIRC_THRESHOLD);
     	
     	// MEASUREMENTS
@@ -960,6 +977,7 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
 
 	    // other particle params
 	    excludeOnEdgesCheckbox.setSelected(ldc.analyseExcludeOnEdgesEnabled());
+	    includeHolesCheckbox.setSelected(ldc.analyseIncludeHolesEnabled());
 	    circularityThresholdSpinner.setValue(ldc.getAnalyseCircularityThreshold());
 
 	    // measurements

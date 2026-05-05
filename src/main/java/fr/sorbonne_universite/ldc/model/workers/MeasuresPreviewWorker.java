@@ -38,6 +38,7 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     	int options = 0;
     	options += ParticleAnalyzer.SHOW_OUTLINES; // show outlines of every particles in each images of the stack
     	if (settings.analyseExcludeOnEdgesEnabled()) options += ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES;
+    	if (settings.analyseIncludeHolesEnabled()) options += ParticleAnalyzer.INCLUDE_HOLES;
     	
     	// get current image
     	if (img == null) {
