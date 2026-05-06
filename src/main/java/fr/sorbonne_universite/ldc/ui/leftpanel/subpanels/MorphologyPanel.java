@@ -1,15 +1,21 @@
 package fr.sorbonne_universite.ldc.ui.leftpanel.subpanels;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 
 import org.scijava.Context;
 import org.scijava.plugin.Parameter;
@@ -35,6 +41,7 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
 
     // Components
     private JCheckBox previewCheck;
+    private JCheckBox watershedCheck;
     private JButton applyButton;
     
     // Radio Buttons for mutually exclusive selection
@@ -46,18 +53,22 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
         this.leftPanel = leftPanel;
         ctx.inject(this);
 
-        PanelUtils.createVerticalPanel(this, "Morphological Operations", 500);
+        PanelUtils.createVerticalPanel(this, "Binary Mask Refinement", 500);
 
         add(Box.createVerticalStrut(10));
 
         // Preview Checkbox
-        previewCheck = new JCheckBox("Preview on binary slice");
+        previewCheck = new JCheckBox("Preview");
         previewCheck.setAlignmentX(Component.LEFT_ALIGNMENT);
         previewCheck.addActionListener(e -> triggerPreview());
         add(previewCheck);
 
         add(Box.createVerticalStrut(10));
-
+        
+        // ── Section divider: Morphological Operations────────────────────────────────────────
+        add(createSectionDivider("Morphological Operations"));
+        add(Box.createVerticalStrut(4));
+        
         // Radio Buttons (Single Selection)
         optGroup = new ButtonGroup();
         noneRadio = createRadio("None", true); // Default selected
@@ -65,6 +76,21 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
         dilationRadio = createRadio("Dilate (Expand objects)", false);
         openingRadio = createRadio("Open (Remove small noise)", false);
         closingRadio = createRadio("Close (Fill small holes)", false);
+
+        add(Box.createVerticalStrut(10));
+        
+        // ── Section divider: Watershed ────────────────────────────────────────
+        add(createSectionDivider("Watershed"));
+        add(Box.createVerticalStrut(4));
+        
+        watershedCheck = new JCheckBox("Apply Watershed (separate touching objects)");
+        watershedCheck.setAlignmentX(Component.LEFT_ALIGNMENT);
+        watershedCheck.setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
+        watershedCheck.addActionListener(e -> {
+            updateServiceState();
+            if (previewCheck.isSelected()) triggerPreview();
+        });
+        add(watershedCheck);
 
         add(Box.createVerticalStrut(15));
 
@@ -112,10 +138,36 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
         boolean dilate = dilationRadio.isSelected();
         boolean open = openingRadio.isSelected();
         boolean close = closingRadio.isSelected();
+        boolean watershed = watershedCheck.isSelected();
 
         String morphologicalOperation = erode? "Erode" : dilate ? "Dilate" : open? "Open" :  close? "Close" : "None";
         ldc.setMorphologicalOperation(morphologicalOperation);
+        ldc.setWathershed(watershed);
 
+    }
+    
+    /**
+     * Creates a flat section divider: a label with a horizontal line to its right.
+     * Replaces nested titled border boxes.
+     */
+    private JPanel createSectionDivider(String title) {
+        JPanel divider = new JPanel();
+        divider.setLayout(new BoxLayout(divider, BoxLayout.X_AXIS));
+        divider.setAlignmentX(Component.LEFT_ALIGNMENT);
+        divider.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
+
+        JLabel label = new JLabel(title);
+        label.setForeground(Color.GRAY);
+        label.setFont(label.getFont().deriveFont(Font.BOLD, 11f));
+
+        JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
+        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
+
+        divider.add(label);
+        divider.add(Box.createHorizontalStrut(6));
+        divider.add(sep);
+
+        return divider;
     }
 
     @Override
@@ -187,6 +239,7 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
         openingRadio.setEnabled(enabled);
         closingRadio.setEnabled(enabled);
         previewCheck.setEnabled(enabled);
+        watershedCheck.setEnabled(enabled);
         applyButton.setEnabled(enabled);
     }
     
@@ -226,6 +279,7 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
 			default:
 				System.err.println("Unknown binary mask operation "+ldc.getMorphologicalOperation());
 		}
+        watershedCheck.setSelected(ldc.watershedEnabled());
 	}
 
 	@Override
