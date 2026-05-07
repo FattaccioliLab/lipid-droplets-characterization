@@ -14,8 +14,8 @@ import ij.plugin.filter.ParticleAnalyzer;
 /**
  * {@link SwingWorker} that take care of processing measurements and returning them.
  * <p>
- * Its {@code doInBackground} method generates the results table by setting the measurements of the Analyzer according 
- * to those chosen by the user and then starting the particles analyzer. 
+ * Its {@code doInBackground} method generates the results table by setting the measurements
+ * of the Analyzer according to those chosen by the user and then starting the particles analyzer. 
  * </p>
  */
 public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
@@ -79,8 +79,14 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
     		}
         }
     	
-    	ParticleAnalyzer pa = new ParticleAnalyzer(options, measurements, rt, pxMinSize, pxMaxSize, 
-    			settings.getAnalyseMinCircularity(), settings.getAnalyseMaxCircularity());
+    	ParticleAnalyzer pa = new ParticleAnalyzer(
+    			options,
+    			measurements,
+    			rt,
+    			pxMinSize,
+    			pxMaxSize, 
+    			settings.getAnalyseMinCircularity(),
+    			settings.getAnalyseMaxCircularity());
     	
     	// save the original calibration
     	Calibration backupCal = img.getCalibration();

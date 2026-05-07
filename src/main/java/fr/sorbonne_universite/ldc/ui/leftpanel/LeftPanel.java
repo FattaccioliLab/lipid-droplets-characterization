@@ -172,6 +172,12 @@ public class LeftPanel extends JPanel {
     /** @return The mask attached to the currently considered image. May be {@code null} if no mask has been generated yet. */
     public ImagePlus getMask() { return mainGUI.getMask(); }
     
+    /** @param previewWindow The window containing the preview of the measures. */
+    public void setPreviewWindow(ImagePlus previewWindow) { mainGUI.setPreviewWindow(previewWindow); }
+    
+    /** @return The window containing the preview of the measures. */
+    public ImagePlus getPreviewWindow() { return mainGUI.getPreviewWindow(); }
+    
     // =========================================================================
     // Enabling / Disabling UI components of sub-panels
     // =========================================================================

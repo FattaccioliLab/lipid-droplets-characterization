@@ -10,13 +10,13 @@ import ij.measure.Calibration;
 import ij.plugin.filter.ParticleAnalyzer;
 
 /**
- * {@link SwingWorker} that take care of processing measurements and showing them.
+ * {@link SwingWorker} that take care of generating and returning the preview of the measures.
  * <p>
- * Its {@code doInBackground} method generates the results table by setting the measurements of the Analyzer according 
- * to those chosen by the user and then starting the particles analyzer. 
+ * Its {@code doInBackground} method returns the window that show the outlines of particles, 
+ * with the defined settings given to the Analyzer.
  * </p>
  */
-public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
+public class MeasuresPreviewWorker extends SwingWorker<ImagePlus, Void>{
     
 	private AnalysisSettings settings;
     private ImagePlus img;
@@ -32,7 +32,7 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     }
 
 	@Override
-	protected Void doInBackground() throws Exception {
+	protected ImagePlus doInBackground() throws Exception {
     	
     	// set options for Particles Analyzer
     	int options = 0;
@@ -59,8 +59,14 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
     		}
     	}
     	
-    	ParticleAnalyzer pa = new ParticleAnalyzer(options, 0, null, pxMinSize, pxMaxSize, 
-    			settings.getAnalyseMinCircularity(), settings.getAnalyseMaxCircularity());
+    	ParticleAnalyzer pa = new ParticleAnalyzer(
+    			options,
+    			0,
+    			null,
+    			pxMinSize,
+    			pxMaxSize, 
+    			settings.getAnalyseMinCircularity(),
+    			settings.getAnalyseMaxCircularity());
     	pa.setHideOutputImage(true);
     	
     	// save the original calibration
@@ -104,10 +110,8 @@ public class MeasuresPreviewWorker extends SwingWorker<Void, Void>{
         	}
         	
         	// show the preview
-        	if (outlinesStack.getSize() > 0) {
-                ImagePlus combinedOutlines = new ImagePlus("Outlines of " + img.getTitle(), outlinesStack);
-                combinedOutlines.show();
-            }
+        	if (outlinesStack.getSize() > 0) 
+        		return new ImagePlus("Outlines of " + img.getTitle(), outlinesStack);
     		
     	} finally {
     		// ensure that the original calibration is restored in the end. 

@@ -309,6 +309,7 @@ public class ImageSourcePanel extends JPanel implements LeftPanelSubPanel {
         updateCalibrationState(currentImg);
         
         closeBinaryWindow();
+        closePreviewWindow();
     }
 
     
@@ -325,6 +326,22 @@ public class ImageSourcePanel extends JPanel implements LeftPanelSubPanel {
             binaryImp.changes = false; 
             binaryImp.close();
             leftPanel.setMask(null);
+        }
+    }
+    
+    /**
+     * Closes the generated preview window associated with the given original image.
+     * This ensures the workspace is cleaned up when the user resets the workflow.
+     */
+    public void closePreviewWindow() {
+        ImagePlus previewWindow = leftPanel.getPreviewWindow();
+        
+        // If the window exists, safely close it
+        if (previewWindow != null) {
+            // Tell ImageJ no changes were made to bypass the "Save changes?" dialog
+        	previewWindow.changes = false; 
+        	previewWindow.close();
+            leftPanel.setPreviewWindow(null);
         }
     }
     

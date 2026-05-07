@@ -219,11 +219,11 @@ public interface LDCService extends SciJavaService {
     
     /**
      * Create a {@link SwingWorker}, that take care of processing the preview of the selected measured parameters,
-     * it shows the preview as a new window showing outlines of detected particles.
+     * it returns the preview as an image showing outlines of detected particles.
      * @param img	The current image to consider.
      * @see	MeasuresPreviewWorker
      */
-    public SwingWorker<Void,Void> createMeasuresPreviewWorker(ImagePlus img);
+    public SwingWorker<ImagePlus,Void> createMeasuresPreviewWorker(ImagePlus img);
     
     /**
      * Create a {@link SwingWorker}, that take care of processing measurements and returning them, if executed.
