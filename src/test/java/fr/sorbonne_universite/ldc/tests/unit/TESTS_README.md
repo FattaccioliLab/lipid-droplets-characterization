@@ -221,6 +221,20 @@ Through ImageJ :
 - Process > Binary > Close (on all slices)  
 -> resulting image : `.../expected/test_binary_operations/test6.tif`  
 
+### test7
+
+Through ImageJ :  
+- Process > Binary > Wathershed (on all slices)  
+-> resulting image : `.../expected/test_binary_operations/test7.tif`  
+
+### test8
+
+Through ImageJ :  
+- Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
+- Process > Binary > Erode (on all slices)  
+- Process > Binary > Wathershed (on all slices)  
+-> resulting image : `.../expected/test_binary_operations/test8.tif`  
+
 ## TestPipeline.java
 
 We successively apply the different previous steps, and verify that the same resulting image, mask and csv results are got with our plugin.  
@@ -233,7 +247,7 @@ Through ImageJ :
 - Image > Adjust > Threshold ... : dark background + stack histogram + don't reset range selected, Moments, Red  
 - in opened window > method Moments, Background Dark, Black background selected + Create new stack  
 - Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
-- (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
+- (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results and Exclude on edges selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test1_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test1_mask.tif`  
 -> resulting csv : `.../expected/test_pipeline/test1_table.csv`  
@@ -246,7 +260,7 @@ Through ImageJ :
 - Image > Adjust > Threshold ... : dark background + stack histogram + don't reset range selected, Triangle, Red  
 - in opened window > method Triangle, Background Dark, Black background selected + Create new stack  
 - Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
-- (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 0.8. Show : Nothing. Only Display results, Exclude on edges selected + process all 3 slices   
+- (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 0.8. Show : Nothing. Only Display results and Exclude on edges selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test2_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test2_mask.tif`  
 -> resulting csv : `.../expected/test_pipeline/test2_table.csv`  
@@ -286,10 +300,23 @@ Through ImageJ :
 - Image > Adjust > Threshold ... : dark background + stack histogram + don't reset range selected, Moments, Red  
 - in opened window > method Moments, Background Dark, Black background selected + Create new stack  
 - Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. Redirect to : None, decimal places : 4  
-- (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results, Exclude on edges + include holes selected + process all 3 slices   
+- (focus on image window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results, Exclude on edges and Include holes selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test5_res.tif`  
 -> resulting mask : `.../expected/test_pipeline/test5_mask.tif`  
 -> resulting csv : `.../expected/test_pipeline/test5_table.csv`  
+
+### test6
+
+Through ImageJ :
+- Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
+- Image > Adjust > Threshold ... : dark background + stack histogram + don't reset range selected, Moments, Red  
+- in opened window > method Moments, Background Dark, Black background selected + Create new stack  
+- Process > Binary > Wathershed (on all slices)  
+- Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. **Redirect to : TestSample.tif**, decimal places : 4  
+- (focus on binary mask window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results selected + process all 3 slices   
+-> resulting image : `.../expected/test_pipeline/test6_res.tif`  
+-> resulting mask : `.../expected/test_pipeline/test6_mask.tif`  
+-> resulting csv : `.../expected/test_pipeline/test6_table.csv`  
 
 ## SPECIAL CASE : TestJSON.java
 
