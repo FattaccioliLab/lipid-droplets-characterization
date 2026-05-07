@@ -32,7 +32,7 @@ public class MeasurementsManager {
      * @param img 							The current image to consider.
 	 * @see MeasuresPreviewWorker
      */
-	public SwingWorker<Void,Void> createMeasuresPreviewWorker(AnalysisSettings settings, ImagePlus img){
+	public SwingWorker<ImagePlus,Void> createMeasuresPreviewWorker(AnalysisSettings settings, ImagePlus img){
 		return new MeasuresPreviewWorker(settings, img); 
 	}
 	

@@ -40,6 +40,8 @@ public class MainGUI_LDC extends JFrame {
     private ImagePlus currentImage = null;
     /** The mask attached to the currently considered image. */
     private ImagePlus mask = null;
+    /** The preview window of the right panel */
+    private ImagePlus previewWindow = null;
     
     public MainGUI_LDC(final Context ctx) {
         ctx.inject(this);
@@ -100,4 +102,10 @@ public class MainGUI_LDC extends JFrame {
     
     /** @return The mask attached to the currently considered image. May be {@code null} if no mask has been generated yet. */
     public ImagePlus getMask() { return this.mask; }
+
+    /** @param previewWindow The window containing the preview of the measures. */
+    public void setPreviewWindow(ImagePlus previewWindow) { this.previewWindow = previewWindow; }
+    
+    /** @return The window containing the preview of the measures. */
+    public ImagePlus getPreviewWindow() { return this.previewWindow; }
 }

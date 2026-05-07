@@ -68,7 +68,7 @@ public class RightPanel extends JPanel {
 	private LDCService selectedSettings;
 
     private JPanel viewPanel; // container panel for the data table
-    
+
     private ResultsTable currentResults; // reference to the last generated results
     private ResultsTable currentTable; // reference for the table currently shown 
     
@@ -132,7 +132,23 @@ public class RightPanel extends JPanel {
         	
         	
         	// launch the preview worker on the binary mask
-        	SwingWorker<Void,Void> previewWorker = selectedSettings.createMeasuresPreviewWorker(binaryImg);
+        	SwingWorker<ImagePlus,Void> previewWorker = selectedSettings.createMeasuresPreviewWorker(binaryImg);
+
+        	previewWorker.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("state".equals(evt.getPropertyName()) && SwingWorker.StateValue.DONE == evt.getNewValue()) {
+                    	try {
+                    		ImagePlus previewWindow = previewWorker.get();
+                    		leftPanel.setPreviewWindow(previewWindow);
+                    		previewWindow.show();
+                    	} catch (InterruptedException | ExecutionException e) {
+							e.printStackTrace();
+						}
+                    }
+                }
+            });
+        	
         	previewWorker.execute();
         });;
         headerPanel.add(previewButton);

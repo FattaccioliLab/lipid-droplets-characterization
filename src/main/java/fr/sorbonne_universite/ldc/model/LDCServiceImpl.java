@@ -219,7 +219,7 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // =============================================
 
 	/** @see MeasuresPreviewWorker */
-    @Override public SwingWorker<Void, Void> createMeasuresPreviewWorker(ImagePlus img){
+    @Override public SwingWorker<ImagePlus, Void> createMeasuresPreviewWorker(ImagePlus img){
 		return measurementsManager.createMeasuresPreviewWorker(settings, img);
     }
     
