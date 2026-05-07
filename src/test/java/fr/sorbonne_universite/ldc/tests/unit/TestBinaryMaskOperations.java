@@ -14,6 +14,7 @@ import ij.ImagePlus;
  * 	<li>Dilatation.</li>
  * 	<li>Opening.</li>
  * 	<li>Closing.</li>
+ * 	<li>Wathershed.</li>
  * </ul> 
  */
 public class TestBinaryMaskOperations {
@@ -169,6 +170,49 @@ public class TestBinaryMaskOperations {
         
         // Apply Closing
 		ldcPlugin.setMorphologicalOperation("Close");
+        ldcPlugin.applyMorphology(mask);
+        
+        Utils.checkSameDimensions(expectedMask, mask);
+        Utils.checkSameDisplayRange(expectedMask, mask);
+        Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, mask}, ldcPlugin);
+	}
+	
+    // =========================================================================
+    // WATHERSHED
+    // =========================================================================
+	
+	@Test
+	public void test7() {
+		LDCService ldcPlugin = new LDCServiceImpl();
+		ldcPlugin.initialize();
+		
+		ImagePlus expectedMask = importImage("/expected/test_binary_operations/test7.tif");
+		ImagePlus mask = importImage("/TestMask.tif");
+		
+		//Apply Wathersed
+		ldcPlugin.setWathershed(true);
+        ldcPlugin.applyMorphology(mask);
+        
+        Utils.checkSameDimensions(expectedMask, mask);
+        Utils.checkSameDisplayRange(expectedMask, mask);
+        Utils.checkSamePixels(expectedMask, mask);
+        
+        Utils.cleanup(new ImagePlus[]{expectedMask, mask}, ldcPlugin);
+	}
+	
+	@Test
+	public void test8() {
+		LDCService ldcPlugin = new LDCServiceImpl();
+		ldcPlugin.initialize();
+		
+		ImagePlus expectedMask = importImage("/expected/test_binary_operations/test8.tif");
+		ImagePlus mask = importImage("/TestMask.tif");
+		
+		//Apply Erosion + Wathersed
+		ldcPlugin.setMorphologicalOperation("Erode");
+		ldcPlugin.setWathershed(true);
         ldcPlugin.applyMorphology(mask);
         
         Utils.checkSameDimensions(expectedMask, mask);
