@@ -110,6 +110,10 @@ public class ThresholdingManager {
             // Copy calibration (pixel size, mm/px, etc.)
             binaryImp.setCalibration(originalImp.getCalibration());
             
+            // Remove the RED preview overlay on the original image
+            originalImp.getProcessor().setThreshold(min, max, ImageProcessor.NO_LUT_UPDATE);
+            originalImp.updateAndDraw();
+            
             return binaryImp;
             
         } catch (Exception e) {
