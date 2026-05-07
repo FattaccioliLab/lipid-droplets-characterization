@@ -21,7 +21,7 @@ import ij.ImagePlus;
 public class MainGUI_LDC extends JFrame {
     
 	public static final int WINDOW_WIDTH = 1000;
-	public static final int WINDOW_HEIGHT = 825;
+	public static final int WINDOW_HEIGHT = 800;
     
     public static final int PREPROCESSING_STEP = 0;
     public static final int THRESHOLDING_STEP = 1;
@@ -55,7 +55,6 @@ public class MainGUI_LDC extends JFrame {
         
         // Initialization of the MainGUI itself
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        setMinimumSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT)); // Protect the whole window
         setLocationRelativeTo(null);
         setTitle("Lipid Droplets Characterization");
 
