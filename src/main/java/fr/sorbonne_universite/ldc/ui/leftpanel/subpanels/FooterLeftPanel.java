@@ -13,7 +13,6 @@ import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanelSubPanel;
 
 /**
  * Creates the bottom panel of the {@link LeftPanel}, containing navigation buttons (Prev/Next).
- * * @return The constructed JPanel.
  */
 @SuppressWarnings("serial")
 public class FooterLeftPanel extends JPanel implements LeftPanelSubPanel{
@@ -60,12 +59,12 @@ public class FooterLeftPanel extends JPanel implements LeftPanelSubPanel{
     // =========================================================================
 	
     /**
-     * Enables, or disables, UI components (navigation buttons) of this footer panel.<br>
+     * Enables, or disables, UI components (navigation buttons) of this footer panel.
      * 
-     * <p>
-     * 	If the {@link LeftPanel} navigation index is currently at preprocessing, the prev button is necessarily disabled.<br>
-     * 	If the {@link LeftPanel} navigation index is currently at particle analysis, the next button is necessarily disabled.
-     * </p>
+     * <ul>
+     * 	<li>If the {@link LeftPanel} navigation index is currently at preprocessing, the prev button is necessarily disabled.</li>
+     * 	<li>If the {@link LeftPanel} navigation index is currently at particle analysis, the next button is necessarily disabled.</li>
+     * </ul>
      * 
      * @param enable 			true : enables inputs, false : disables inputs.
      */

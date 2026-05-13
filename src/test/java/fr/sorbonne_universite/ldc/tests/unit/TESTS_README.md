@@ -224,7 +224,7 @@ Through ImageJ :
 ### test7
 
 Through ImageJ :  
-- Process > Binary > Wathershed (on all slices)  
+- Process > Binary > Watershed (on all slices)  
 -> resulting image : `.../expected/test_binary_operations/test7.tif`  
 
 ### test8
@@ -232,7 +232,7 @@ Through ImageJ :
 Through ImageJ :  
 - Process > Binary > Options... : Iterations 1, Count 1, Black background selected + Pad edges when eroding selected, EDM output overwrite. (Do Nothing)  
 - Process > Binary > Erode (on all slices)  
-- Process > Binary > Wathershed (on all slices)  
+- Process > Binary > Watershed (on all slices)  
 -> resulting image : `.../expected/test_binary_operations/test8.tif`  
 
 ## TestPipeline.java
@@ -311,7 +311,7 @@ Through ImageJ :
 - Process > Filters > Median... : Radius 2 pixels + process all 3 slices  
 - Image > Adjust > Threshold ... : dark background + stack histogram + don't reset range selected, Moments, Red  
 - in opened window > method Moments, Background Dark, Black background selected + Create new stack  
-- Process > Binary > Wathershed (on all slices)  
+- Process > Binary > Watershed (on all slices)  
 - Analyze > Set Measurements ... : Only Area, Shape descriptors, Integrated density, Mean gray value, Centroid, Median are selected. **Redirect to : TestSample.tif**, decimal places : 4  
 - (focus on binary mask window) Analyze > Analyze particles ... : Size : 0 - Infinity. Circularity : 0 - 1. Show : Nothing. Only Display results selected + process all 3 slices   
 -> resulting image : `.../expected/test_pipeline/test6_res.tif`  

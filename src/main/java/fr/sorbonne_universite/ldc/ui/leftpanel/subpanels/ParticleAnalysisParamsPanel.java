@@ -25,6 +25,7 @@ import org.scijava.plugin.Parameter;
 import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.ui.leftpanel.PipelineSubPanel;
+import fr.sorbonne_universite.ldc.ui.rightpanel.RightPanel;
 import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.measure.Calibration;
@@ -34,9 +35,11 @@ import ij.measure.Calibration;
  * 
  * <p>
  * Input values for particle size and circularity are currently updated after either :
- * <li> Pressing 'ENTER' after entering a new value into an input.
- * <li> Pressing 'show results' or 'histograms' buttons.
- * </p><br>
+ * </p>
+ * <ul>
+ * 	<li>Pressing 'ENTER' after entering a new value into an input.</li>
+ * 	<li>Pressing a button of the {@link RightPanel} requiring a particle analysis.</li>
+ * </ul>
  * 
  * <p>
  * This means that if you enter a value in a field without pressing 'ENTER', 
@@ -597,12 +600,15 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
      * 
      * <p>
      * Behavior:
-     * <li> If the input is a valid number within the allowed range, updates the field and the setting.
-     * <li> If the input is less than the default minimum size, resets the field and the setting to the default minimum.
-     * <li> If the input is greater than the current maximum size, resets the field and the setting to the maximum size.
-     * <li> If the input is not a valid number, resets the field and the setting to the default minimum or maximum, 
-     *   depending on which is applicable.
      * </p>
+     * <ul>
+     * 	<li>If the input is a valid number within the allowed range, updates the field and the setting.</li>
+     * 	<li>If the input is less than the default minimum size, resets the field and the setting to the default minimum.</li>
+     * 	<li>If the input is greater than the current maximum size, resets the field and the setting to the maximum size.</li>
+     * 	<li>If the input is not a valid number, resets the field and the setting to the default minimum or maximum, 
+     *   depending on which is applicable.</li>
+     * </ul>
+     * 
      */
     private void enterMinSizeField() {
     	double maxValue;
@@ -648,11 +654,13 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
      * 
      * <p>
      * Behavior:
-     * <li> If the input is a valid number greater than or equal to the current minimum size, updates the field and the setting.
-     * <li> If the input is less than the current minimum size, resets the field and the setting to the minimum size.
-     * <li> If the input is not a valid number : resets to the default maximum size (displayed as "∞") 
-     * if it is greater than or equal to the current minimum size. Otherwise, resets to the minimum size.
      * </p>
+     * <ul>
+     * 	<li>If the input is a valid number greater than or equal to the current minimum size, updates the field and the setting.</li>
+     * 	<li>If the input is less than the current minimum size, resets the field and the setting to the minimum size.</li>
+     * 	<li>If the input is not a valid number : resets to the default maximum size (displayed as "∞") 
+     * 			if it is greater than or equal to the current minimum size. Otherwise, resets to the minimum size.</li>
+     * </ul>
      */
     private void enterMaxSizeField() {
     	double minValue;
@@ -693,12 +701,14 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
      * 
      * <p>
      * Behavior:
-     * <li> If the input is a valid number within the allowed range, updates the field and the setting.
-     * <li> If the input is less than the default minimum circularity, resets the field and the setting to the default minimum.
-     * <li> If the input is greater than the current maximum circularity, resets the field and the setting to the maximum circularity.
-     * <li> If the input is not a valid number, resets the field and the setting to the default minimum or maximum, 
-     *   depending on which is applicable.
      * </p>
+     * <ul>
+     * 	<li>If the input is a valid number within the allowed range, updates the field and the setting.</li>
+     * 	<li>If the input is less than the default minimum circularity, resets the field and the setting to the default minimum.</li>
+     * 	<li>If the input is greater than the current maximum circularity, resets the field and the setting to the maximum circularity.</li>
+     * 	<li>If the input is not a valid number, resets the field and the setting to the default minimum or maximum, 
+     *   		depending on which is applicable.</li>
+     * </ul>
      */
     private void enterMinCircularityField() {
     	double maxValue;
@@ -740,11 +750,13 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
      * 
      * <p>
      * Behavior:
-     * <li> If the input is a valid number greater than or equal to the current minimum circularity, updates the field and the setting.
-     * <li> If the input is less than the current minimum circularity, resets the field and the setting to the minimum circularity.
-     * <li> If the input is not a valid number : resets to the default maximum circularity
-     * if it is greater than or equal to the current minimum circularity. Otherwise, resets to the minimum circularity.
      * </p>
+     * <ul>
+     * 	<li> If the input is a valid number greater than or equal to the current minimum circularity, updates the field and the setting.</li>
+     * 	<li> If the input is less than the current minimum circularity, resets the field and the setting to the minimum circularity.</li>
+     * 	<li> If the input is not a valid number : resets to the default maximum circularity
+     * 		if it is greater than or equal to the current minimum circularity. Otherwise, resets to the minimum circularity.</li>
+     * </ul>
      */
     private void enterMaxCircularityField() {
     	double minValue;
@@ -856,8 +868,13 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
     // =========================================================================
     
     /**
-     * Synchronize the {@link LDCService} with current particle analysis input values.<br>
-     * It considers only min/max size and circularity inputs, as measures checkboxes are always kept synchronized with the service.
+     * Synchronize the {@link LDCService} with current particle analysis input values,
+     * used when a button of the {@link RightPanel} is pressed for a particle analysis.
+     * 
+     * <p>
+     * 	It considers only min/max size and circularity inputs, as measures checkboxes 
+     * 	are always kept synchronized with the service.
+     * </p>
      */
     public void syncInputValues() {
     	enterManualCalibrationSpinner();

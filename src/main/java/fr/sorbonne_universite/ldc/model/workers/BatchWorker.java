@@ -9,6 +9,7 @@ import java.util.concurrent.Future;
 
 import javax.swing.SwingWorker;
 
+import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.LDCService;
 import fr.sorbonne_universite.ldc.ui.rightpanel.BatchWindow;
 import ij.measure.ResultsTable;
@@ -20,13 +21,19 @@ import ij.measure.ResultsTable;
  */
 public class BatchWorker extends SwingWorker<Void, Void> {
 
+	/** The plug-in from which we consider the {@link AnalysisSettings}. */
 	private LDCService ldcPlugin;
+	/** The input directory to consider. */
 	private File inputDirectory;
+	/** The output .csv file. */
 	private File outputFile;
+	/** The batch window, if existing. */
 	private BatchWindow bw;
 
 	// For sub-workers management
+	/** Individual file sub-workers. */
 	private List<BatchFileWorker> workers = new ArrayList<>();
+	/** Individual file sub-workers results, waiting to be completed. */
 	private List<Future<ResultsTable>> futures = new ArrayList<>();
 	
 	/**
@@ -35,7 +42,7 @@ public class BatchWorker extends SwingWorker<Void, Void> {
 	 * @param inputDirectory	The input directory where it has to find '.tif' and '.tiff' files.
 	 * @param outputFile     	The output '.csv' where it writes the results.
 	 * @param bw             	A reference to the {@link BatchWindow} creating this
-	 *                       	worker, needed to update the progress bar.
+	 *                       	worker, needed to update the progress bar. Can be {@code null}.
 	 */
 	public BatchWorker(LDCService ldcPlugin, File inputDirectory, File outputFile, BatchWindow bw) {
 		this.ldcPlugin = ldcPlugin;
@@ -114,7 +121,7 @@ public class BatchWorker extends SwingWorker<Void, Void> {
 	/**
 	 * Gets all '.tif' and '.tiff' files from the given {@code directory}.
 	 * 
-	 * @param directory The directory in which we recursively serch for input files.
+	 * @param directory The directory in which we recursively search for input files.
 	 * @return The list of '.tif' and '.tiff' inside the {@code directory}.
 	 */
 	private List<File> getAllTifFiles(File directory) {

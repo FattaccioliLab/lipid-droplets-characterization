@@ -7,11 +7,6 @@ import ij.process.ImageProcessor;
 
 /**
  * SwingWorker applying a median filter preview on an {@link ImageProcessor}.
- * <p>
- * When preview mode is enabled, the image is reset, snapshotted, and filtered
- * using a median filter with the specified radius. When disabled, the image
- * is restored to its original state.
- * </p>
  */
 public class PreprocessingPreviewMedianWorker extends SwingWorker<Void, Void>{
 	

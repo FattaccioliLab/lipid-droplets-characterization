@@ -4,6 +4,7 @@ import java.io.File;
 
 import javax.swing.SwingWorker;
 
+import fr.sorbonne_universite.ldc.model.AnalysisSettings;
 import fr.sorbonne_universite.ldc.model.LDCService;
 import ij.IJ;
 import ij.ImagePlus;
@@ -15,8 +16,11 @@ import ij.measure.ResultsTable;
  */
 public class BatchFileWorker extends SwingWorker<ResultsTable,Void>{
 	
+	/** The plug-in from which we consider the {@link AnalysisSettings}. */
 	private LDCService ldcPlugin;
+	/** The input directory, used here for having the relative path of the {@code inputFile}. */
 	private File inputDirectory;
+	/** The input file to consider. */
 	private File inputFile;
 	
 	/**
@@ -40,7 +44,7 @@ public class BatchFileWorker extends SwingWorker<ResultsTable,Void>{
         
         // PREPROCESSING
         if (isCancelled()) return null;
-        ldcPlugin.applyEnhanceContrast(image.getProcessor());
+        ldcPlugin.enhanceContrast(image.getProcessor());
         SwingWorker<Void, Void> worker = ldcPlugin.createApplyMedianWorker(image.getImageStack());
         worker.execute();
         try {

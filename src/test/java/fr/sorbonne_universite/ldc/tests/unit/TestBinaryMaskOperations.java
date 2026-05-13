@@ -14,7 +14,7 @@ import ij.ImagePlus;
  * 	<li>Dilatation.</li>
  * 	<li>Opening.</li>
  * 	<li>Closing.</li>
- * 	<li>Wathershed.</li>
+ * 	<li>Watershed.</li>
  * </ul> 
  */
 public class TestBinaryMaskOperations {
@@ -191,8 +191,8 @@ public class TestBinaryMaskOperations {
 		ImagePlus expectedMask = importImage("/expected/test_binary_operations/test7.tif");
 		ImagePlus mask = importImage("/TestMask.tif");
 		
-		//Apply Wathersed
-		ldcPlugin.setWathershed(true);
+		//Apply Watersed
+		ldcPlugin.setWatershed(true);
         ldcPlugin.applyMorphology(mask);
         
         Utils.checkSameDimensions(expectedMask, mask);
@@ -210,9 +210,9 @@ public class TestBinaryMaskOperations {
 		ImagePlus expectedMask = importImage("/expected/test_binary_operations/test8.tif");
 		ImagePlus mask = importImage("/TestMask.tif");
 		
-		//Apply Erosion + Wathersed
+		//Apply Erosion + Watersed
 		ldcPlugin.setMorphologicalOperation("Erode");
-		ldcPlugin.setWathershed(true);
+		ldcPlugin.setWatershed(true);
         ldcPlugin.applyMorphology(mask);
         
         Utils.checkSameDimensions(expectedMask, mask);

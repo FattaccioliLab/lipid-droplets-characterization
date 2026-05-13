@@ -23,14 +23,15 @@ import ij.ImagePlus;
 
 /**
  * The left side of the plugin main GUI.
+ * 
  * <p>
  * This panel handles in its sub-panels :
- * <ul>
- * <li>Image loading and replacement.</li>
- * <li>Preprocessing settings (Contrast enhancement, Median filtering).</li>
- * <li>Asynchronous previewing and application of filters.</li>
- * <li>Navigation to the next step of the workflow.</li>
- * </ul>
+ * </p>
+ * 	<ul>
+ * 		<li>Image loading and replacement, with its {@link ImageSourcePanel}.</li>
+ * 		<li>Pipeline sub-panels (being {@link PipelineSubPanel}s).</li>
+ * 		<li>Navigation to the next step of the workflow, with its {@link FooterLeftPanel}.</li>
+ * 	</ul>
  */
 @SuppressWarnings("serial")
 public class LeftPanel extends JPanel {
@@ -38,10 +39,10 @@ public class LeftPanel extends JPanel {
     @Parameter
     private LDCService ldc;
     
-    // Parent container
+    // Parent main frame
     private MainGUI_LDC mainGUI;
   
-    // Layout Containers
+    // Sub-panels
     private ImageSourcePanel imageSourcePanel;
     private PreprocessingPanel preprocessingPanel;
     private ThresholdingPanel thresholdingPanel;
@@ -52,20 +53,19 @@ public class LeftPanel extends JPanel {
     /** Sub-panels part of the workflow pipeline. */
 	private PipelineSubPanel[] pipelineSubPanels;
 
-    // State Flags
-    private volatile boolean isProcessing = false; 	//it's false when no img is selected or a task is running to partially disable the interface
+	/** 
+	 * State flag, it's false when no img is selected or a task is running to partially disable the interface.<br>
+	 * Used only by {@link PreprocessingPanel}.
+	 */
+    private volatile boolean isProcessing = false; 	//
   
     // Sub-panels display indexes
     // 0 = Preprocessing, 1 = Thresholding, 2 = MorphologyPanel, 3 = Particle analysis parameters
-    private int navigationIndex = 0; // Which pipeline sub-panel is currently showed
-    private int workflowIndex = 0; // Which workflow step is currently considered (other sub-panels are locked)
+    /** Which pipeline sub-panel is currently showed. */
+    private int navigationIndex = 0;
+    /** Which workflow step is currently considered (other sub-panels are locked). */
+    private int workflowIndex = 0;
 
-    /**
-     * Constructs the LeftPanel, by initializing the main layout and initializing + assembling the sub-panels.
-     * @param ctx              The SciJava context for injection.
-     * @param mainGUI          The parent component.
-     * @param selectedSettings The model object holding analysis parameters.
-     */
     public LeftPanel(Context ctx, MainGUI_LDC mainGUI) {
         ctx.inject(this);
         
@@ -138,7 +138,9 @@ public class LeftPanel extends JPanel {
      */
     public void setProcessing(boolean isProcessing) {
     	this.isProcessing = isProcessing; 
-    	enablePanels(true); // even if true is given as parameter, the method itself will consider the new 'isProcessing' flag
+    	// even if true is given as parameter, the method itself will consider the new 'isProcessing' flag
+    	// and potentially disable sub-panels
+    	enablePanels(true);
     }
     
     /** @return index giving the current pipeline sub-panel showed. */
@@ -183,8 +185,10 @@ public class LeftPanel extends JPanel {
     // =========================================================================
 
     /**
+     * <p>
+     * Either :
+     * </p>
      * <ul>
-     * 	Either :
      * 	<li>Enables UI components of ONLY the current workflow's step sub-panel, if not processing.</li>
      * 	<li>Disables UI components of ALL sub panels.</li>
      * </ul>
@@ -260,9 +264,9 @@ public class LeftPanel extends JPanel {
     
     /**
      * Updates LeftPanel UI to show the given sub-panel, and manage allowing/disallowing interaction with Prev/Next footer buttons
-     * depending on the new current sub panel.<br>
-     * Does not manage enabling/disabling UI components of sub-panels.
-     * @param 			The new navigation index.
+     * depending on the new current sub panel.
+     * <p>Does not manage enabling/disabling UI components of sub-panels.</p>
+     * @param newNavigationIndex	The new navigation index.
      */
     private void goToStep(int newNavigationIndex) {
     	
@@ -305,8 +309,8 @@ public class LeftPanel extends JPanel {
     
     /**
      * Updates LeftPanel UI to show the next sub-panel, and manage allowing/disallowing interaction with Prev/Next footer buttons
-     * depending on the new current sub panel.<br>
-     * Does not manage enabling/disabling UI components of sub-panels.
+     * depending on the new current sub panel.
+     * <p>Does not manage enabling/disabling UI components of sub-panels.</p>
      */
     public void goToNextStep() {
         if (navigationIndex == MainGUI_LDC.PREPROCESSING_STEP) {
@@ -337,8 +341,8 @@ public class LeftPanel extends JPanel {
 	
     /**
      * Updates LeftPanel UI to show the previous sub-panel, and manage allowing/disallowing interaction with Prev/Next footer buttons
-     * depending on the new current sub panel.<br>
-     * Does not manage enabling/disabling UI components of sub-panels.
+     * depending on the new current sub panel.
+     * <p>Does not manage enabling/disabling UI components of sub-panels.</p>
      */
 	public void goToPrevStep() {
         if (navigationIndex == MainGUI_LDC.THRESHOLDING_STEP) {
