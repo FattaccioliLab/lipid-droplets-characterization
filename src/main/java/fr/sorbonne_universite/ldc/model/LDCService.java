@@ -11,6 +11,7 @@ import org.scijava.service.SciJavaService;
 import fr.sorbonne_universite.ldc.model.leftpanel.JSONManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.PreprocessingManager;
 import fr.sorbonne_universite.ldc.model.workers.BatchWorker;
+import fr.sorbonne_universite.ldc.model.workers.MeasuresPreviewWorker;
 import fr.sorbonne_universite.ldc.model.workers.MeasuresProcessingWorker;
 import fr.sorbonne_universite.ldc.model.workers.PreprocessingApplyMedianWorker;
 import fr.sorbonne_universite.ldc.model.workers.PreprocessingPreviewMedianWorker;
@@ -155,7 +156,7 @@ public interface LDCService extends SciJavaService {
 	/**
 	 * Enhances contrast for the given {@link ImageProcessor}. Does not modify the content of it, it is only a visual modification.
 	 * @param ip The image processor to modify.
-	 * @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, boolean, double)
+	 * @see PreprocessingManager#enhanceContrast(ImageProcessor, boolean, double)
 	 */
 	public void enhanceContrast(ImageProcessor ip);
 	

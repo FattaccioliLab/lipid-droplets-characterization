@@ -30,6 +30,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.ui.UIService;
 
 import fr.sorbonne_universite.ldc.model.LDCService;
+import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 import fr.sorbonne_universite.ldc.ui.leftpanel.LeftPanel;
 import ij.IJ;
 import ij.ImagePlus;

@@ -6,6 +6,7 @@ import org.scijava.Context;
 import org.scijava.plugin.Parameter;
 
 import fr.sorbonne_universite.ldc.model.LDCService;
+import fr.sorbonne_universite.ldc.model.workers.BatchWorker;
 import fr.sorbonne_universite.ldc.ui.MainGUI_LDC;
 
 import java.awt.*;

@@ -48,7 +48,7 @@ public class Utils {
 	
 	/**
 	 * Checks if 2 given images have the same display range (min/max values).
-	 * This verifies the Brightness & Contrast settings (LUT parameters) without comparing actual pixel values.
+	 * This verifies the Brightness and Contrast settings (LUT parameters) without comparing actual pixel values.
 	 * @param expected 		The reference image.
 	 * @param actual 		The image that needs to have the same display range as {@code expected}.
 	 */

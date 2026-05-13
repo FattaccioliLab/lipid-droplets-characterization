@@ -185,8 +185,10 @@ public class LeftPanel extends JPanel {
     // =========================================================================
 
     /**
+     * <p>
+     * Either :
+     * </p>
      * <ul>
-     * 	Either :
      * 	<li>Enables UI components of ONLY the current workflow's step sub-panel, if not processing.</li>
      * 	<li>Disables UI components of ALL sub panels.</li>
      * </ul>
@@ -264,7 +266,7 @@ public class LeftPanel extends JPanel {
      * Updates LeftPanel UI to show the given sub-panel, and manage allowing/disallowing interaction with Prev/Next footer buttons
      * depending on the new current sub panel.
      * <p>Does not manage enabling/disabling UI components of sub-panels.</p>
-     * @param 			The new navigation index.
+     * @param newNavigationIndex	The new navigation index.
      */
     private void goToStep(int newNavigationIndex) {
     	
