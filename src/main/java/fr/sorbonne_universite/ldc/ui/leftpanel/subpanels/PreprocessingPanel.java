@@ -37,12 +37,10 @@ import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.gui.GenericDialog;
 import ij.process.ImageProcessor;
 
 /**
- * Creates the middle panel of the {@link LeftPanel}, containing preprocessing controls (Contrast, Median Filter).<br>
- * Includes logic for initializing the loading GIF and Cancel button.
+ * Creates the middle panel of the {@link LeftPanel}, containing preprocessing controls (Contrast, Median Filter).
  */
 @SuppressWarnings("serial")
 public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
@@ -50,7 +48,6 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
 	// The parent panel
 	private LeftPanel leftPanel;
 	
-    // --- Services ---
     @Parameter
 	private LDCService ldc;
     
@@ -71,10 +68,10 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
     private JTextField applyRangeField;
     private JButton applyButton;
     
-    // Reference to the currently running worker to allow cancellation
+    /** Reference to the currently running worker to allow cancellation. */
     private SwingWorker<Void, Void> currentWorker;
     
-    // Reference to the last ImageStack before a median preview / apply.
+    /** Reference to the last ImageStack before a median preview / apply. */
     ImageStack lastImageStackBeforeMedian = null;
 	
 	public PreprocessingPanel(Context ctx, LeftPanel leftPanel) {
@@ -211,7 +208,7 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
 	    applyButton.addActionListener(e -> {
 	        if (leftPanel.isProcessing()) return;
 	        applyButton.setEnabled(false);
-	        runApplyLogic();
+	        apply();
 	    });
 	    applyRow.add(applyButton, BorderLayout.WEST);
 	    
@@ -231,16 +228,18 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
      * The main entry point for the "Apply preprocessing parameters" button logic.
      * 
      * <p>
-     * Checks if sub stack processing is needed, and if we process all slices or only the current. Then :
-     * <li>Either applies the median filter by handling preview state conflicts, and launching the median filter worker.
-     * <li>Otherwise eventually enhances contrast.
+     * 	Checks if sub stack processing is needed. Then :
      * </p>
+     * <ul>
+     * 	<li>Either applies the median filter by handling preview state conflicts, and launching the median filter worker.
+     * 	<li>Otherwise eventually enhances contrast.
+     * </ul>
      * 
      * <p>
      * In each case, we work on a copy of the original image, before replacing the current image by this copy.
      * </p>
      */
-    private void runApplyLogic() {
+    private void apply() {
     	ImagePlus img = leftPanel.getCurrentImage();
         if (img == null) {
             IJ.showMessage("No image", "Please open an image first.");
@@ -264,19 +263,8 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
         	return;
         }
         
-        // We ask if we must apply preprocessing parameters and allow the user to access to the next workflow step
-        GenericDialog gd = new GenericDialog("Process Stack?", leftPanel.getMainGUI());
-        gd.addMessage("Do you want to process all " + nbSlices + " images ?\nThere is no undo.");
-        gd.enableYesNoCancel("Yes", "Cancel");
-        gd.hideCancelButton();
-        gd.showDialog();
-        if (!gd.wasOKed()) {
-            applyButton.setEnabled(true);
-            return;
-        }
-        
         // If median filter is enabled : 
-        // Start from the original image's copy : applies eventually enhance contrast + applies median filter + locks preprocessing UI at the end
+        // Start from the original image's copy : eventually enhances contrast + applies median filter
         // (all of that is done in the 'launchApplyWorker' method)
         if (ldc.medianFilterEnabled()) {
 	
@@ -287,16 +275,16 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
 	        }
 	
 	        // The new stack range will be considered inside the called method
-	        launchApplyWorker(slices, false);
+	        performApplyAsync(slices, false);
         
 	    // Else :
-	    // Start from the original image's copy : applies eventually enhance contrast + locks preprocessing UI here
+	    // Start from the original image's copy : eventually enhances contrast
         } else {
         	
         	ImagePlus copy = leftPanel.getOriginalImage().duplicate();
         	ImageProcessor ipCopy = copy.getProcessor();
         	
-        	if (ldc.enhanceContrastEnabled()) ldc.applyEnhanceContrast(ipCopy);
+        	if (ldc.enhanceContrastEnabled()) ldc.enhanceContrast(ipCopy);
         	img.setProcessor(ipCopy);
         	
         	// The new stack range considered (if we must)
@@ -354,7 +342,7 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
 
     /**
      * Toggles the median filter controls.
-     * If unchecked while preview was active, it resets the image logic.
+     * If unchecked while preview was active, it resets the preview.
      */
     private void toggleMedian() {
         boolean enabled = medianCheckbox.isSelected();
@@ -371,7 +359,7 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
     }
     
     /**
-     * Reads the radius value from the text field, validates it, and triggers a preview update.
+     * Reads the radius value from the text field, validates it, and potentially triggers a preview update.
      */
     private void updateMedianRadiusFromField() {
         try {
@@ -410,7 +398,7 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
     
     /**
      * Cancels the currently running SwingWorker (preview or apply), if it exists.
-     * This triggers the isCancelled() check inside the worker's logic.
+     * This triggers the isCancelled() check inside the worker's {@code doInBackground()} method.
      */
     private void cancelCurrentTask() {
         if (currentWorker != null && !currentWorker.isDone()) {
@@ -426,13 +414,12 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
     // =========================================================================
 
     /**
-     * Try to apply contrast enhancement to the current image using ImageJ's ContrastEnhancer<br>
-     * LDC service applies the enhancement only if the option is set, within it.
+     * Try to apply contrast enhancement to the current image using ImageJ's ContrastEnhancer.
      */
     private void enhanceContrast() {
         ImagePlus img = leftPanel.getCurrentImage();
         if (img == null) return;
-        ldc.applyEnhanceContrast(img.getProcessor()); // If the option is not enabled, does nothing.
+        ldc.enhanceContrast(img.getProcessor()); // If the option is not enabled, does nothing.
         img.updateAndDraw();
     }
     
@@ -441,7 +428,7 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
     // =========================================================================
     
     /**
-     * Handles the Median Filter preview logic, called after each toggle of the median filter preview checkbox.
+     * Handles the Median Filter preview, called after each toggle of the median filter preview checkbox.
      *
      * <p>
      * If called after unselecting the median preview toggle, it restores the previous {@link ImageStack} state from before the preview (synchronously).
@@ -475,10 +462,11 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
         
         // We try to do a preview on an independent copy. 
         // If it works out, we replace the current's image Processor with this modified ImageProcessor.
-        // 'toProcess' is the ImageProcessor corresponding in the original ImageStack.
-        ImageProcessor toProcess = leftPanel.getOriginalImage().getStack().getProcessor(img.getCurrentSlice()).duplicate();
+    	ImageStack previewStack = img.getStack().duplicate();
+    	ImageProcessor toProcess = previewStack.getProcessor(img.getCurrentSlice());
+    	
         // There is no enhance contrast on the original ImageProcessor, so we apply it if needed.
-        if (ldc.enhanceContrastEnabled()) ldc.applyEnhanceContrast(toProcess);
+        if (ldc.enhanceContrastEnabled()) ldc.enhanceContrast(toProcess);
 
         SwingWorker<Void,Void> previewWorker = ldc.createPreviewMedianWorker(toProcess);
         currentWorker = previewWorker;
@@ -497,7 +485,7 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
 	                // if it went OK
 	                } else {
 	                	previewWorker.get(); // check for exceptions
-	                	img.setProcessor(toProcess); // Applies changes to the current image
+	                	img.setStack(previewStack); // Applies changes to the current image
 	                	img.updateAndDraw();
 	                    IJ.showStatus("Preview updated.");
 	                }
@@ -525,13 +513,14 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
     }
     
     /**
-     * Launches a dedicated background worker to apply the filter to the image (= stack).<br>
-     * If a set of {@code slices} is given, it considers them for the current image.
+     * Launches a dedicated background worker to apply the filter to the image (= stack).
+     * 
+     * <p>If a set of {@code slices} is given, it considers them for the current image.</p>
      * @param slices    		Slices associated to a sub-stack of the current image's stack to consider. 
      * 							If {@code null}, the original stack is considered.
      * @param blocking			true if the current thread must wait the worker. It is the case on new parameters import.
      */
-    private void launchApplyWorker(Set<Integer> slices, boolean blocking) {
+    private void performApplyAsync(Set<Integer> slices, boolean blocking) {
         ImagePlus img = leftPanel.getCurrentImage();
         
         // save
@@ -546,7 +535,7 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
     	}
         
         // There is no enhance contrast on the original ImageProcessor, so we apply it if needed.
-        if (ldc.enhanceContrastEnabled()) ldc.applyEnhanceContrast(toProcess.getProcessor());
+        if (ldc.enhanceContrastEnabled()) ldc.enhanceContrast(toProcess.getProcessor());
         
         if (!blocking) {
         	SwingWorker<Void,Void> applyWorker = ldc.createApplyMedianWorker(toProcess.getImageStack());
@@ -714,7 +703,7 @@ public class PreprocessingPanel extends JPanel implements PipelineSubPanel {
 
 	@Override
 	public void applyUIWithParams() {
-		launchApplyWorker(null, true);
+		performApplyAsync(null, true); // The whole image stack is considered
 	}
 
 }

@@ -47,7 +47,7 @@ public class TestPreprocessing {
 		
         ldcPlugin.setEnhanceContrast(true);
         ldcPlugin.setEnhanceSaturatedPercent(0.35);
-        ldcPlugin.applyEnhanceContrast(image.getProcessor());
+        ldcPlugin.enhanceContrast(image.getProcessor());
         
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
@@ -65,7 +65,7 @@ public class TestPreprocessing {
 		
         ldcPlugin.setEnhanceContrast(true);
         ldcPlugin.setEnhanceSaturatedPercent(10);
-        ldcPlugin.applyEnhanceContrast(image.getProcessor());
+        ldcPlugin.enhanceContrast(image.getProcessor());
         
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
@@ -84,7 +84,7 @@ public class TestPreprocessing {
 		
         ldcPlugin.setEnhanceContrast(true);
         ldcPlugin.setEnhanceSaturatedPercent(40);
-        ldcPlugin.applyEnhanceContrast(image.getProcessor());
+        ldcPlugin.enhanceContrast(image.getProcessor());
         
         Utils.checkSameDimensions(expectedImage, image);
         Utils.checkSameDisplayRange(expectedImage, image);
@@ -186,7 +186,7 @@ public class TestPreprocessing {
 		
         ldcPlugin.setEnhanceContrast(true);
         ldcPlugin.setEnhanceSaturatedPercent(10);
-        ldcPlugin.applyEnhanceContrast(image.getProcessor());
+        ldcPlugin.enhanceContrast(image.getProcessor());
 		
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(5);
@@ -215,7 +215,7 @@ public class TestPreprocessing {
 		
         ldcPlugin.setEnhanceContrast(true);
         ldcPlugin.setEnhanceSaturatedPercent(10);
-        ldcPlugin.applyEnhanceContrast(image.getProcessor());
+        ldcPlugin.enhanceContrast(image.getProcessor());
 		
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(2.45);

@@ -40,7 +40,7 @@ public class MainGUI_LDC extends JFrame {
     private ImagePlus currentImage = null;
     /** The mask attached to the currently considered image. */
     private ImagePlus mask = null;
-    /** The preview window of the right panel */
+    /** The preview window of the right panel. */
     private ImagePlus previewWindow = null;
     
     public MainGUI_LDC(final Context ctx) {
@@ -51,7 +51,7 @@ public class MainGUI_LDC extends JFrame {
         
         // --- Enforce Minimum Widths ---
         // JSplitPane will absolutely refuse to drag past these minimums, 
-        // protecting your Left Panel from getting squished.
+        // protecting the Left Panel from getting squished.
         this.leftContent.setMinimumSize(new Dimension(470, 0)); 
         this.rightContent.setMinimumSize(new Dimension(400, 0)); 
         

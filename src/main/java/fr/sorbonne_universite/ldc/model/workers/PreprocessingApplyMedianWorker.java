@@ -8,9 +8,6 @@ import ij.plugin.filter.RankFilters;
 
 /**
  * SwingWorker applying a median filter using ImageJ's {@link RankFilters} on a whole {@link ImageStack}.
- * <p>
- * Supports cancellation during the stack loop.
- * </p>
  */
 public class PreprocessingApplyMedianWorker extends SwingWorker<Void, Void>{
 	

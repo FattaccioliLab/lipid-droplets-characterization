@@ -11,15 +11,6 @@ import ij.measure.Calibration;
  */
 public class AnalysisSettings implements Cloneable {
 	
-    @Override
-    public AnalysisSettings clone() {
-        try {
-            return (AnalysisSettings) super.clone(); // Shallow copy
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(); // Cannot happen
-        }
-    }
-	
     // =========================================================================
     // SETTINGS
     // =========================================================================
@@ -60,8 +51,6 @@ public class AnalysisSettings implements Cloneable {
 	// Dark background option
 	public final static boolean DFL_THRESHOLD_DARK_BACKGROUND = false;
 	private boolean thresholdDarkBackground = DFL_THRESHOLD_DARK_BACKGROUND;
-	
-
 
     // ====================================
     // Binary mask morphological operations
@@ -79,7 +68,7 @@ public class AnalysisSettings implements Cloneable {
 	private boolean dilation = DFL_BINARY_MASK_OP;
 	private boolean opening = DFL_BINARY_MASK_OP;
 	private boolean closing = DFL_BINARY_MASK_OP;
-	private boolean watershed = DFL_BINARY_MASK_OP; // bonus
+	private boolean watershed = DFL_BINARY_MASK_OP;
 	
     // ====================================
     // Image calibration (unit per pixel)
@@ -188,8 +177,6 @@ public class AnalysisSettings implements Cloneable {
 	public boolean thresholdDarkBackgroundEnabled() { return thresholdDarkBackground; }
 	public void setThresholdDarkBackground(boolean thresholdDarkBackground) { this.thresholdDarkBackground = thresholdDarkBackground; }
 	
-
-	
     // ====================================
     // Binary mask morphological operations
     // ====================================
@@ -217,7 +204,7 @@ public class AnalysisSettings implements Cloneable {
 	public void setClosing(boolean closing) { this.closing = closing; }
 	
 	public boolean watershedEnabled() { return watershed; }
-	public void setWathershed(boolean watershed) { this.watershed = watershed; }
+	public void setWatershed(boolean watershed) { this.watershed = watershed; }
 	
     // =================
     // Analyse particles

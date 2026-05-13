@@ -50,8 +50,6 @@ public class ImageSourcePanel extends JPanel implements LeftPanelSubPanel {
 	
 	private JLabel infosNbSlicesLabel;
 	
-	JButton openImageButton;
-	
 	// Parameters management buttons
 	private JButton importParametersButton;
 	private JButton exportParametersButton;
@@ -139,7 +137,8 @@ public class ImageSourcePanel extends JPanel implements LeftPanelSubPanel {
     
     /**
      * Starts a timer that regularly checks the status of the current image.
-     * Updates UI enable/disable states based on image presence and processing status.
+     * 
+     * <p>Updates UI enable/disable states based on image presence and processing status.</p>
      */
     private void startImageWatcher() {
     	
@@ -352,7 +351,6 @@ public class ImageSourcePanel extends JPanel implements LeftPanelSubPanel {
      * @param img		The current image to update it's calibration.
      */
     public void updateCalibrationState(ImagePlus img) {
-    	
     	if (img != null) {
     		Calibration cal = img.getCalibration();
     		ldc.setCalibration(cal);
@@ -361,7 +359,6 @@ public class ImageSourcePanel extends JPanel implements LeftPanelSubPanel {
     		ldc.setIsCalibrated(false);
     		ldc.setCalibration(null);
     	}
-    	
     }
     
     // =========================================================================
@@ -369,9 +366,10 @@ public class ImageSourcePanel extends JPanel implements LeftPanelSubPanel {
     // =========================================================================
     
     /**
-     * Open a JFileChooser for selecting an analysis parameters JSON to import.
+     * Open a JFileChooser for selecting an analysis parameters JSON to import.<br>
      * Then applies the pipeline until the selected pipeline step, and imports parameters into the UI for every step.
-     * Note that the calibration is kept with the current opened image.
+     * 
+     * <p>Note that the calibration is kept with the current opened image.</p>
      */
     private void importParametersAction() {
         JFileChooser fileChooser = new JFileChooser();

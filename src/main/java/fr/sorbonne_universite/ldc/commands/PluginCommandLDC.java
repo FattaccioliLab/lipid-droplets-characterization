@@ -18,6 +18,7 @@ public class PluginCommandLDC implements Command {
 	@Parameter
 	private Context ctx;
 	
+	/** The plugin interface to open. */
 	private static MainGUI_LDC dialog = null;
 
 	/**

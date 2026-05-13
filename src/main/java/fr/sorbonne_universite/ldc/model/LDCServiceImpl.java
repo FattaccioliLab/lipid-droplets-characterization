@@ -15,7 +15,6 @@ import fr.sorbonne_universite.ldc.model.leftpanel.MorphologyManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.PreprocessingManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.ThresholdingManager;
 import fr.sorbonne_universite.ldc.model.rightpanel.MeasurementsManager;
-import fr.sorbonne_universite.ldc.model.workers.PreprocessingPreviewMedianWorker;
 import fr.sorbonne_universite.ldc.ui.rightpanel.BatchWindow;
 import fr.sorbonne_universite.ldc.model.workers.BatchWorker;
 import ij.ImagePlus;
@@ -26,21 +25,29 @@ import ij.process.ImageProcessor;
 
 /**
  * The implementation of the {@link LDCService}. It delegates its operations to inner attributes.
+ * 
+ * <p>
+ * 		Needs to be initialized by a call to the {@link AbstractService#initialize()} method to be used,
+ * 		if manually created with its constructor.
+ * </p>
  */
 @Plugin(type = Service.class)
 public class LDCServiceImpl extends AbstractService implements LDCService{
 
-	// Object holding all LDC parameters (pure state)
+	/** Object holding all LDC parameters (pure state) */
 	private AnalysisSettings settings;
 	
-	// For the LeftPanel's sub-panels operations.
+	/** LeftPanel's JSON manager */
+	private JSONManager jsonManager;
+	/** LeftPanel's preprocessing operations manager */
 	private PreprocessingManager preprocessingManager;
+	/** LeftPanel's thresholding operations manager */
 	private ThresholdingManager thresholdingManager;
+	/** LeftPanel's morphological operations manager */
 	private MorphologyManager morphologyManager;
   
-	// For the RightPanel's sub-panels operations.
+	/** RightPanel's measurements manager */
 	private MeasurementsManager measurementsManager;
-	private JSONManager jsonManager;
 	
 	@Override
 	public void initialize() { 
@@ -88,8 +95,6 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     @Override public boolean thresholdDarkBackgroundEnabled() { return settings.thresholdDarkBackgroundEnabled(); }
     @Override public void setThresholdDarkBackground(boolean thresholdDarkBackground) { settings.setThresholdDarkBackground(thresholdDarkBackground); }
 
-
-
     // =============================================
     // Binary mask morphological operations
     // =============================================
@@ -99,7 +104,7 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     public void setMorphologicalOperation(String method) {settings.setMorphologicalOperation(method);}
 
     @Override public boolean watershedEnabled() { return settings.watershedEnabled(); }
-    @Override public void setWathershed(boolean watershed) { settings.setWathershed(watershed); }
+    @Override public void setWatershed(boolean watershed) { settings.setWatershed(watershed); }
 
     // =============================================
     // Analyse particles
@@ -166,15 +171,12 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // Preprocessing
     // =============================================
 	
-	/** @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, double) */
-	@Override public void applyEnhanceContrast(ImageProcessor ip) { preprocessingManager.applyEnhanceContrast(ip, enhanceContrastEnabled(), getEnhanceSaturatedPercent()); }
+	@Override public void enhanceContrast(ImageProcessor ip) { preprocessingManager.enhanceContrast(ip, enhanceContrastEnabled(), getEnhanceSaturatedPercent()); }
 
-	/** @see PreprocessingPreviewMedianWorker */
 	@Override public SwingWorker<Void, Void> createPreviewMedianWorker(ImageProcessor ip) {
 		return preprocessingManager.createPreviewMedianWorker(ip, getMedianRadius());
 	}
 	
-	/** @see PreprocessingApplyMedianWorker */
 	@Override public SwingWorker<Void, Void> createApplyMedianWorker(ImageStack stack) {  
 		return preprocessingManager.createApplyMedianWorker(medianFilterEnabled(), getMedianRadius(), stack);
 	}
@@ -199,13 +201,14 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // Morphology
     // =============================================
     
-
     @Override public void captureMorphologySnapshot(ImagePlus imp) {
     	morphologyManager.captureSnapshot(imp);
     }
+    
     @Override public void previewMorphology(ImagePlus imp) {
     	morphologyManager.previewMorphology(imp, settings.getMorphologicalOperation(), settings.watershedEnabled());
     }
+    
     @Override public boolean resetMorphologyPreview(ImagePlus imp) {
     	return morphologyManager.resetPreview(imp);
     }
@@ -218,12 +221,10 @@ public class LDCServiceImpl extends AbstractService implements LDCService{
     // Measures
     // =============================================
 
-	/** @see MeasuresPreviewWorker */
     @Override public SwingWorker<ImagePlus, Void> createMeasuresPreviewWorker(ImagePlus img){
 		return measurementsManager.createMeasuresPreviewWorker(settings, img);
     }
     
-	/** @see MeasuresProcessingWorker */
 	@Override public SwingWorker<ResultsTable, Void> createMeasuresProcessingWorker(ImagePlus img, ImagePlus binaryImg) {
 		return measurementsManager.createMeasuresProcessingWorker(settings, img, binaryImg);
 	}

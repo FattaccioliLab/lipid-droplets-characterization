@@ -142,7 +142,7 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
 
         String morphologicalOperation = erode? "Erode" : dilate ? "Dilate" : open? "Open" :  close? "Close" : "None";
         ldc.setMorphologicalOperation(morphologicalOperation);
-        ldc.setWathershed(watershed);
+        ldc.setWatershed(watershed);
 
     }
     

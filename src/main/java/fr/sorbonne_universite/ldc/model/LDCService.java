@@ -8,6 +8,7 @@ import javax.swing.SwingWorker;
 
 import org.scijava.service.SciJavaService;
 
+import fr.sorbonne_universite.ldc.model.leftpanel.JSONManager;
 import fr.sorbonne_universite.ldc.model.leftpanel.PreprocessingManager;
 import fr.sorbonne_universite.ldc.model.workers.BatchWorker;
 import fr.sorbonne_universite.ldc.model.workers.MeasuresProcessingWorker;
@@ -73,12 +74,14 @@ public interface LDCService extends SciJavaService {
     // Binary mask morphological operations
     // =============================================
 	
+	// Morphological operations
     public List<String> getMorphologicalOperationsList();
     public String getMorphologicalOperation();
     public void setMorphologicalOperation(String method);
 	
+    // Watershed
 	public boolean watershedEnabled();
-	public void setWathershed(boolean watershed);
+	public void setWatershed(boolean watershed);
     
     // =============================================
     // Analyse particles
@@ -150,14 +153,14 @@ public interface LDCService extends SciJavaService {
     // =============================================
 	
 	/**
-	 * Applies contrast enhancement to the given {@link ImageProcessor}.
+	 * Enhances contrast for the given {@link ImageProcessor}. Does not modify the content of it, it is only a visual modification.
 	 * @param ip The image processor to modify.
-	 * @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, double)
+	 * @see PreprocessingManager#applyEnhanceContrast(ImageProcessor, boolean, double)
 	 */
-	public void applyEnhanceContrast(ImageProcessor ip);
+	public void enhanceContrast(ImageProcessor ip);
 	
     /**
-     * Creates a {@link SwingWorker}, that can apply a median filter preview on a given {@link ImageProcessor} if executed.
+     * Creates a {@link SwingWorker}, that applies a median filter preview on a given {@link ImageProcessor} if executed.
      * @param ip The image processor to modify.
      * @see PreprocessingPreviewMedianWorker
      */
@@ -258,7 +261,7 @@ public interface LDCService extends SciJavaService {
     // =============================================
     
     /**
-     * Create a {@link SwingWorker}, that has the goal of applying particle analysis on a whole given {@code directory}.
+     * Create a {@link SwingWorker}, that has the goal of applying particle analysis on a whole given {@code directory} images.
 	 * @param inputDirectory	The input directory where it has to find '.tif' and '.tiff' files.
 	 * @param outputFile		The output '.csv' where it writes the results.
 	 * @param bw				A reference to the {@link BatchWindow} creating this worker, needed to update the progress bar.
@@ -274,6 +277,7 @@ public interface LDCService extends SciJavaService {
      * Save current plug-in general state into a file (.json) specified by the {@code outputPath}.
      * @param outputPath 	The path where the current plug-in state needs to be saved.
      * @throws IOException	If an error occurs while attempting to save the file.
+     * @see JSONManager#saveAnalysis(String, AnalysisSettings)
      */
     public void saveAnalysis(String outputPath) throws IOException;
     
@@ -281,6 +285,7 @@ public interface LDCService extends SciJavaService {
      * Load a plug-in general state from a file (.json) specified by the {@code inputPath}, and the current state by it.
      * @param inputPath 	The path from where the new current plug-in state needs to be loaded.
      * @throws IOException	If an error occurs while attempting to load the file.
+     * @see JSONManager#loadAnalysis(String)
      */
     public void loadAnalysis(String inputPath) throws IOException;
 }

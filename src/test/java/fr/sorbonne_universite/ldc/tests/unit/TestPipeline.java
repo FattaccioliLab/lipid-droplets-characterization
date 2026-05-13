@@ -126,7 +126,7 @@ public class TestPipeline {
 		// Preprocessing
         ldcPlugin.setEnhanceContrast(true);
         ldcPlugin.setEnhanceSaturatedPercent(0.35);
-        ldcPlugin.applyEnhanceContrast(image.getProcessor());
+        ldcPlugin.enhanceContrast(image.getProcessor());
 		
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(4);
@@ -195,7 +195,7 @@ public class TestPipeline {
 		// Preprocessing
         ldcPlugin.setEnhanceContrast(true);
         ldcPlugin.setEnhanceSaturatedPercent(4);
-        ldcPlugin.applyEnhanceContrast(image.getProcessor());
+        ldcPlugin.enhanceContrast(image.getProcessor());
 		
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(2);
@@ -263,7 +263,7 @@ public class TestPipeline {
 		// Preprocessing
         ldcPlugin.setEnhanceContrast(true);
         ldcPlugin.setEnhanceSaturatedPercent(4);
-        ldcPlugin.applyEnhanceContrast(image.getProcessor());
+        ldcPlugin.enhanceContrast(image.getProcessor());
 		
         ldcPlugin.setMedianFilter(true);
         ldcPlugin.setMedianRadius(2);
@@ -413,8 +413,8 @@ public class TestPipeline {
 		ldcPlugin.previewAutoThreshold(image);
 		ImagePlus mask = ldcPlugin.applyThreshold(image);
 		
-		// Binary morphological operation (Wathershed)
-		ldcPlugin.setWathershed(true);
+		// Binary morphological operation (Watershed)
+		ldcPlugin.setWatershed(true);
 		ldcPlugin.applyMorphology(mask);
 		
 		// Particle Analysis

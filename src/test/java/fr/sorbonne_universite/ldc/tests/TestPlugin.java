@@ -9,7 +9,7 @@ import net.imagej.patcher.LegacyInjector;
 
 /**
  * Simply creates a new {@link ImageJ} interface, containing as well the plugin content (from src/main/java).<br>
- * Entry point for debug, instantly opens the {@code MainGUI_LDC}.
+ * Entry point for development, instantly opens the {@code MainGUI_LDC}.
  */
 @Disabled("Not used for unit tests, must be individually executed")
 public class TestPlugin {

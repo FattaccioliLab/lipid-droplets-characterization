@@ -3,20 +3,22 @@ package fr.sorbonne_universite.ldc.utils;
 import java.util.HashSet;
 import java.util.Set;
 
+import fr.sorbonne_universite.ldc.ui.leftpanel.subpanels.PreprocessingPanel;
 import ij.ImageStack;
 
 /**
- * Utility class for managing inputs.
+ * Utility class for managing inputs, currently only used by the {@link PreprocessingPanel}.
  */
 public class InputUtils {
 	
     /**
-     * Parses a slice range string (e.g. "1-3,5,8-10") and returns a set of valid 1-based slice indices.<br>
-     * Out-of-bounds values are ignored and duplicates are removed.
+     * Parses a slice range string (e.g. "1-3,5,8-10") and returns a set of valid 1-based slice indices.
+     * 
+     * <p>Out-of-bounds values are ignored and duplicates are removed.</p>
      *
-     * @param input Slice range string.
-     * @param maxSlices Maximum number of slices available.
-     * @return Set of valid slice indices, or an empty set if input is null/empty.
+     * @param input 		Slice range string.
+     * @param maxSlices 	Maximum number of slices available.
+     * @return 				Set of valid slice indices, or an empty set if input is null/empty.
      */
     public static Set<Integer> parseSliceRangeToSet(String input, int maxSlices) {
 
@@ -62,12 +64,13 @@ public class InputUtils {
     }
 
     /**
-     * Builds a new {@link ImageStack} containing the specified 1-based slice indices.<br>
-     * Invalid indices are ignored.
+     * Builds a new {@link ImageStack} containing the specified 1-based slice indices.
+     * 
+     * <p>Invalid indices are ignored.</p>
      *
-     * @param slices Set of slice indices.
-     * @param stack Source {@link ImageStack}.
-     * @return New {@link ImageStack} containing selected slices.
+     * @param slices 	Set of slice indices.
+     * @param stack 	Source {@link ImageStack}.
+     * @return 			New {@link ImageStack} containing selected slices.
      */
     public static ImageStack buildStackFromSlices(Set<Integer> slices, ImageStack stack) {
 

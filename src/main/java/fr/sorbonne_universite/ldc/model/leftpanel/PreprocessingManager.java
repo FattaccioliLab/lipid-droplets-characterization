@@ -17,23 +17,24 @@ public class PreprocessingManager {
 	ContrastEnhancer ce = new ContrastEnhancer();
 
 	/**
-	 * Applies contrast enhancement on the given {@link ImageProcessor} using ImageJ's ContrastEnhancer.
-	 * @param ip The image processor to modify.
-	 * @param enhanceContrastEnabled Indicates if the 'Enhance contrast' option is enabled.
-	 * @param saturated The saturation percentage for contrast enhancement.
-	 * @throws IllegalArgumentException if {@code ip} == {@code null}.
+	 * Enhances contrast for the given {@link ImageProcessor} using ImageJ's ContrastEnhancer.
+	 * Does not modify the content of it, it is only a visual modification.
+	 * @param ip 							The image processor to modify.
+	 * @param enhanceContrastEnabled 		Indicates if the 'Enhance contrast' option is enabled.
+	 * @param saturated 					The saturation percentage for contrast enhancement.
+     * @throws IllegalArgumentException 	if image processor is {@code null}.
 	 */
-	public void applyEnhanceContrast(ImageProcessor ip, boolean enhanceContrastEnabled, double saturated) {
+	public void enhanceContrast(ImageProcessor ip, boolean enhanceContrastEnabled, double saturated) {
     	if (ip == null) throw new IllegalArgumentException("No image processor given.");
     	
     	if (enhanceContrastEnabled) ce.stretchHistogram(ip, saturated);
 	}
 	
     /**
-     * Creates a {@link SwingWorker}, that can apply a median filter preview on a given {@link ImageProcessor} if executed.
-     * @param ip The image processor to modify.
-     * @param radius The radius of the median filter.
-     * @throws IllegalArgumentException if {@code ip} == {@code null}.
+     * Creates a {@link SwingWorker}, that applies a median filter preview on a given {@link ImageProcessor} if executed.
+     * @param ip 							The image processor to modify.
+     * @param radius 						The radius of the median filter.
+     * @throws IllegalArgumentException 	if image processor is {@code null}.
      * @see PreprocessingPreviewMedianWorker
      */
 	public SwingWorker<Void,Void> createPreviewMedianWorker(ImageProcessor ip, double radius){
@@ -44,10 +45,10 @@ public class PreprocessingManager {
 	
     /**
      * Creates a {@link SwingWorker}, that applies a median filter on a given {@link ImageStack} if executed.
-	 * @param medianFilterEnabled Indicates if the median filter is enabled.
-	 * @param radius The median filter radius (px).
-	 * @param stack The array of images to process (slices).
-	 * @throws IllegalArgumentException if {@code stack} == {@code null}.
+	 * @param medianFilterEnabled 			Indicates if the median filter is enabled.
+	 * @param radius 						The median filter radius (px).
+	 * @param stack 						The array of images to process (slices).
+	 * @throws IllegalArgumentException 	if image stack is {@code null}.
 	 * @see PreprocessingApplyMedianWorker
      */
 	public SwingWorker<Void,Void> createApplyMedianWorker(boolean medianFilterEnabled, double radius, ImageStack stack){

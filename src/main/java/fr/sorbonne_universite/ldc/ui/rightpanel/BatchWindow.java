@@ -31,17 +31,14 @@ public class BatchWindow extends JFrame {
 	private JButton cancelButton;
 	private JLabel loadingLabel;
 
+	/** The input selected directory. */
 	private File selectedDirectory;
+	/** The output selected .csv file. */
 	private File selectedOutputFile;
 	
-	// Reference to the current BatchWorker (null if no current worker)
+	/** Reference to the current BatchWorker (null if no current worker). */
 	private SwingWorker<Void, Void> currentBatchWorker = null;
 
-	/**
-	 * Creates a Batch mode window. If the {@code parent} Main LDC window is closed, this window is also closed.
-	 * @param ctx		The LDC plugin context.
-	 * @param parent	The LDC window.
-	 */
 	public BatchWindow(Context ctx, MainGUI_LDC parent) {
 		super("Batch Processing");
 		ctx.inject(this);

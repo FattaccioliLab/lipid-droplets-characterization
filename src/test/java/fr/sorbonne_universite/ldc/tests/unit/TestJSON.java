@@ -141,7 +141,7 @@ public class TestJSON {
 		settings.setDilation(true);
 		settings.setOpening(false);
 		settings.setClosing(true);
-		settings.setWathershed(true);
+		settings.setWatershed(true);
 		
 		// Save then load
 		jsonManager.saveAnalysis(testFilePath, settings);
@@ -260,7 +260,7 @@ public class TestJSON {
 		settings.setDilation(false);
 		settings.setOpening(true);
 		settings.setClosing(false);
-		settings.setWathershed(true);
+		settings.setWatershed(true);
 		settings.setAnalyseMinSize(15.5);
 		settings.setAnalyseMaxSize(800.0);
 		settings.setAnalyseMinCircularity(0.3);
