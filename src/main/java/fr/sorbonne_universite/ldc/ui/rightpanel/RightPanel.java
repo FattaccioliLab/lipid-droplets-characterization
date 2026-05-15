@@ -68,15 +68,22 @@ public class RightPanel extends JPanel {
 	@Parameter
 	private LDCService selectedSettings;
 
-    private JPanel viewPanel; // container panel for the data table
+	/** container panel for the data table */
+    private JPanel viewPanel;
 
-    private ResultsTable currentResults; // reference to the last generated results
-    private ResultsTable currentTable; // reference for the table currently shown 
+    /** reference to the last generated results */
+    private ResultsTable currentResults;
     
-    private int nb_particle = 0; // total number of particle in the current table
-    private int nb_isolated = 0;	// save the number of isolated particle showed with the given measures parameters
+    /** reference for the table currently shown  */
+    private ResultsTable currentTable;
     
-    private JLabel nbIsolatedLabel; // label that show the number of isolated particles on the total number of particles
+    /** total number of particle in the current table */
+    private int nb_particle = 0;
+    /** save the number of isolated particle showed with the given measures parameters */
+    private int nb_isolated = 0;
+    
+    /** label that show the number of isolated particles on the total number of particles */
+    private JLabel nbIsolatedLabel;
         
     /**
      * Constructor for the {@link RightPanel}.
@@ -300,8 +307,8 @@ public class RightPanel extends JPanel {
     
     
     /**
-     * Write and add show the data of a ResultsTable in the center panel of the right panel.
-     * @param rt ResutsTable
+     * Show the data of a ResultsTable in the center panel of the right panel.
+     * @param rt 			The ResutsTable to show.
      */
     private void showTable(ResultsTable rt) {
     	viewPanel.removeAll(); // reseting panel
@@ -389,7 +396,7 @@ public class RightPanel extends JPanel {
     
     /**
      * Show histograms in the viewPanel.
-     * @param plots List of ImagePlus histograms. 
+     * @param plots 			List of ImagePlus histograms. 
      */
     private void showHistograms(List<ImagePlus> plots) {
     	viewPanel.removeAll();
