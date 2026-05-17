@@ -70,7 +70,7 @@ In this section, you can calibrate the image by defining the unit and the ratio 
 
 In this section, you can define a minimum and maximum **Size** and **Circularity** for the particles you want to keep in the final results.
 You can also choose whether to exclude particles on the edges of the image or to include holes. 
-Additionally, you can set the circularity threshold to determine if a particle is isolated: if a particle does not touch the edges and has a circularity below the threshold, it will be considered isolated.
+Additionally, you can set the circularity threshold to determine if a particle is isolated: if a particle does not touch the edges and has a circularity above the threshold, it will be considered isolated.
 
 **Measurements**
 
