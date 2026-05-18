@@ -25,12 +25,13 @@ This project is licensed under the GPL-3.0 license.
 ## Explanation of the plugin's usage
 
 The following section explains how to use the plugin and describes its features.
+This is how the overall UI presents itself.
 
-![This is how the overall UI presents itself]()
+<img width="1919" height="1020" alt="overall" src="https://github.com/user-attachments/assets/89f5cc81-fa39-4739-be38-b01dee546169" />
 
 ### Preprocessing
 
-![Preprocessing section]()
+<img width="575" height="276" alt="preprocessing" src="https://github.com/user-attachments/assets/d08328a7-a4cb-4a57-a598-4449999dff00" />
 
 The preprocessing section of the pipeline allows you to apply preliminary treatments to the images. The available preprocessing steps are the following:
 - **Enhance contrast**: This is just a visual tool; it does not affect pixel values.
@@ -38,13 +39,13 @@ The preprocessing section of the pipeline allows you to apply preliminary treatm
 
 ### Thresholding
 
-![Thresholding section]()
+<img width="568" height="374" alt="thresholding" src="https://github.com/user-attachments/assets/9cf1ddfb-66d4-45c9-b565-a9eba07d08bd" />
 
 In the thresholding section, you must create a binary mask of the image by applying a threshold. The threshold can either be set manually or determined automatically using one of the following methods: **Otsu**, **Moments**, **Triangle**, **Yen**, or **Li**. If you choose an automatic method, make sure to check the **Dark Background** option if the background of your image is dark.
 
 ### Operations on the binary mask
 
-![Binary mask refinement section]()
+<img width="575" height="340" alt="binary_mask_operations" src="https://github.com/user-attachments/assets/60e1b9a2-eada-468d-8bea-bce8f05423d7" />
 
 After generating the binary mask, you can refine it by applying some modifications. You can choose one morphological operation among the following:
 - **Erosion**: Shrinks the objects.
@@ -57,7 +58,7 @@ These modifications can be previewed before being definitively applied by checki
 
 ### Particle analysis
 
-![The particle analysis section]()
+<img width="1919" height="1019" alt="particle_analysis" src="https://github.com/user-attachments/assets/762126d4-6773-4e87-b3e6-bf9c326b74c2" />
 
 This section allows the user to configure the parameters for the particle analysis. The parameters to configure are the following:
 
@@ -69,7 +70,7 @@ In this section, you can calibrate the image by defining the unit and the ratio 
 
 In this section, you can define a minimum and maximum **Size** and **Circularity** for the particles you want to keep in the final results.
 You can also choose whether to exclude particles on the edges of the image or to include holes. 
-Additionally, you can set the circularity threshold to determine if a particle is isolated: if a particle does not touch the edges and has a circularity below the threshold, it will be considered isolated.
+Additionally, you can set the circularity threshold to determine if a particle is isolated: if a particle does not touch the edges and has a circularity above the threshold, it will be considered isolated.
 
 **Measurements**
 
@@ -87,29 +88,27 @@ The **Show results with default calibration unit** checkbox can only be selected
 
 After completing the processing pipeline, you can proceed to the particle analysis to generate your data using the tools available on the right panel of the UI.
 
-![The right side of the UI]()
-
 **Preview** 
 
-![Outlines window example]()
+<img width="657" height="736" alt="outlines_window" src="https://github.com/user-attachments/assets/818dfc8f-60ae-44e7-bc17-d43ec1435d71" />
 
 The **Preview** button opens a new window showing the outlines of the particles detected based on your current analysis parameters.
 
 **Generate results**
 
-![Generated data example]()
+<img width="1919" height="1020" alt="data" src="https://github.com/user-attachments/assets/1c86dd52-d21a-4848-9ef5-04e373f45b0f" />
 
 This button runs the full analysis and displays the raw data for each analyzed particle. In this results table, each row represents a single particle. It includes its specific properties such as X and Y coordinates, the slice number it belongs to, and the **is_isolated** indicator (which equals `1.0` if the particle is isolated and `0.0` otherwise), alongside all the measurements selected in the parameters section.
 
 **Histograms**
 
-![Histogram example]()
+<img width="950" height="631" alt="historgram" src="https://github.com/user-attachments/assets/a1a2800a-6c71-4f73-8307-9b6ce43efc95" />
 
 After generating the results, you can display frequency distributions for your measured properties by clicking the **Histograms** button. You can double-click on any histogram to open it in a separate window and save it using the standard Fiji menu.
 
 **Statistics**
 
-![Statistics format example]()
+<img width="752" height="994" alt="statistics" src="https://github.com/user-attachments/assets/27454aac-058b-4e50-b5ce-9ee1281ec68d" />
 
 Clicking the **Statistics** button computes the overall statistical metrics for your data. For each property, it generates the Mean, Median, Standard Deviation (SD), Coefficient of Variation (CV), Minimum, and Maximum values. The table displays these metrics globally for all slices combined, followed by a detailed breakdown for each individual slice.
 
@@ -119,11 +118,11 @@ The **Export** button allows you to save the currently displayed table (either t
 
 **Batch mode**
 
-![Batch mode example]()
+<img width="1919" height="1018" alt="batch_window" src="https://github.com/user-attachments/assets/cb113b1f-87b4-4eb4-a756-bddc203c95a3" />
 
 By clicking the **Batch mode** button, you can process multiple image files simultaneously. A dialog will prompt you to select an input directory containing your images and an output destination for the final global CSV file.
 
-![Batch mode CSV output example]()
+<img width="1118" height="362" alt="batch_mode_csv_format" src="https://github.com/user-attachments/assets/5dbfe872-4556-43e5-8e0d-0fcae4a65359" />
 
 The output CSV file from the batch mode combines global and individual data. The top rows present the aggregated statistics across all processed images, while the subsequent rows list every single detected particle with its metrics and the filename of the image it was extracted from.
 
@@ -134,4 +133,4 @@ The **Image Source** section at the top of the interface provides option buttons
 - **Export parameters**: Saves your current configuration into a JSON file. If you haven't completed the entire pipeline, default values will automatically be assigned to the unconfigured steps.
 - **Import parameters**: Loads an existing JSON parameters file. Upon importing, a dialog will ask you to select a specific target step in the workflow up to which the parameters should be automatically applied.
 
-![Import parameters window]()
+<img width="340" height="191" alt="import_parameters" src="https://github.com/user-attachments/assets/f228d5db-d347-438b-8538-b52983a95f82" />
