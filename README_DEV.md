@@ -33,7 +33,7 @@ To avoid building and packaging the `.jar` file manually after every minor code 
 
 Below is the UML class diagram representing the overall structural design of the project. For readability purposes, only the most critical relationships and classes are depicted.
 
-![UML diagram]()
+<img width="1949" height="761" alt="UML" src="https://github.com/user-attachments/assets/8b830861-2020-49d7-9ba2-faf0250b3448" />
 
 The project structure is split into two secondary packages and two core packages to ensure a strict separation of concerns:
 
