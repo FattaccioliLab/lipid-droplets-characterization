@@ -10,7 +10,7 @@ To install it, simply place the `.jar` file into the **plugins** folder of your 
 
 ## Contributing
 
-If you want to contribute to the project, please consider reading the [developer README]().
+If you want to contribute to the project, please consider reading the [developer README](https://github.com/FattaccioliLab/lipid-droplets-characterization/blob/documentation/README_DEV.md).
 
 ## Credits
 
