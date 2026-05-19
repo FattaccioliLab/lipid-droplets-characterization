@@ -29,6 +29,10 @@ This is how the overall UI presents itself.
 
 <img width="1919" height="1020" alt="overall" src="https://github.com/user-attachments/assets/89f5cc81-fa39-4739-be38-b01dee546169" />
 
+Here is a video demonstrating the usage of the plugin.
+
+![demo](assets/demo.gif)
+
 ### Preprocessing
 
 <img width="575" height="276" alt="preprocessing" src="https://github.com/user-attachments/assets/d08328a7-a4cb-4a57-a598-4449999dff00" />
