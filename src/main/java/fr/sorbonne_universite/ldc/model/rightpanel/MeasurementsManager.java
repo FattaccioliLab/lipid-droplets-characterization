@@ -27,22 +27,30 @@ import ij.measure.ResultsTable;
 public class MeasurementsManager {
 
     /**
-     * Creates a {@link SwingWorker}, that take care of processing and showing the measurements preview, if executed.
+     * Creates a {@link SwingWorker}, that take care of processing 
+     * and showing the measurements preview.
      * @param settings						The plugin settings.
      * @param img 							The current image to consider.
 	 * @see MeasuresPreviewWorker
      */
-	public SwingWorker<ImagePlus,Void> createMeasuresPreviewWorker(AnalysisSettings settings, ImagePlus img){
+	public SwingWorker<ImagePlus,Void> createMeasuresPreviewWorker(
+			AnalysisSettings settings,
+			ImagePlus img){
 		return new MeasuresPreviewWorker(settings, img); 
 	}
 	
     /**
-     * Creates a {@link SwingWorker}, that take care of processing measurements and showing them, if executed.
+     * Creates a {@link SwingWorker}, that take care of 
+     * processing measurements and showing them.
      * @param settings						The plugin settings.
      * @param img 							The current image to consider.
+     * @param binaryImg						The binary mask of the current image.
 	 * @see MeasuresProcessingWorker
      */
-	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(AnalysisSettings settings, ImagePlus img, ImagePlus binaryImg){
+	public SwingWorker<ResultsTable,Void> createMeasuresProcessingWorker(
+			AnalysisSettings settings,
+			ImagePlus img,
+			ImagePlus binaryImg){
 		return new MeasuresProcessingWorker(settings, img, binaryImg); 
 	}
 	
@@ -128,7 +136,13 @@ public class MeasurementsManager {
      * @param headings			The headings of the summary table.
      * @param ignoredCols		The set of columns to ignore.
      */
-    private void addStatisticsRows(ResultsTable summaryRt, ResultsTable rt, List<Integer> rows, String sliceLabel, String[] headings, Set<String> ignoredCols) {
+    private void addStatisticsRows(
+    		ResultsTable summaryRt,
+    		ResultsTable rt,
+    		List<Integer> rows,
+    		String sliceLabel,
+    		String[] headings,
+    		Set<String> ignoredCols) {
         
         // maps to store the computed statistic for each column heading
         Map<String, Double> means = new HashMap<>();

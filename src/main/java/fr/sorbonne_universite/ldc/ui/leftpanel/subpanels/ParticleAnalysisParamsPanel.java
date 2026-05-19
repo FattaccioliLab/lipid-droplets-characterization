@@ -542,8 +542,9 @@ public class ParticleAnalysisParamsPanel extends JPanel implements PipelineSubPa
     }
     
     /**
-     * Update the default pixel size and unit for the calibration, try to take them from the image if it is already
-     * calibrated, otherwise take 1.0 and µm.
+     * Update the default pixel size and unit for the calibration,
+     * try to take them from the image if it is already calibrated,
+     * otherwise take 1.0 and µm.
      */
     private void updateDefaultCalibration() {
     	// get the default pixel size if the image is already calibrated

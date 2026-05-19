@@ -28,8 +28,12 @@ public class MeasuresProcessingWorker extends SwingWorker<ResultsTable, Void>{
      * Creates a {@code MeasuresProcessingWorker}.
      * @param settings						The plugin settings.
      * @param img 							The current image to consider.
+     * @param binaryImg						The binary mask of the current image.
      */
-    public MeasuresProcessingWorker(AnalysisSettings settings, ImagePlus img, ImagePlus binaryImg) {
+    public MeasuresProcessingWorker(
+    		AnalysisSettings settings,
+    		ImagePlus img,
+    		ImagePlus binaryImg) {
     	this.settings = settings;
     	this.img = img;
     	this.binaryImg = binaryImg;
