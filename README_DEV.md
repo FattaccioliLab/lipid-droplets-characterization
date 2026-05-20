@@ -19,7 +19,7 @@ Except for JUnit, all dependency versions are managed automatically by the SciJa
 
 The project integrates Continuous Integration via **GitHub Actions**, which automatically runs the full JUnit test suite on every push or pull request across both Java 8 and Java 11 environments.
 
-For a detailed breakdown of our testing methodology (including unit, integration, and JSON test cases), please refer to the dedicated [Tests README](https://github.com/FattaccioliLab/lipid-droplets-characterization/blob/main/src/test/java/fr/sorbonne_universite/ldc/tests/unit/TESTS_README.md).
+For a detailed breakdown of our testing methodology (including unit, integration, and JSON test cases), please refer to the dedicated [Tests README](src/test/java/fr/sorbonne_universite/ldc/tests/unit/TESTS_README.md).
 
 ## Development Workflow
 
@@ -29,7 +29,7 @@ To avoid building and packaging the `.jar` file manually after every minor code 
 
 Below is the UML class diagram representing the overall structural design of the project. For readability purposes, only the most critical relationships and classes are depicted.
 
-<img width="1949" height="761" alt="UML" src="https://github.com/user-attachments/assets/8b830861-2020-49d7-9ba2-faf0250b3448" />
+![UML](assets/PSTL_architecture.png)
 
 The project structure is split into two secondary packages and two core packages to ensure a strict separation of concerns:
 

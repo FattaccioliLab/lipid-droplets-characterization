@@ -4,16 +4,6 @@ An ImageJ/Fiji plugin for the morphological and photometric characterization of 
 
 A [parameters description](Parameters.md) is available.
 
-## Download and Installation
-
-You can download the latest version of the plugin's `.jar` file from the [releases page](https://github.com/FattaccioliLab/lipid-droplets-characterization/releases).
-
-To install it, simply place the `.jar` file into the **plugins** folder of your Fiji directory. If installed correctly, you will be able to find **Lipid Droplets Characterization** at the bottom of the Plugins menu in Fiji.
-
-## Contributing
-
-If you want to contribute to the project, please consider reading the [developer README](README_DEV.md).
-
 ## Credits
 
 **Abdullah AL MAMUN** \
@@ -24,6 +14,16 @@ If you want to contribute to the project, please consider reading the [developer
 
 This project is licensed under the GPL-3.0 license.
 
+## Download and Installation
+
+You can download the latest version of the plugin's `.jar` file from the [releases page](https://github.com/FattaccioliLab/lipid-droplets-characterization/releases).
+
+To install it, simply place the `.jar` file into the **plugins** folder of your Fiji directory. If installed correctly, you will be able to find **Lipid Droplets Characterization** at the bottom of the Plugins menu in Fiji.
+
+## Contributing
+
+If you want to contribute to the project, please consider reading the [developer README](README_DEV.md).
+
 ## 🎬 Demonstration
 
 ![demo](assets/demo.gif)
@@ -33,11 +33,11 @@ This project is licensed under the GPL-3.0 license.
 The following section explains how to use the plugin and describes its features.
 This is how the overall UI presents itself.
 
-<img width="1919" height="1020" alt="overall" src="https://github.com/user-attachments/assets/89f5cc81-fa39-4739-be38-b01dee546169" />
+![UML](assets/PSTL1.png)
 
 ### Preprocessing
 
-<img width="575" height="276" alt="preprocessing" src="https://github.com/user-attachments/assets/d08328a7-a4cb-4a57-a598-4449999dff00" />
+![UML](assets/PSTL2.png)
 
 The preprocessing section of the pipeline allows you to apply preliminary treatments to the images. The available preprocessing steps are the following:  
 - **Enhance contrast**: This is just a visual tool; it does not affect pixel values.  
@@ -48,7 +48,7 @@ When changing an input value for the contrast or the median filter, it takes eff
 
 ### Thresholding
 
-<img width="568" height="374" alt="thresholding" src="https://github.com/user-attachments/assets/9cf1ddfb-66d4-45c9-b565-a9eba07d08bd" />
+![UML](assets/PSTL3.png)
 
 In the thresholding section, you must create a binary mask of the image by applying a threshold.  
 The threshold can either be set manually or determined automatically using one of the following methods:  
@@ -65,7 +65,7 @@ From here, it is required to **keep the generated mask opened** until particle a
 
 ### Operations on the binary mask
 
-<img width="575" height="340" alt="binary_mask_operations" src="https://github.com/user-attachments/assets/60e1b9a2-eada-468d-8bea-bce8f05423d7" />
+![UML](assets/PSTL4.png)
 
 After generating the binary mask, you can refine it by applying some modifications. You can choose **exactly one** morphological operation among the following:
 - **Erosion**: Shrinks the objects.
@@ -78,7 +78,7 @@ These modifications can be previewed before being definitively applied by checki
 
 ### Particle analysis
 
-<img width="1919" height="1019" alt="particle_analysis" src="https://github.com/user-attachments/assets/762126d4-6773-4e87-b3e6-bf9c326b74c2" />
+![UML](assets/PSTL5.png)
 
 This section allows the user to configure the parameters for the particle analysis. The parameters to configure are the following:
 
@@ -112,25 +112,25 @@ After completing the processing pipeline, you can proceed to the particle analys
 
 **Preview** 
 
-<img width="657" height="736" alt="outlines_window" src="https://github.com/user-attachments/assets/818dfc8f-60ae-44e7-bc17-d43ec1435d71" />
+![UML](assets/PSTL6.png)
 
 The **Preview** button opens a new window showing the outlines of the particles detected based on your current analysis parameters.
 
 **Generate results**
 
-<img width="1919" height="1020" alt="data" src="https://github.com/user-attachments/assets/1c86dd52-d21a-4848-9ef5-04e373f45b0f" />
+![UML](assets/PSTL7.png)
 
 This button runs the full analysis and displays the raw data for each analyzed particle. In this results table, each row represents a single particle. It includes its specific properties such as X and Y coordinates, the slice number it belongs to, and the **is_isolated** indicator (which equals `1.0` if the particle is isolated and `0.0` otherwise), alongside all the measurements selected in the parameters section.
 
 **Histograms**
 
-<img width="950" height="631" alt="historgram" src="https://github.com/user-attachments/assets/a1a2800a-6c71-4f73-8307-9b6ce43efc95" />
+![UML](assets/PSTL8.png)
 
 After generating the results, you can display frequency distributions for your measured properties by clicking the **Histograms** button. You can double-click on any histogram to open it in a separate window and save it using the standard Fiji menu.
 
 **Statistics**
 
-<img width="752" height="994" alt="statistics" src="https://github.com/user-attachments/assets/27454aac-058b-4e50-b5ce-9ee1281ec68d" />
+![UML](assets/PSTL9.png)
 
 Clicking the **Statistics** button computes the overall statistical metrics for your data. For each property, it generates the Mean, Median, Standard Deviation (SD), Coefficient of Variation (CV), Minimum, and Maximum values. The table displays these metrics globally for all slices combined, followed by a detailed breakdown for each individual slice.
 
@@ -140,11 +140,11 @@ The **Export** button allows you to save the currently displayed table (either t
 
 **Batch mode**
 
-<img width="1919" height="1018" alt="batch_window" src="https://github.com/user-attachments/assets/cb113b1f-87b4-4eb4-a756-bddc203c95a3" />
+![UML](assets/PSTL10.png)
 
 By clicking the **Batch mode** button, you can process multiple image files simultaneously. A dialog will prompt you to select an input directory containing your images and an output destination for the final global CSV file.
 
-<img width="1118" height="362" alt="batch_mode_csv_format" src="https://github.com/user-attachments/assets/5dbfe872-4556-43e5-8e0d-0fcae4a65359" />
+![UML](assets/PSTL11.png)
 
 The output CSV file from the batch mode combines global and individual data. The top rows present the aggregated statistics across all processed images, while the subsequent rows list every single detected particle with its metrics and the filename of the image it was extracted from.
 
@@ -155,4 +155,4 @@ The **Image Source** section at the top of the interface provides option buttons
 - **Export parameters**: Saves your current configuration into a JSON file. If you haven't completed the entire pipeline, default values will automatically be assigned to the unconfigured steps.
 - **Import parameters**: Loads an existing JSON parameters file. Upon importing, a dialog will ask you to select a specific target step in the workflow up to which the parameters should be automatically applied. If the particle analysis step is selected, you must still manually generate the results once the navigation has been done.  
 
-<img width="340" height="191" alt="import_parameters" src="https://github.com/user-attachments/assets/f228d5db-d347-438b-8538-b52983a95f82" />
+![UML](assets/PSTL12.png)
