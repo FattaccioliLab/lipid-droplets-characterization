@@ -142,7 +142,8 @@ The **Export** button allows you to save the currently displayed table (either t
 
 ![Batch mode UI](assets/PSTL10.png)
 
-By clicking the **Batch mode** button, you can process multiple image files simultaneously. A dialog will prompt you to select an input directory containing your images and an output destination for the final global CSV file.
+By clicking the **Batch mode** button, you can process multiple image files simultaneously. A dialog will prompt you to select an input directory containing your images and an output destination for the final global CSV file.  
+Considering that the batch mode uses the current plugin pipeline parameters, it is **not recommended to change them during a batch processing**, and you must wait until the processing is done to be able to change them safely.  
 
 ![Batch mode results](assets/PSTL11.png)
 

@@ -1,10 +1,13 @@
 # Lipid Droplets Characterization - Developer Documentation
 
-This plugin is fully developed in Java as a Maven project, utilizing the SciJava framework. The development and runtime environments are constrained to **Java 8** and **Java 11** due to specific ImageJ dependency requirements.
+This plugin is fully developed in Java as a Maven project, utilizing the SciJava framework. The development and runtime environments are constrained to **Java 8** and **Java 11** due to specific ImageJ dependency requirements, and the builds have been done with **Java 11**.   
+However, this does not seem to affect the plugin's usage once built, in ImageJ/Fiji using a more recent Java version.  
+
+A [javadoc documentation](doc/index.html) is available.  
 
 ## Build and Dependencies
 
-The project uses `SciJava` version `42.0.0` as its **Maven** parent, and thus can be builded using the `mvn clean install` command.  
+The project uses `SciJava` version `42.0.0` as its **Maven** parent, and thus can be built using the `mvn clean install` command.  
 The core dependencies are configured as follows:
 - `imagej` (2.17.0)
 - `imglib2-ij` (2.0.3)

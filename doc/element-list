@@ -1,0 +1,12 @@
+fr.sorbonne_universite.ldc.commands
+fr.sorbonne_universite.ldc.model
+fr.sorbonne_universite.ldc.model.leftpanel
+fr.sorbonne_universite.ldc.model.rightpanel
+fr.sorbonne_universite.ldc.model.workers
+fr.sorbonne_universite.ldc.tests
+fr.sorbonne_universite.ldc.tests.unit
+fr.sorbonne_universite.ldc.ui
+fr.sorbonne_universite.ldc.ui.leftpanel
+fr.sorbonne_universite.ldc.ui.leftpanel.subpanels
+fr.sorbonne_universite.ldc.ui.rightpanel
+fr.sorbonne_universite.ldc.utils
