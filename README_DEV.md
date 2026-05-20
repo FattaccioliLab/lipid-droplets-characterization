@@ -1,14 +1,10 @@
 # Lipid Droplets Characterization - Developer Documentation
 
-This plugin is fully developed in Java as a Maven project, utilizing the SciJava framework. The development and runtime environments are constrained to Java 8 and Java 11 due to specific ImageJ dependency requirements.
+This plugin is fully developed in Java as a Maven project, utilizing the SciJava framework. The development and runtime environments are constrained to **Java 8** and **Java 11** due to specific ImageJ dependency requirements.
 
-## Issues and Contributions
+## Build and Dependencies
 
-In the current state of the project, there are still open issues that you can contribute to fixing. Please feel free to fork the repository and submit a Pull Request. Do not hesitate to open new issues if you encounter problems with the plugin or if you have ideas for future enhancements.
-
-## Dependencies
-
-The project uses `SciJava` version `42.0.0` as its Maven parent. 
+The project uses `SciJava` version `42.0.0` as its **Maven** parent, and thus can be builded using the `mvn clean install` command.  
 The core dependencies are configured as follows:
 - `imagej` (2.17.0)
 - `imglib2-ij` (2.0.3)
@@ -21,7 +17,7 @@ Except for JUnit, all dependency versions are managed automatically by the SciJa
 
 ## Tests and Continuous Integration
 
-The project integrates Continuous Integration via GitHub Actions, which automatically runs the full JUnit test suite on every push or pull request across both Java 8 and Java 11 environments.
+The project integrates Continuous Integration via **GitHub Actions**, which automatically runs the full JUnit test suite on every push or pull request across both Java 8 and Java 11 environments.
 
 For a detailed breakdown of our testing methodology (including unit, integration, and JSON test cases), please refer to the dedicated [Tests README](https://github.com/FattaccioliLab/lipid-droplets-characterization/blob/main/src/test/java/fr/sorbonne_universite/ldc/tests/unit/TESTS_README.md).
 
@@ -49,7 +45,7 @@ The project structure is split into two secondary packages and two core packages
 
 ## Service Part (Model Architecture)
 
-The core architectural choice of the plugin is the implementation of a dedicated SciJava service. The service lifecycle and accessibility are governed by the `LDCService` interface, which extends `SciJavaService`, and its implementation class `LDCServiceImpl`.
+The core architectural choice of the plugin is the implementation of a dedicated **SciJava service**. The service lifecycle and accessibility are governed by the `LDCService` interface, which extends `SciJavaService`, and its implementation class `LDCServiceImpl`.
 
 ### 1. State Persistence and Delegation
 Unlike standard volatile execution logic, the `LDCServiceImpl` instance is globally managed by the SciJava framework and acts as a central stateful container:
