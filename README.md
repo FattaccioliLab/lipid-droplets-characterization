@@ -33,11 +33,11 @@ If you want to contribute to the project, please consider reading the [developer
 The following section explains how to use the plugin and describes its features.
 This is how the overall UI presents itself.
 
-![UML](assets/PSTL1.png)
+![MainUI](assets/PSTL1.png)
 
 ### Preprocessing
 
-![UML](assets/PSTL2.png)
+![Preprocessing UI](assets/PSTL2.png)
 
 The preprocessing section of the pipeline allows you to apply preliminary treatments to the images. The available preprocessing steps are the following:  
 - **Enhance contrast**: This is just a visual tool; it does not affect pixel values.  
@@ -48,7 +48,7 @@ When changing an input value for the contrast or the median filter, it takes eff
 
 ### Thresholding
 
-![UML](assets/PSTL3.png)
+![Thresholding UI](assets/PSTL3.png)
 
 In the thresholding section, you must create a binary mask of the image by applying a threshold.  
 The threshold can either be set manually or determined automatically using one of the following methods:  
@@ -65,7 +65,7 @@ From here, it is required to **keep the generated mask opened** until particle a
 
 ### Operations on the binary mask
 
-![UML](assets/PSTL4.png)
+![Operations UI](assets/PSTL4.png)
 
 After generating the binary mask, you can refine it by applying some modifications. You can choose **exactly one** morphological operation among the following:
 - **Erosion**: Shrinks the objects.
@@ -78,7 +78,7 @@ These modifications can be previewed before being definitively applied by checki
 
 ### Particle analysis
 
-![UML](assets/PSTL5.png)
+![Particle parameters UI](assets/PSTL5.png)
 
 This section allows the user to configure the parameters for the particle analysis. The parameters to configure are the following:
 
@@ -112,25 +112,25 @@ After completing the processing pipeline, you can proceed to the particle analys
 
 **Preview** 
 
-![UML](assets/PSTL6.png)
+![Preview](assets/PSTL6.png)
 
 The **Preview** button opens a new window showing the outlines of the particles detected based on your current analysis parameters.
 
 **Generate results**
 
-![UML](assets/PSTL7.png)
+![Generated results](assets/PSTL7.png)
 
 This button runs the full analysis and displays the raw data for each analyzed particle. In this results table, each row represents a single particle. It includes its specific properties such as X and Y coordinates, the slice number it belongs to, and the **is_isolated** indicator (which equals `1.0` if the particle is isolated and `0.0` otherwise), alongside all the measurements selected in the parameters section.
 
 **Histograms**
 
-![UML](assets/PSTL8.png)
+![Histograms](assets/PSTL8.png)
 
 After generating the results, you can display frequency distributions for your measured properties by clicking the **Histograms** button. You can double-click on any histogram to open it in a separate window and save it using the standard Fiji menu.
 
 **Statistics**
 
-![UML](assets/PSTL9.png)
+![Statistics](assets/PSTL9.png)
 
 Clicking the **Statistics** button computes the overall statistical metrics for your data. For each property, it generates the Mean, Median, Standard Deviation (SD), Coefficient of Variation (CV), Minimum, and Maximum values. The table displays these metrics globally for all slices combined, followed by a detailed breakdown for each individual slice.
 
@@ -140,11 +140,11 @@ The **Export** button allows you to save the currently displayed table (either t
 
 **Batch mode**
 
-![UML](assets/PSTL10.png)
+![Batch mode UI](assets/PSTL10.png)
 
 By clicking the **Batch mode** button, you can process multiple image files simultaneously. A dialog will prompt you to select an input directory containing your images and an output destination for the final global CSV file.
 
-![UML](assets/PSTL11.png)
+![Batch mode results](assets/PSTL11.png)
 
 The output CSV file from the batch mode combines global and individual data. The top rows present the aggregated statistics across all processed images, while the subsequent rows list every single detected particle with its metrics and the filename of the image it was extracted from.
 
@@ -155,4 +155,4 @@ The **Image Source** section at the top of the interface provides option buttons
 - **Export parameters**: Saves your current configuration into a JSON file. If you haven't completed the entire pipeline, default values will automatically be assigned to the unconfigured steps.
 - **Import parameters**: Loads an existing JSON parameters file. Upon importing, a dialog will ask you to select a specific target step in the workflow up to which the parameters should be automatically applied. If the particle analysis step is selected, you must still manually generate the results once the navigation has been done.  
 
-![UML](assets/PSTL12.png)
+![Import UI](assets/PSTL12.png)
