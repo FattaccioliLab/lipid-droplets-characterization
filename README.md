@@ -65,13 +65,13 @@ From here, it is required to **keep the generated mask opened** until particle a
 
 <img width="575" height="340" alt="binary_mask_operations" src="https://github.com/user-attachments/assets/60e1b9a2-eada-468d-8bea-bce8f05423d7" />
 
-After generating the binary mask, you can refine it by applying some modifications. You can choose one morphological operation among the following:
+After generating the binary mask, you can refine it by applying some modifications. You can choose **exactly one** morphological operation among the following:
 - **Erosion**: Shrinks the objects.
 - **Dilation**: Expands the objects.
 - **Opening**: Removes small noise/objects.
 - **Closing**: Fills small holes.
 
-You can also apply the **Watershed** algorithm, which separates touching objects.  
+You can also apply the **Watershed** algorithm, which separates touching objects. If a binary operation has been previosly selected, the watershed will be applied after doing the previous operation.   
 These modifications can be previewed before being definitively applied by checking the Preview checkbox.  
 
 ### Particle analysis
