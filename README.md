@@ -14,13 +14,17 @@ If you want to contribute to the project, please consider reading the [developer
 
 ## Credits
 
-**David VADIMON** \
 **Abdullah AL MAMUN** \
-**Yahya MUDALLAL** 
+**Yahya MUDALLAL** \
+**David VADIMON**
  
 ## License
 
 This project is licensed under the GPL-3.0 license.
+
+## 🎬 Demonstration
+
+![demo](assets/demo.gif)
 
 ## Explanation of the plugin's usage
 
@@ -29,23 +33,33 @@ This is how the overall UI presents itself.
 
 <img width="1919" height="1020" alt="overall" src="https://github.com/user-attachments/assets/89f5cc81-fa39-4739-be38-b01dee546169" />
 
-Here is a video demonstrating the usage of the plugin.
-
-![demo](assets/demo.gif)
-
 ### Preprocessing
 
 <img width="575" height="276" alt="preprocessing" src="https://github.com/user-attachments/assets/d08328a7-a4cb-4a57-a598-4449999dff00" />
 
-The preprocessing section of the pipeline allows you to apply preliminary treatments to the images. The available preprocessing steps are the following:
-- **Enhance contrast**: This is just a visual tool; it does not affect pixel values.
-- **Median filter**: Applies a median filter to the image with the specified radius. The possibility to preview the filter's effect is offered by checking the Preview checkbox. You can also apply the median filter to a specific range of slices in an image stack by defining the range in the format shown in the interface.
+The preprocessing section of the pipeline allows you to apply preliminary treatments to the images. The available preprocessing steps are the following:  
+- **Enhance contrast**: This is just a visual tool; it does not affect pixel values.  
+- **Median filter**: Applies a median filter to the image with the specified radius. The possibility to preview the filter's effect is offered by checking the Preview checkbox.  
+- **Consider a sub-stack**: From that step, you can decide to continue with a specific range of slices from the original image stack, by defining this range in a format similar to printing pages `i.e. 1-3,7,12-15`.  
+
+When changing an input value for the contrast or the median filter, it takes effect either by pressing ENTER while having the input focus, or just automatically by loosing the input focus.
 
 ### Thresholding
 
 <img width="568" height="374" alt="thresholding" src="https://github.com/user-attachments/assets/9cf1ddfb-66d4-45c9-b565-a9eba07d08bd" />
 
-In the thresholding section, you must create a binary mask of the image by applying a threshold. The threshold can either be set manually or determined automatically using one of the following methods: **Otsu**, **Moments**, **Triangle**, **Yen**, or **Li**. If you choose an automatic method, make sure to check the **Dark Background** option if the background of your image is dark.
+In the thresholding section, you must create a binary mask of the image by applying a threshold.  
+The threshold can either be set manually or determined automatically using one of the following methods:  
+- **Otsu**  
+- **Moments**  
+- **Triangle**  
+- **Yen**  
+- **Li**
+
+If you choose an automatic method, make sure to check the **Dark Background** option if the background of your image is dark.  
+Note that the histogramm currently showed remains the one from the original stack, but the methods are effectively applied on the sub-stack pixel range, if a sub-stack has been previously chosen.  
+
+From here, it is required to **keep the generated mask opened** until particle analysis results for ensuring a correct plugin behavior.  
 
 ### Operations on the binary mask
 
@@ -57,8 +71,8 @@ After generating the binary mask, you can refine it by applying some modificatio
 - **Opening**: Removes small noise/objects.
 - **Closing**: Fills small holes.
 
-You can also apply the **Watershed** algorithm, which separates touching objects. 
-These modifications can be previewed before being definitively applied by checking the Preview checkbox.
+You can also apply the **Watershed** algorithm, which separates touching objects.  
+These modifications can be previewed before being definitively applied by checking the Preview checkbox.  
 
 ### Particle analysis
 
@@ -73,8 +87,10 @@ In this section, you can calibrate the image by defining the unit and the ratio 
 **Particle settings**
 
 In this section, you can define a minimum and maximum **Size** and **Circularity** for the particles you want to keep in the final results.
-You can also choose whether to exclude particles on the edges of the image or to include holes. 
-Additionally, you can set the circularity threshold to determine if a particle is isolated: if a particle does not touch the edges and has a circularity above the threshold, it will be considered isolated.
+You can also choose whether to **exclude particles on the edges** of the image or to **include holes**.  
+Previous options are used to filter particles to consider for the analysis. Additionally, you can set the **circularity threshold** to determine if a particle is isolated: if a particle **does not touch the edges** and has a **circularity above the threshold**, it will be considered **isolated**.  
+
+Particles size and circularity inputs are taken into account on the next result generation. Invalid inputs are only switched to safe values before the generation.
 
 **Measurements**
 
@@ -135,6 +151,6 @@ The output CSV file from the batch mode combines global and individual data. The
 The **Image Source** section at the top of the interface provides option buttons to import or export your pipeline configurations.
 
 - **Export parameters**: Saves your current configuration into a JSON file. If you haven't completed the entire pipeline, default values will automatically be assigned to the unconfigured steps.
-- **Import parameters**: Loads an existing JSON parameters file. Upon importing, a dialog will ask you to select a specific target step in the workflow up to which the parameters should be automatically applied.
+- **Import parameters**: Loads an existing JSON parameters file. Upon importing, a dialog will ask you to select a specific target step in the workflow up to which the parameters should be automatically applied. If the particle analysis step is selected, you must still manually generate the results once the navigation has been done.  
 
 <img width="340" height="191" alt="import_parameters" src="https://github.com/user-attachments/assets/f228d5db-d347-438b-8538-b52983a95f82" />
