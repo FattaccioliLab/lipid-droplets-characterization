@@ -3,7 +3,7 @@
 This plugin is fully developed in Java as a Maven project, utilizing the SciJava framework. The development and runtime environments are constrained to **Java 8** and **Java 11** due to specific ImageJ dependency requirements, and the builds have been done with **Java 11**.   
 However, this does not seem to affect the plugin's usage once built, in ImageJ/Fiji using a more recent Java version.  
 
-A [javadoc documentation](doc/index.html) is available.  
+A javadoc documentation is available in the `doc` folder.  
 
 ## Build and Dependencies
 
