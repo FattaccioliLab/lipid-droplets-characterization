@@ -10,7 +10,10 @@ import ij.process.ImageProcessor;
  */
 public class PreprocessingPreviewMedianWorker extends SwingWorker<Void, Void>{
 	
+	/** The image processor of the current slice to apply the preview on. */
 	private ImageProcessor ip;
+	
+	/** The median filter radius in pixels. */
 	private double radius;
 	
     /**
@@ -23,6 +26,17 @@ public class PreprocessingPreviewMedianWorker extends SwingWorker<Void, Void>{
 		this.radius = radius;
 	}
 
+	
+	/**
+	 * Applies the median filter to a single {@link ImageProcessor} (the current slice preview),
+	 * using ImageJ's {@link RankFilters#MEDIAN} rank filter.
+	 *
+	 * <p>Does nothing if the radius is zero or negative.
+	 * Cancellation is checked before execution.</p>
+	 *
+	 * @return {@code null} on completion or cancellation.
+	 * @throws Exception if an unexpected error occurs during processing.
+	 */
 	@Override
     protected Void doInBackground() throws Exception {
 

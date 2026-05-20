@@ -11,11 +11,19 @@ import ij.process.ImageProcessor;
  */
 public class MorphologyManager {
 
+		/** Deep copy of each slice's pixel array at the time of the last snapshot, 
+		 * used as the clean baseline for non-destructive previews. 
+		 * */
 	    private Object[] cleanStackPixels = null; // one pixel array per slice
 
 	    /**
 	     * Previews a morphological operation across the ENTIRE stack.
 	     * Always restores from the clean backup first to prevent compounding.
+	     * 
+	     * @param imp                   The binary mask stack to preview on. Does nothing if {@code null}.
+		 * @param morphologicalOperation The operation to apply ({@code "Erode"}, {@code "Dilate"},
+		 *                               {@code "Open"}, {@code "Close"}, or {@code "None"}).
+		 * @param applyWatershed         {@code true} to also apply watershed after the morphological operation.
 	     */
 	    public void previewMorphology(ImagePlus imp, String morphologicalOperation, boolean applyWatershed) {
 	        if (imp == null) return;
@@ -49,7 +57,10 @@ public class MorphologyManager {
 	    }
 
 	    /**
-	     * Resets ALL slices back to the clean binary state.
+	     * Resets ALL slices back to the clean binary state
+	     * @param imp The binary mask stack to restore. Does nothing and returns {@code false}
+		 *            if {@code null} or if no snapshot has been captured yet.
+		 * @return    {@code true} if the reset was successful, {@code false} otherwise..
 	     */
 	    public boolean resetPreview(ImagePlus imp) {
 	        if (imp == null || cleanStackPixels == null) return false;
@@ -69,6 +80,7 @@ public class MorphologyManager {
 
 	    /**
 	     * Captures a deep copy of every slice in the stack as the clean baseline.
+	     * @param imp The binary mask stack to snapshot. Does nothing if {@code null}.
 	     */
 	    public void captureSnapshot(ImagePlus imp) {
 	        if (imp == null) return;
@@ -85,6 +97,12 @@ public class MorphologyManager {
 	    
 	    /**
 	     * Permanently applies the selected operations to the entire image stack.
+	     * @param imp                    The binary mask stack to modify. Returns {@code false} if {@code null}.
+		 * @param morphologicalOperations The operation to apply ({@code "Erode"}, {@code "Dilate"},
+		 *                                {@code "Open"}, {@code "Close"}, or {@code "None"}).
+		 * @param applyWatershed          {@code true} to also apply watershed after the morphological operation.
+		 * @return                        {@code true} if the operation completed successfully,
+		 *                                {@code false} if an error occurred.
 	     */
 	    public boolean applyMorphology(ImagePlus imp, String morphologicalOperations, boolean applyWatershed) {
 	        if (imp == null) return false;
@@ -160,6 +178,16 @@ public class MorphologyManager {
 	        }
 	    }
 	    
+	    
+	    /**
+	     * Applies the Watershed transform to a single {@link ImageProcessor}
+	     * using ImageJ's Euclidean Distance Map ({@link EDM}).
+	     *
+	     * <p>Watershed separates touching objects by finding intensity valleys
+	     * in the distance map of the binary mask.</p>
+	     *
+	     * @param ip The binary {@link ImageProcessor} to apply watershed to.
+	     */
 	    private void applyWatershedToProcessor(ImageProcessor ip) {
 	        EDM edm = new EDM();
 	        edm.toWatershed(ip);

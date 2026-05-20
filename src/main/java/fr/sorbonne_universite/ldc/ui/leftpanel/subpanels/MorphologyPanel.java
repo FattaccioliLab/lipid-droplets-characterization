@@ -28,6 +28,25 @@ import fr.sorbonne_universite.ldc.utils.PanelUtils;
 import ij.IJ;
 import ij.ImagePlus;
 
+
+
+/**
+ * Panel for the Binary Mask Refinement step of the pipeline.
+ *
+ * <p>
+ * Allows the user to optionally apply one morphological operation
+ * (Erode, Dilate, Open, Close) and/or a Watershed transform to the binary mask
+ * generated during the thresholding step.
+ * </p>
+ *
+ * <p>
+ * A live preview is available via the Preview checkbox, which applies
+ * the selected operation across the entire stack non-destructively.
+ * The final Apply button commits the changes permanently.
+ * </p>
+ *
+ * @see fr.sorbonne_universite.ldc.model.leftpanel.MorphologyManager
+ */
 @SuppressWarnings("serial")
 public class MorphologyPanel extends JPanel implements PipelineSubPanel {
 
@@ -48,6 +67,15 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
     private ButtonGroup optGroup;
     private JRadioButton noneRadio, erosionRadio, dilationRadio, openingRadio, closingRadio;
     
+    
+    /**
+     * Constructs the {@code MorphologyPanel}, initializing all UI components
+     * and wiring their listeners to the corresponding logic methods.
+     *
+     * @param ctx       The SciJava {@link Context}, used to inject plugin dependencies.
+     * @param leftPanel The parent {@link LeftPanel}, used to access the binary mask
+     *                  and to notify the pipeline of state changes.
+     */
     public MorphologyPanel(Context ctx, LeftPanel leftPanel) {
         super();
         this.leftPanel = leftPanel;
@@ -106,6 +134,15 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
         add(buttonRow);
     }
 
+    
+    /**
+     * Creates a {@link JRadioButton}, registers it in the {@link ButtonGroup},
+     * adds it to this panel, and wires its action listener to {@link #handleSelectionChange()}.
+     *
+     * @param label      The display label of the radio button.
+     * @param isSelected {@code true} if this radio button should be selected by default.
+     * @return           The configured {@link JRadioButton}.
+     */
     private JRadioButton createRadio(String label, boolean isSelected) {
         JRadioButton rb = new JRadioButton(label, isSelected);
         rb.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -170,6 +207,17 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
         return divider;
     }
 
+    /**
+     * Called when this panel becomes visible or hidden in the pipeline navigation.
+     *
+     * <p>When made visible, captures a snapshot of the current binary mask as the
+     * clean baseline for non-destructive preview operations.</p>
+     *
+     * <p>When hidden, automatically deselects the preview checkbox and resets
+     * the mask to its clean state to avoid leaving preview artifacts.</p>
+     *
+     * @param aFlag {@code true} to make the panel visible, {@code false} to hide it.
+     */
     @Override
     public void setVisible(boolean aFlag) {
         super.setVisible(aFlag);
@@ -191,7 +239,19 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
             }
         }
     }
+    
 
+    /**
+     * Triggers or resets the morphological preview on the binary mask,
+     * depending on the current state of the preview checkbox.
+     *
+     * <p>If the preview checkbox is selected, applies the currently selected
+     * operation (and watershed if checked) across the entire stack via
+     * {@link LDCService#previewMorphology(ImagePlus)}.</p>
+     *
+     * <p>If deselected, restores the mask to its clean baseline via
+     * {@link LDCService#resetMorphologyPreview(ImagePlus)}.</p>
+     */
     private void triggerPreview() {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
@@ -207,6 +267,15 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
         }
     }
 
+    
+    /**
+     * Permanently applies the selected morphological operation and optional watershed
+     * to the entire binary mask stack, then advances the workflow to the
+     * particle analysis parameters step.
+     *
+     * <p>Resets the preview before applying to ensure the operation is performed
+     * on the clean baseline, not on a previously previewed state.</p>
+     */
     private void applyMorphology() {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
@@ -231,6 +300,11 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
     // ENABLING / DISABLING UI COMPONENTS
     // =========================================================================
     
+    /**
+     * Enables or disables all interactive UI components of this panel.
+     *
+     * @param enabled {@code true} to enable components, {@code false} to disable them.
+     */
     @Override
     public void enableUIComponents(boolean enabled) {
         noneRadio.setEnabled(enabled);
@@ -247,6 +321,12 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
     // ON IMAGE RESET
     // =========================================================================
     
+    /**
+     * Resets all UI components to their default values: operation set to None,
+     * watershed unchecked, and preview unchecked.
+     *
+     * <p>Called when the image is reset or replaced in the pipeline.</p>
+     */
     @Override
     public void resetUIComponents() {
         noneRadio.setSelected(true);            // Reset radio group to 'None'
@@ -258,6 +338,12 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
     // ON NEW PARAMETERS IMPORT
     // =========================================================================
     
+    /**
+     * Synchronizes all UI components with the current plugin parameters,
+     * restoring the selected morphological operation and watershed checkbox state.
+     *
+     * <p>Called after a JSON parameter import, before {@link #applyUIWithParams()}.</p>
+     */
 	@Override
 	public void syncUIWithParams() {
 		switch (ldc.getMorphologicalOperation()) {
@@ -282,6 +368,12 @@ public class MorphologyPanel extends JPanel implements PipelineSubPanel {
         watershedCheck.setSelected(ldc.watershedEnabled());
 	}
 
+	/**
+	 * Applies the current morphological parameters to the binary mask
+	 * by triggering the apply logic.
+	 *
+	 * <p>Used during parameter import to replay the morphological step.</p>
+	 */
 	@Override
 	public void applyUIWithParams() {
 		applyMorphology();

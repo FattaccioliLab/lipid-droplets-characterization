@@ -61,6 +61,18 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
     private Timer sliceWatcher;
     private int lastSlice = -1;
 
+    
+    /**
+     * Constructs the {@code ThresholdingPanel}, initializing all UI components
+     * and wiring their listeners to the corresponding logic methods.
+     *
+     * <p>All components are disabled at construction time and will be enabled
+     * once the preprocessing step has been completed.</p>
+     *
+     * @param ctx       The SciJava {@link Context}, used to inject plugin dependencies.
+     * @param leftPanel The parent {@link LeftPanel}, used to access the current image
+     *                  and to notify the pipeline of state changes.
+     */
     public ThresholdingPanel(Context ctx, LeftPanel leftPanel) {
         super();
         this.leftPanel = leftPanel;
@@ -163,6 +175,11 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
         }
     }
 
+    /**
+     * Reloads the histogram data from the current slice of the active image
+     * and updates the {@link HistogramPanel} display.
+     * Also stores the effective max bin value used to configure slider ranges.
+     */
     private void refreshHistogramData() {
         ImagePlus img = leftPanel.getCurrentImage();
         if (img != null) {
@@ -174,6 +191,18 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
         }
     }
 
+    
+    /**
+     * Builds a labeled threshold control row containing a {@link JSlider} and a {@link JSpinner},
+     * synchronized with each other and bound to the min or max threshold value.
+     *
+     * @param label        The label to display on the left of the row (e.g. {@code "Min:"}).
+     * @param min          The minimum value of the slider and spinner.
+     * @param max          The maximum value of the slider and spinner.
+     * @param isMinControl {@code true} if this control manages the minimum threshold,
+     *                     {@code false} for the maximum threshold.
+     * @return             The configured {@link JPanel} row.
+     */
     private JPanel createThresholdControl(String label, int min, int max, boolean isMinControl) {
         JPanel row = new JPanel(new BorderLayout());
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -222,6 +251,15 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
         return row;
     }
 
+    
+    /**
+     * Updates the minimum or maximum threshold value in the {@link LDCService}
+     * and refreshes the histogram overlay accordingly.
+     * In manual mode, also triggers a live preview of the threshold on the current image.
+     *
+     * @param isMin {@code true} to update the minimum threshold, {@code false} for the maximum.
+     * @param value The new threshold value.
+     */
     private void updateManualValues(boolean isMin, int value) {
         if(isApplied) return;
         
@@ -263,6 +301,16 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
     	updateThresholdLogic();
     }
 
+    
+    /**
+     * Applies the currently selected threshold method to the active image.
+     *
+     * <p>In manual mode, enables the sliders and applies the stored min/max values as a preview.
+     * In automatic mode (Otsu, Moments, etc.), disables the sliders, computes the threshold
+     * from the stack histogram, and snaps the sliders to the computed values.</p>
+     *
+     * <p>Does nothing if the threshold has already been applied ({@code isApplied == true}).</p>
+     */
     public void updateThresholdLogic() {
         if (isApplied) return;
 
@@ -294,6 +342,12 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
         histogramPanel.setThresholdRange(ldc.getThresholdMinValue(), ldc.getThresholdMaxValue());
     }
 
+    
+    /**
+     * Converts the current threshold preview into a binary mask by calling
+     * {@link LDCService#applyThreshold(ImagePlus)}, stores it in the {@link LeftPanel},
+     * and advances the workflow to the morphological operations step.
+     */
     private void applyThreshold() {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
@@ -330,6 +384,11 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
         }
     }
     
+    
+    /**
+     * Resets the threshold on the current image, re-enables the panel controls,
+     * and resets the UI components to their default state.
+     */
     private void resetThreshold() {
         ImagePlus img = leftPanel.getCurrentImage();
         if(img == null) return;
@@ -346,6 +405,12 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
     }
     
 
+    
+    /**
+     * Enables or disables all four threshold slider and spinner controls simultaneously.
+     *
+     * @param enabled {@code true} to enable the controls, {@code false} to disable them.
+     */
     private void enableSliders(boolean enabled) {
         minSlider.setEnabled(enabled);
         maxSlider.setEnabled(enabled);
@@ -365,6 +430,17 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
     	}
     }
 
+    
+    /**
+     * Updates the model of a paired {@link JSlider} and {@link JSpinner} to a new range and value,
+     * clamping the current value to the new maximum if necessary.
+     *
+     * @param slider  The slider to update.
+     * @param spinner The spinner to update.
+     * @param min     The new minimum value.
+     * @param max     The new maximum value.
+     * @param current The new current value (will be clamped to {@code max} if greater).
+     */
     private void updateControlModel(JSlider slider, JSpinner spinner, int min, int max, int current) {
         // Ensure current value is valid in the new range
         if (current > max) current = max;
@@ -413,6 +489,15 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
     // ENABLING / DISABLING UI COMPONENTS
     // =========================================================================
     
+    /**
+     * Enables or disables all interactive UI components of this panel.
+     *
+     * <p>When enabling, refreshes the histogram and reconfigures slider ranges.
+     * When disabling, resets slider values to zero if in manual mode
+     * and clears the histogram if no image is loaded.</p>
+     *
+     * @param enabled {@code true} to enable components, {@code false} to disable them.
+     */
     @Override
     public void enableUIComponents(boolean enabled) {
     	resetButton.setEnabled(enabled);
@@ -448,6 +533,13 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
     // ON IMAGE RESET
     // =========================================================================
 
+    /**
+     * Resets all UI components to their default values: method set to Manual,
+     * dark background unchecked, sliders and spinners set to zero,
+     * and threshold cleared on the current image if one is open.
+     *
+     * <p>Called when the image is reset or replaced in the pipeline.</p>
+     */
     @Override
     public void resetUIComponents() {
     	isApplied = false;
@@ -473,7 +565,13 @@ public class ThresholdingPanel extends JPanel implements PipelineSubPanel {
     // =========================================================================
     // ON NEW PARAMETERS IMPORT
     // =========================================================================
-    
+    /**
+     * Synchronizes all UI components with the current plugin parameters,
+     * restoring the threshold method, dark background option, slider values,
+     * and refreshing the histogram display.
+     *
+     * <p>Called after a JSON parameter import, before {@link #applyUIWithParams()}.</p>
+     */
 	@Override
 	public void syncUIWithParams() {
 		methodComboBox.setSelectedItem(ldc.getThresholdMethod());

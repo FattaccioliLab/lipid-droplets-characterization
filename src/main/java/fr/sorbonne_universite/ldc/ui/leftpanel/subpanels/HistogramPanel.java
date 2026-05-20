@@ -25,6 +25,11 @@ public class HistogramPanel extends JPanel {
     private int minThreshold = -1;
     private int maxThreshold = -1;
 
+    
+    /**
+     * Constructs a {@code HistogramPanel} with a default preferred size
+     * and a white background, matching the native ImageJ threshold window style.
+     */
     public HistogramPanel() {
         // Standard ImageJ threshold window size style
         setPreferredSize(new Dimension(256, 100)); 
@@ -65,12 +70,34 @@ public class HistogramPanel extends JPanel {
         return effectiveMaxBin;		//returning this value, so that ThresholdPanel can use it to determine the max value of a slider.
     }
 
+    
+    /**
+     * Updates the threshold range to highlight in red on the histogram.
+     * Triggers a repaint to reflect the new range immediately.
+     *
+     * @param min The minimum threshold value (inclusive).
+     * @param max The maximum threshold value (inclusive).
+     */
     public void setThresholdRange(int min, int max) {
         this.minThreshold = min;
         this.maxThreshold = max;
         repaint();
     }
 
+    
+    /**
+     * Paints the histogram bars, scaling them logarithmically on the Y-axis
+     * to match the native ImageJ histogram look.
+     *
+     * <p>Bars within the current threshold range are drawn in red,
+     * all others in black. If no histogram data is available, a placeholder
+     * message is drawn instead.</p>
+     *
+     * <p>For 16-bit images the histogram may have up to 65536 bins, so bins
+     * are mapped to screen pixels by range rather than drawn individually.</p>
+     *
+     * @param g The {@link Graphics} context used for painting.
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

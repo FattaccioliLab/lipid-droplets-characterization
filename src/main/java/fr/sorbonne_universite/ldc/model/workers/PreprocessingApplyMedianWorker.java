@@ -11,8 +11,13 @@ import ij.plugin.filter.RankFilters;
  */
 public class PreprocessingApplyMedianWorker extends SwingWorker<Void, Void>{
 	
+	/** Whether the median filter is enabled. If {@code false}, the worker does nothing. */
 	private boolean medianFilterEnabled;
+	
+	/** The median filter radius in pixels. */
 	private double radius;
+	
+	/** The image stack to process, slice by slice. */
 	private ImageStack stack;
 	
 	/**
@@ -27,6 +32,17 @@ public class PreprocessingApplyMedianWorker extends SwingWorker<Void, Void>{
 		this.stack = stack;
 	}
 
+	
+	/**
+	 * Applies the median filter to every slice of the {@link ImageStack}
+	 * using ImageJ's {@link RankFilters#MEDIAN} rank filter.
+	 *
+	 * <p>Cancellation is checked at the start and inside the slice loop,
+	 * so the operation can be interrupted cleanly at any point.</p>
+	 *
+	 * @return {@code null} on completion or cancellation.
+	 * @throws Exception if an unexpected error occurs during processing.
+	 */
     @Override
     protected Void doInBackground() throws Exception {
     	IJ.showStatus("Applying filters...");
