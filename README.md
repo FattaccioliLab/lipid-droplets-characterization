@@ -1,6 +1,8 @@
 # Lipid Droplets Characterization
 
-An ImageJ/Fiji plugin for the morphological and photometric characterization of spherical microparticles from optical or confocal microscopy images. This plugin offers a graphical interface that allows users to apply a complete image processing pipeline.
+An ImageJ/Fiji plugin for the morphological and photometric characterization of spherical microparticles from optical or confocal microscopy images. This plugin offers a graphical interface that allows users to apply a complete image processing pipeline.  
+
+A [parameters description](Parameters.md) is available.
 
 ## Download and Installation
 
@@ -10,7 +12,7 @@ To install it, simply place the `.jar` file into the **plugins** folder of your 
 
 ## Contributing
 
-If you want to contribute to the project, please consider reading the [developer README](https://github.com/FattaccioliLab/lipid-droplets-characterization/blob/documentation/README_DEV.md).
+If you want to contribute to the project, please consider reading the [developer README](README_DEV.md).
 
 ## Credits
 
